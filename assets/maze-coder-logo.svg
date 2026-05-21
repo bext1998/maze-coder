@@ -1,0 +1,324 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" role="img" aria-labelledby="title desc">
+  <title id="title">maze-coder animated workflow logo</title>
+  <desc id="desc">An animated maze workflow banner showing eleven skill nodes flowing from Markdown documents to Claude Code, Codex, Cursor, and opencode adapters.</desc>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    .frame {
+      fill: #f8fafc;
+      stroke: #d8dee9;
+    }
+
+    .panel {
+      fill: #ffffff;
+      stroke: #d8dee9;
+    }
+
+    .shadow {
+      fill: #0f172a;
+      opacity: 0.08;
+    }
+
+    .maze-base {
+      fill: none;
+      stroke: #cbd5e1;
+      stroke-width: 16;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .maze-trace {
+      fill: none;
+      stroke: url(#traceGradient);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 680;
+      stroke-dashoffset: 680;
+      animation: trace 7.2s ease-in-out infinite;
+    }
+
+    .node {
+      fill: #ffffff;
+      stroke: #2563eb;
+      stroke-width: 3;
+      animation: pulse 7.2s ease-in-out infinite;
+    }
+
+    .node-label,
+    .adapter-label,
+    .brand,
+    .tagline,
+    .doc-mark {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    .node-label {
+      fill: #334155;
+      font-size: 9px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .adapter {
+      fill: #ffffff;
+      stroke: #64748b;
+      stroke-width: 2;
+      animation: adapterGlow 7.2s ease-in-out infinite;
+    }
+
+    .adapter-label {
+      fill: #0f172a;
+      font-size: 12px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .brand {
+      fill: #0f172a;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .tagline {
+      fill: #475569;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .doc {
+      fill: #ffffff;
+      stroke: #0f766e;
+      stroke-width: 3;
+    }
+
+    .doc-fold {
+      fill: #ccfbf1;
+      stroke: #0f766e;
+      stroke-width: 2;
+    }
+
+    .doc-line {
+      stroke: #14b8a6;
+      stroke-width: 4;
+      stroke-linecap: round;
+    }
+
+    .doc-mark {
+      fill: #0f766e;
+      font-size: 20px;
+      font-weight: 800;
+      text-anchor: middle;
+    }
+
+    .check {
+      fill: none;
+      stroke: #16a34a;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: checkBlink 7.2s ease-in-out infinite;
+    }
+
+    .exit-line {
+      stroke: #94a3b8;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 8 9;
+    }
+
+    .count {
+      fill: #1d4ed8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 42px;
+      font-weight: 900;
+      text-anchor: middle;
+    }
+
+    .count-label {
+      fill: #475569;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .n1 { animation-delay: 0s; }
+    .n2 { animation-delay: 0.2s; }
+    .n3 { animation-delay: 0.4s; }
+    .n4 { animation-delay: 0.6s; }
+    .n5 { animation-delay: 0.8s; }
+    .n6 { animation-delay: 1s; }
+    .n7 { animation-delay: 1.2s; }
+    .n8 { animation-delay: 1.4s; }
+    .n9 { animation-delay: 1.6s; }
+    .n10 { animation-delay: 1.8s; }
+    .n11 { animation-delay: 2s; }
+
+    .a1 { animation-delay: 2.2s; }
+    .a2 { animation-delay: 2.4s; }
+    .a3 { animation-delay: 2.6s; }
+    .a4 { animation-delay: 2.8s; }
+
+    @keyframes trace {
+      0% { stroke-dashoffset: 680; opacity: 0.35; }
+      14% { opacity: 1; }
+      58% { stroke-dashoffset: 0; opacity: 1; }
+      78% { stroke-dashoffset: 0; opacity: 0.85; }
+      100% { stroke-dashoffset: -680; opacity: 0.25; }
+    }
+
+    @keyframes pulse {
+      0%, 22%, 100% {
+        fill: #ffffff;
+        stroke: #2563eb;
+        transform: scale(1);
+      }
+      8% {
+        fill: #dbeafe;
+        stroke: #1d4ed8;
+        transform: scale(1.16);
+      }
+    }
+
+    @keyframes adapterGlow {
+      0%, 30%, 100% {
+        fill: #ffffff;
+        stroke: #64748b;
+      }
+      12% {
+        fill: #ecfeff;
+        stroke: #0891b2;
+      }
+    }
+
+    @keyframes checkBlink {
+      0%, 55%, 100% { opacity: 0.35; }
+      68%, 82% { opacity: 1; }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .frame { fill: #111827; stroke: #334155; }
+      .panel, .doc, .adapter, .node { fill: #172033; }
+      .brand, .adapter-label { fill: #e5e7eb; }
+      .tagline, .node-label, .count-label { fill: #cbd5e1; }
+      .maze-base { stroke: #334155; }
+      .doc-fold { fill: #134e4a; }
+      .shadow { opacity: 0.18; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .maze-trace,
+      .node,
+      .adapter,
+      .check {
+        animation: none;
+      }
+
+      .maze-trace {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+  <defs>
+    <linearGradient id="traceGradient" x1="140" x2="760" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14b8a6" />
+      <stop offset="0.45" stop-color="#2563eb" />
+      <stop offset="1" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+
+  <rect class="frame" x="8" y="8" width="944" height="244" rx="24" />
+  <ellipse class="shadow" cx="480" cy="229" rx="370" ry="12" />
+
+  <g transform="translate(38 38)">
+    <rect class="doc" x="0" y="10" width="82" height="104" rx="12" />
+    <path class="doc-fold" d="M57 10 L82 35 L57 35 Z" />
+    <text class="doc-mark" x="41" y="47">MD</text>
+    <line class="doc-line" x1="20" y1="66" x2="61" y2="66" />
+    <line class="doc-line" x1="20" y1="82" x2="52" y2="82" />
+    <path class="check" d="M22 101 L34 112 L60 87" />
+  </g>
+
+  <text class="brand" x="154" y="74">maze-coder</text>
+  <text class="tagline" x="156" y="101">Markdown-first workflow skills for portable coding agents</text>
+
+  <g transform="translate(812 38)">
+    <circle class="panel" cx="55" cy="55" r="54" />
+    <text class="count" x="55" y="57">11</text>
+    <text class="count-label" x="55" y="80">maze-* skills</text>
+  </g>
+
+  <path class="maze-base" d="M156 163 H244 V129 H314 V190 H395 V138 H469 V180 H556 V121 H626 V163 H734" />
+  <path class="maze-trace" d="M156 163 H244 V129 H314 V190 H395 V138 H469 V180 H556 V121 H626 V163 H734" />
+
+  <g transform="translate(156 163)">
+    <circle class="node n1" r="13" />
+    <text class="node-label" y="33">idea</text>
+  </g>
+  <g transform="translate(244 163)">
+    <circle class="node n2" r="13" />
+    <text class="node-label" y="33">harden</text>
+  </g>
+  <g transform="translate(244 129)">
+    <circle class="node n3" r="13" />
+    <text class="node-label" y="-21">init</text>
+  </g>
+  <g transform="translate(314 129)">
+    <circle class="node n4" r="13" />
+    <text class="node-label" y="-21">map</text>
+  </g>
+  <g transform="translate(314 190)">
+    <circle class="node n5" r="13" />
+    <text class="node-label" y="33">audit</text>
+  </g>
+  <g transform="translate(395 190)">
+    <circle class="node n6" r="13" />
+    <text class="node-label" y="33">bug</text>
+  </g>
+  <g transform="translate(395 138)">
+    <circle class="node n7" r="13" />
+    <text class="node-label" y="-21">review</text>
+  </g>
+  <g transform="translate(469 138)">
+    <circle class="node n8" r="13" />
+    <text class="node-label" y="-21">qa</text>
+  </g>
+  <g transform="translate(469 180)">
+    <circle class="node n9" r="13" />
+    <text class="node-label" y="33">git</text>
+  </g>
+  <g transform="translate(556 180)">
+    <circle class="node n10" r="13" />
+    <text class="node-label" y="33">status</text>
+  </g>
+  <g transform="translate(626 121)">
+    <circle class="node n11" r="13" />
+    <text class="node-label" y="-21">handoff</text>
+  </g>
+
+  <line class="exit-line" x1="734" y1="163" x2="790" y2="82" />
+  <line class="exit-line" x1="734" y1="163" x2="790" y2="130" />
+  <line class="exit-line" x1="734" y1="163" x2="790" y2="178" />
+  <line class="exit-line" x1="734" y1="163" x2="790" y2="226" />
+
+  <g>
+    <rect class="adapter a1" x="790" y="61" width="118" height="36" rx="10" />
+    <text class="adapter-label" x="849" y="84">Claude Code</text>
+  </g>
+  <g>
+    <rect class="adapter a2" x="790" y="109" width="118" height="36" rx="10" />
+    <text class="adapter-label" x="849" y="132">Codex</text>
+  </g>
+  <g>
+    <rect class="adapter a3" x="790" y="157" width="118" height="36" rx="10" />
+    <text class="adapter-label" x="849" y="180">Cursor</text>
+  </g>
+  <g>
+    <rect class="adapter a4" x="790" y="205" width="118" height="36" rx="10" />
+    <text class="adapter-label" x="849" y="228">opencode</text>
+  </g>
+</svg>

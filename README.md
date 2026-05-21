@@ -1,5 +1,9 @@
 # maze-coder
 
+<p align="center">
+  <img src="./assets/maze-coder-logo.svg" alt="maze-coder animated workflow logo" width="720">
+</p>
+
 **Portable Harness Engineering Skills Pack**
 可攜式 AI Coding 工作流技能包，讓 Claude Code、Codex、Cursor、opencode 共用同一套工程規範。
 
