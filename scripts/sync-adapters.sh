@@ -232,6 +232,7 @@ declare -A TEMPLATE_MAP=(
   ["maze-project-init/templates/STATUS.template.md"]="STATUS.md"
   ["maze-project-init/templates/NEXT_ACTION.template.md"]="NEXT_ACTION.md"
   ["maze-project-init/templates/DECISIONS.template.md"]="DECISIONS.md"
+  ["maze-project-init/templates/MAZE_PROJECT.template.md"]="MAZE_PROJECT.md"
   ["maze-qa-verification/templates/QA_REPORT.template.md"]="QA_REPORT.md"
   ["maze-design-review/templates/DESIGN_REVIEW.template.md"]="DESIGN_REVIEW.md"
   ["maze-repo-map/templates/REPO_MAP.template.md"]="REPO_MAP.md"

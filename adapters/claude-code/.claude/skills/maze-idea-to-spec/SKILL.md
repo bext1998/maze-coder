@@ -52,11 +52,18 @@ description: |
 
 輸出後詢問使用者：「這份 spec 是否正確反映你的想法？需要調整哪個部分？」
 
+### Phase 4：記錄 spec 路徑
+
+使用者確認後：
+- 若目錄下已有 `MAZE_PROJECT.md`，更新其中的「規格文件實際路徑」欄位為本次寫入的路徑
+- 若無 `MAZE_PROJECT.md`，提示使用者：「可執行 `maze-project-init` 以建立 MAZE_PROJECT.md，讓未來的 agent 能快速定位此 spec」
+
 ## 輸出（Output Contract）
 
 - **位置**：使用者指定路徑，預設為 `spec.md`
 - **格式**：符合 `spec.template.md` 的完整 Markdown 文件
 - **完整性**：所有必要 section 都必須填寫，不留空白佔位符
+- **路徑記錄**：若 `MAZE_PROJECT.md` 存在，其中的 spec 路徑欄位必須更新
 
 ## 技能邊界（本技能不做的事）
 
