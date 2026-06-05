@@ -1,4 +1,4 @@
-# maze-coder 規格書（補強版 v1.4）
+# maze-coder 規格書（補強版 v1.5）
 
 > **補強版說明**：本文件在原始 spec v1.0 基礎上，依照 Harness Engineering 原則加入防護層。
 > 原始架構決策、功能範圍、命名慣例均保持不動。補強內容以 `<!-- HARDENED -->` 區塊標示。
@@ -6,6 +6,7 @@
 > **v1.2 變更**：OQ-1、OQ-2、OQ-5 決策落地
 > **v1.3 變更**：OQ-3、OQ-4、OQ-6 決策落地，所有 Open Questions 已全數確認
 > **v1.4 變更**：技能 `maze-` 前綴、`maze-project-init` 既有文件處理行為、spec 路徑改由 `MAZE_PROJECT.md` 管理
+> **v1.5 變更**：新增 `maze-writing-skills`、`maze-update`；擴充 `maze-bug-reproduction`（4-phase 除錯）、`maze-qa-verification`（完成前確認）、`maze-session-closeout`（任務粒度原則）；新增 `update-skillpack.sh`
 
 ---
 
@@ -164,9 +165,8 @@ maze-coder/
         MAZE_PROJECT.template.md  ← 記錄本專案的 spec 路徑與關鍵文件位置
 
     maze-session-closeout/
-      SKILL.md
+      SKILL.md                  ← v1.5：執行流程新增步驟「確認下一個 task 是否符合 2-5 分鐘粒度原則」
       templates/
-        session-summary.template.md
         status-update.template.md
 
     maze-github-safe-ops/
@@ -186,11 +186,12 @@ maze-coder/
         DESIGN_REVIEW.template.md
 
     maze-qa-verification/
-      SKILL.md
+      SKILL.md                  ← v1.5：執行流程新增 Phase 0「完成宣告前確認」（≤5 條輕量 checklist）
       checklists/
         code-quality-checklist.md
         test-plan-checklist.md
         regression-checklist.md
+        pre-completion-checklist.md  ← v1.5 新增
       templates/
         QA_REPORT.template.md
 
@@ -205,7 +206,9 @@ maze-coder/
         context-consistency-checklist.md
 
     maze-bug-reproduction/
-      SKILL.md
+      SKILL.md                  ← v1.5：整合 4-phase 除錯流程（Reproduce→Isolate→Root Cause→Fix+Verify）
+      checklists/
+        debug-4phase-checklist.md  ← v1.5 新增
       templates/
         BUG_REPRODUCTION.template.md
 
@@ -213,6 +216,14 @@ maze-coder/
       SKILL.md
       templates/
         HANDOFF.template.md
+
+    maze-writing-skills/         ← v1.5 新增：協助使用者建立新的 maze-coder 技能
+      SKILL.md
+      templates/
+        skill-scaffold.template.md
+
+    maze-update/                 ← v1.5 新增：檢查遠端版本並輸出更新摘要（不寫入檔案）
+      SKILL.md
 
   templates/                 ← 供使用者複製到自己專案的可攜式範本（非 maze-coder 自身文件）
     spec.md
@@ -225,7 +236,7 @@ maze-coder/
     DESIGN_REVIEW.md
     REPO_MAP.md
     HANDOFF.md
-    TASK_PLAN.md
+    TASK_PLAN.md              ← v1.5：嵌入任務粒度原則（2-5 分鐘、具體檔案路徑、驗證步驟）
 
   adapters/
     claude-code/
@@ -254,6 +265,10 @@ maze-coder/
             SKILL.md
           maze-handoff-summary/
             SKILL.md
+          maze-writing-skills/
+            SKILL.md
+          maze-update/
+            SKILL.md
 
     codex/
       README.md
@@ -275,17 +290,19 @@ maze-coder/
   scripts/
     validate-skillpack.sh
     sync-adapters.sh
+    update-skillpack.sh       ← v1.5 新增：從遠端拉取最新版本並寫入本機，衝突時逐一詢問
 ```
 
 <!-- HARDENED: FROZEN — Repository 結構 -->
 > **[FROZEN — 目錄結構 v1.x 期間不得重命名或移動]**
 > 以下路徑是被 `validate-skillpack.sh` 直接引用的錨點，變更需同步更新腳本並遞增 spec 版本：
-> - `skills/maze-*/SKILL.md`（所有 11 個技能入口，**必須帶 `maze-` 前綴**）
-> - `adapters/claude-code/.claude/skills/`（含所有 11 個 `maze-*` 技能子目錄）
+> - `skills/maze-*/SKILL.md`（所有 13 個技能入口，**必須帶 `maze-` 前綴**）
+> - `adapters/claude-code/.claude/skills/`（含所有 13 個 `maze-*` 技能子目錄）
 > - `adapters/cursor/.cursor/rules/`
 > - `adapters/codex/AGENTS.md`
 > - `adapters/opencode/AGENTS.md`
 > - `scripts/validate-skillpack.sh`
+> - `scripts/update-skillpack.sh`（需要 `git` 或 `curl`；與其他純 bash 腳本的依賴需求不同，README 需標注）
 >
 > **`docs/` vs `templates/` 定位（已確認，不得混用）**：
 > - `docs/`：maze-coder **自身**的專案文件，記錄此 repo 的狀態與決策
@@ -353,10 +370,12 @@ description: |
 | `maze-idea-to-spec` | 使用者的文字描述（任意格式） | 一份符合 `spec.template.md` 結構的規格文件，路徑記錄至 `MAZE_PROJECT.md` | 若描述不足，停止並列出缺漏問題，不得自行填充假設 |
 | `maze-spec-hardening` | 一份現有規格文件（路徑可來自 `MAZE_PROJECT.md` 或使用者直接指定） | 補強後的 spec，包含 Contract / Invariants / Edge Cases / AC / Test Plan | 若輸入 spec 不完整，標注 `[缺漏]` 後繼續補強可補的部分 |
 | `maze-project-init` | 專案名稱 + 目標工具（至少一個）+ 規格文件實際路徑 | 填寫完成的專案文件集（PROJECT_BRIEF / STATUS / NEXT_ACTION）+ `MAZE_PROJECT.md`；**若任何目標文件已存在，停止並逐一詢問使用者：合併、覆蓋或跳過** | 缺少專案名稱或規格路徑時停止並詢問，不得使用 "untitled" 或自行命名 |
-| `maze-session-closeout` | 本次 session 的摘要（使用者提供） | 更新後的 STATUS.md + session-summary | 若摘要為空，列出需要填寫的問題，不得留空白模板 |
+| `maze-session-closeout` | 本次 session 的摘要（使用者提供） | 更新後的 STATUS.md + NEXT_ACTION.md；不產出 summary 檔案 | 若摘要為空，列出需要填寫的問題，不得留空白模板 |
 | `maze-github-safe-ops` | 使用者的 Git 操作意圖 | 對應的安全操作步驟 + 檢查清單確認 | 遇到 force push / rebase main 等高風險操作，必須停止並警告 |
 | `maze-design-review` | 前端截圖或程式碼 | DESIGN_REVIEW.md 報告 + 評分 | 若無法取得視覺輸出，標注「無法驗證視覺品質」並繼續審查程式碼結構 |
-| `maze-qa-verification` | 功能描述 + 測試目標 | QA_REPORT.md + 測試清單 | 若測試環境未就緒，列出缺漏環境條件，不得假設環境已就緒 |
+| `maze-qa-verification` | 功能描述 + 測試目標 | Phase 0 完成前確認（≤5 條）+ QA_REPORT.md + 測試清單 | 若測試環境未就緒，列出缺漏環境條件，不得假設環境已就緒 |
+| `maze-writing-skills` | 使用者想建立的新技能名稱與用途描述 | 符合 Section 7 標準結構的 SKILL.md 草稿，存放於 `skills/maze-[name]/` | 若名稱未帶 `maze-` 前綴，自動補上並告知使用者 |
+| `maze-update` | 無（自動讀取 `MAZE_PROJECT.md` 取得安裝路徑）| 更新摘要：目前版本、遠端最新版本、有差異的檔案清單；**不寫入任何檔案** | 若無法連線至遠端 repo，輸出明確錯誤並提示使用者手動執行 `update-skillpack.sh` |
 
 ### 8.2 Core Skills → Adapter 的契約
 
@@ -384,15 +403,16 @@ description: |
 
 | # | 不變式 | 對應範圍 | 違反時的症狀 |
 |---|---|---|---|
-| INV-1 | 每個 `skills/*/` 目錄有且只有一個 `SKILL.md` | `skills/` 全體 | validate 腳本找到 0 或 2+ 個 SKILL.md |
+| INV-1 | 每個 `skills/maze-*/` 目錄有且只有一個 `SKILL.md`；目前共 13 個技能 | `skills/` 全體 | validate 腳本找到 0 或 2+ 個 SKILL.md，或技能總數不為 13 |
 | INV-2 | `adapters/` 下四個 adapter 目錄名稱固定為 `claude-code`、`codex`、`cursor`、`opencode` | `adapters/` | 新增或重命名 adapter 目錄 |
-| INV-3 | `validate-skillpack.sh` 的必要檔案清單必須與本 spec Section 6 的結構一致 | `scripts/` | 腳本通過但實際缺少必要檔案，或腳本失敗但檔案其實存在 |
+| INV-3 | `validate-skillpack.sh` 的必要檔案清單必須與本 spec Section 6 的結構一致（含 13 個技能） | `scripts/` | 腳本通過但實際缺少必要檔案，或腳本失敗但檔案其實存在 |
 | INV-4 | `docs/` 只存放 maze-coder 自身的專案文件；`templates/` 只存放供使用者複製的空白範本，不得交叉存放 | `docs/`、`templates/` | `docs/` 出現空白範本，或 `templates/` 出現 maze-coder 的實際狀態資料 |
 | INV-5 | Adapter 中的技能指令在語意上不得比 `skills/` 中的原始 SKILL.md 更嚴格或更寬鬆 | `adapters/` | 切換工具後，相同技能產生不同結果 |
 | INV-6 | `sync-adapters.sh` 只讀取 `skills/`，只寫入 `adapters/`，不修改其他目錄 | `scripts/` | sync 腳本修改了 core/ 或 templates/ |
 | INV-7 | 技能目錄名稱必須以 `maze-` 開頭，且與 SKILL.md 的 front matter `name:` 欄位完全一致 | `skills/` | adapter 無法用目錄名定位對應的 SKILL.md；技能在工具列表中顯示無前綴名稱 |
 | INV-8 | 根目錄 `templates/` 下的模板是從 `skills/maze-*/templates/` 同步而來，不得手動直接編輯根目錄版本 | `templates/`、`skills/maze-*/templates/` | 根目錄模板與 skills 下模板出現內容分歧 |
 | INV-9 | 每個使用 `maze-project-init` 初始化的專案必須含有 `MAZE_PROJECT.md`，其中記錄 spec 文件的實際路徑；agent 讀取 spec 前必須先查此文件 | 使用者專案目錄 | agent 自行猜測 spec 路徑，或在多個含 "spec" 字眼的文件中隨機選擇 |
+| INV-10 | `update-skillpack.sh` 是唯一允許依賴 `git` 或 `curl` 的腳本；`validate-skillpack.sh` 和 `sync-adapters.sh` 必須只依賴 `bash` 和 `find` | `scripts/` | 其他腳本引入網路依賴，導致在離線環境失效 |
 
 <!-- /HARDENED -->
 
@@ -442,6 +462,19 @@ description: |
 | 同一 session 內連續呼叫同一技能 | 使用者在 spec 完成後又呼叫 `idea-to-spec` | 詢問：「是否要建立新 spec 或修改現有 spec？」 | 直接覆蓋現有 spec |
 | 使用者輸入的語言與 SKILL.md 語言不同 | SKILL.md 以中文撰寫，使用者用英文呼叫 | 以使用者語言回應，但保持技能邏輯不變 | 拒絕執行或切換到不同的技能流程 |
 
+### 10.4 `maze-update` 與 `update-skillpack.sh` 邊界情況
+
+> `maze-update`（技能）：唯讀，只輸出更新摘要，不寫入任何檔案。
+> `update-skillpack.sh`（腳本）：有副作用，實際執行檔案更新，衝突時逐一詢問。
+
+| 情況 | 輸入條件 | 預期行為 | 禁止行為 |
+|---|---|---|---|
+| 無法連線至遠端 repo | 離線環境或 GitHub 不可用 | `maze-update` 輸出明確錯誤並提示手動方式；`update-skillpack.sh` exit 1 | 靜默失敗、假設本機已是最新版、或部分更新後崩潰 |
+| 使用者修改了本機 SKILL.md | 本機與遠端版本不同且非 fast-forward | `update-skillpack.sh` 停止並顯示 diff，詢問「此檔案在本機有修改，是否覆蓋？(y/N)」 | 靜默覆蓋使用者的自訂內容 |
+| 本機版本與遠端完全相同 | 無任何差異 | `maze-update` 輸出「目前已是最新版本」；`update-skillpack.sh` 輸出「No changes」並 exit 0 | 輸出空白或 exit 1 |
+| `MAZE_PROJECT.md` 不存在 | 使用者手動複製 repo 未執行 `maze-project-init` | `maze-update` 仍可執行（讀取 maze-coder repo 自身路徑）；輸出提醒「建議執行 maze-project-init 初始化專案」 | 因找不到 MAZE_PROJECT.md 而崩潰或拒絕執行 |
+| 遠端新增了未知技能 | 遠端有 `skills/maze-new-skill/`，本機無 | `maze-update` 摘要中標注「新增技能：maze-new-skill」；`update-skillpack.sh` 詢問是否安裝 | 靜默新增或靜默跳過 |
+
 <!-- /HARDENED -->
 
 ---
@@ -456,14 +489,17 @@ description: |
 |---|---|---|---|---|
 | AC-1 | `validate-skillpack.sh` 在完整 repo 上執行 | 執行腳本，觀察 exit code | exit 0，輸出「All checks passed」 | 是 |
 | AC-2 | `validate-skillpack.sh` 在缺少任意必要檔案時失敗 | 刪除任一 SKILL.md 後執行腳本 | exit 1，輸出缺漏的檔案路徑 | 是 |
-| AC-3 | `validate-skillpack.sh` 驗證每個 SKILL.md 包含所有必要 section 標題 | 執行腳本，觀察輸出 | 對所有 11 個 SKILL.md 以 grep 確認「技能目標」「前置條件」「執行流程」「輸出」「技能邊界」五個標題存在；缺少任一則 exit 1 並列出路徑 | 是（grep） |
+| AC-3 | `validate-skillpack.sh` 驗證每個 SKILL.md 包含所有必要 section 標題 | 執行腳本，觀察輸出 | 對所有 13 個 SKILL.md 以 grep 確認「技能目標」「前置條件」「執行流程」「輸出」「技能邊界」五個標題存在；缺少任一則 exit 1 並列出路徑 | 是（grep） |
 | AC-4 | 四個 adapter 各包含其 README.md 與主要指令檔 | 人工檢查目錄結構 | 與 Section 6 的結構完全吻合 | 是（由 AC-1 涵蓋） |
-| AC-5 | `idea-to-spec` 技能能將口語描述轉換成有效的 spec.md | 提供範例描述，檢查輸出 | 輸出包含 spec.template.md 所有必要 section | 否（手動） |
-| AC-6 | `spec-hardening` 技能輸出包含所有 8 個補強區塊 | 提供一份範例 spec，檢查輸出 | 輸出含 Contract / Invariants / Edge Cases / AC / Test Plan / FROZEN / Drift Risk / OQ | 否（手動） |
-| AC-7 | `github-safe-ops` 技能在使用者要求 force push main 時發出警告 | 提供「我要 force push main」，檢查輸出 | 輸出明確警告，不提供指令 | 否（手動） |
+| AC-5 | `maze-idea-to-spec` 技能能將口語描述轉換成有效的規格文件 | 提供範例描述，檢查輸出 | 輸出包含 spec.template.md 所有必要 section | 否（手動） |
+| AC-6 | `maze-spec-hardening` 技能輸出包含所有 8 個補強區塊 | 提供一份範例 spec，檢查輸出 | 輸出含 Contract / Invariants / Edge Cases / AC / Test Plan / FROZEN / Drift Risk / OQ | 否（手動） |
+| AC-7 | `maze-github-safe-ops` 技能在使用者要求 force push main 時發出警告 | 提供「我要 force push main」，檢查輸出 | 輸出明確警告，不提供指令 | 否（手動） |
 | AC-8 | `sync-adapters.sh` 執行後，adapter 內容與 skills/ 語意一致 | 執行腳本，比對 adapter 與 skill | 不存在 skills/ 中沒有的技能指令 | 否（手動比對） |
-| AC-9 | 整個 repo 可在不安裝任何依賴的情況下使用（scripts 除外） | 在乾淨的 macOS / Linux 環境複製 repo 後直接閱讀 | 所有 .md 可閱讀，validate 腳本只依賴 bash 和 find | 是 |
+| AC-9 | 整個 repo 可在不安裝任何依賴的情況下使用（`update-skillpack.sh` 除外） | 在乾淨的 macOS / Linux 環境複製 repo 後直接閱讀 | 所有 .md 可閱讀；`validate-skillpack.sh` 和 `sync-adapters.sh` 只依賴 bash 和 find | 是 |
 | AC-10 | `templates/` 下的模板不含任何佔位符需要人工替換（除 `[...]` 格式的欄位） | 人工檢查所有 template 檔案 | 無 `TODO`、`FIXME`、`your-project-name` 等未完成標記 | 部分（grep） |
+| AC-11 | `maze-update` 技能在離線環境執行時輸出明確錯誤，不崩潰 | 斷網後呼叫 `maze-update` | 輸出「無法連線至遠端 repo」並提示手動執行 `update-skillpack.sh` | 否（手動） |
+| AC-12 | `update-skillpack.sh` 在偵測到使用者修改的 SKILL.md 時停止並詢問 | 修改任一 SKILL.md 後執行腳本 | 輸出差異並等待使用者確認，不靜默覆蓋 | 否（手動） |
+| AC-13 | `maze-writing-skills` 技能輸出的 SKILL.md 草稿符合 Section 7 標準結構 | 提供技能名稱與描述，檢查輸出 | 輸出包含所有 5 個必要 section，且 `name:` front matter 帶 `maze-` 前綴 | 否（手動） |
 
 <!-- /HARDENED -->
 
@@ -583,16 +619,20 @@ description: |
 | OQ-5 | docs/ 是自身文件，templates/ 是使用者範本 | Section 6、INV-4 |
 | OQ-6 | HARNESS_ENGINEERING.md 給 agent；PRINCIPLES.md 給人類 | Section 9 FROZEN（core/） |
 
-**v1.4 架構決策落地：**
+**v1.5 新增技能與功能擴充：**
 
-| 決策 | 摘要 | 主要落地位置 |
-|---|---|---|
-| 技能前綴 | 所有技能目錄與 name: front matter 統一加 `maze-` 前綴 | Section 6 結構、Section 7、INV-7、DR-8、Contract 表 |
-| project-init 既有文件處理 | 發現既有文件時停止並逐一詢問，不得靜默覆蓋 | Section 8.1 Contract、Section 10.3 Edge Cases |
-| spec 路徑管理 | 廢除命名模糊匹配，改由 `MAZE_PROJECT.md` 記錄實際路徑作為 agent 錨點 | INV-9、Contract 表、DR-9、Section 6 結構 |
+| 項目 | 類型 | 說明 | 主要落地位置 |
+|---|---|---|---|
+| `maze-writing-skills` | 新增技能 | 協助使用者建立新技能，輸出符合 Section 7 的 SKILL.md 草稿 | Section 6 結構、Contract 表、AC-13 |
+| `maze-update` | 新增技能 | 檢查遠端版本並輸出更新摘要（唯讀，不寫入） | Section 6 結構、Contract 表、AC-11、Section 10.4 |
+| `update-skillpack.sh` | 新增腳本 | 實際執行檔案更新，衝突時逐一詢問（需 git 或 curl） | Section 6 結構、INV-10、AC-12、Section 10.4 |
+| `maze-bug-reproduction` 擴充 | 技能強化 | 整合 4-phase 除錯流程（Reproduce→Isolate→Root Cause→Fix+Verify）+ 新增 debug-4phase-checklist | Section 6 結構 |
+| `maze-qa-verification` 擴充 | 技能強化 | 新增 Phase 0「完成宣告前確認」（≤5 條輕量 checklist）+ pre-completion-checklist | Section 6、Contract 表 |
+| `maze-session-closeout` 擴充 | 技能強化 | 新增步驟「確認下一個 task 是否符合 2-5 分鐘粒度原則」 | Section 6 |
+| `TASK_PLAN.md` 更新 | 模板強化 | 嵌入任務粒度原則（2-5 分鐘、具體檔案路徑、驗證步驟） | Section 6 |
 
 ---
 
-*maze-coder spec v1.4 — 補強版*
-*v1.0 原始 → v1.1 補強 → v1.2 OQ 落地（1、2、5）→ v1.3 OQ 落地（3、4、6）→ v1.4 架構決策落地*
-*最後更新：2026-05-19*
+*maze-coder spec v1.5 — 補強版*
+*v1.0 原始 → v1.1 補強 → v1.2 OQ 落地（1、2、5）→ v1.3 OQ 落地（3、4、6）→ v1.4 架構決策落地 → v1.5 功能擴充*
+*最後更新：2026-05-23*

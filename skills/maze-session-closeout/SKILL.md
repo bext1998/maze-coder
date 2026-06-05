@@ -1,7 +1,7 @@
 ---
 name: maze-session-closeout
 description: |
-  Coding session 結束後，更新 STATUS.md、NEXT_ACTION.md 並產出 session-summary。
+  Coding session 結束後，更新 STATUS.md、NEXT_ACTION.md，不產出額外 summary 檔案。
   當使用者說「結束 session」、「更新狀態」、「今天先到這裡」時觸發。
 ---
 
@@ -43,19 +43,17 @@ Coding session 結束後，若不更新狀態文件，下一個 session 的 agen
 - 根據使用者提供的下一步更新「下一個 Session 的目標」
 - 更新「需要決定的事項」
 
-### Phase 3：產出 session-summary
+### Phase 3：確認不產出額外 summary 檔案
 
-建立本次 session 的快照文件（`session-summary-[日期].md`），包含：
-- 完成事項
-- 技術決策
-- 未解決問題
-- 下一步
+- 不建立 `summary.md`、`session-summary.md` 或 `session-summary-[日期].md`
+- 本次 session 的完成事項、未解決問題與下一步，應整合進 `STATUS.md` 與 `NEXT_ACTION.md`
+- 若使用者明確要求交接文件，改用 `maze-handoff-summary` 產出 `HANDOFF.md`
 
 ## 輸出（Output Contract）
 
 - **STATUS.md**：更新後的當前狀態，帶有新的最後更新時間
 - **NEXT_ACTION.md**：更新後的下一步行動
-- **session-summary**：本次 session 的不可變快照（可選，供未來參考）
+- **不產出 summary 檔案**：避免建立多餘的 `summary.md` 或 `session-summary-*` 文件
 
 ## 技能邊界（本技能不做的事）
 

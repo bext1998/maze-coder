@@ -80,7 +80,7 @@
 當前工具（Claude Code / Codex / Cursor / opencode）
        │
        ▼
-[session-closeout] ── 更新 STATUS.md + 產出 session-summary
+[session-closeout] ── 更新 STATUS.md + NEXT_ACTION.md
        │
        ▼
 [handoff-summary] ─── 產出 HANDOFF.md（含狀態、決策、下一步）
