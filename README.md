@@ -1,5 +1,9 @@
 # maze-coder
 
+<p align="center">
+  <img src="./assets/maze-coder-logo.svg" alt="maze-coder animated workflow logo" width="720">
+</p>
+
 **Portable Harness Engineering Skills Pack** — 讓 Claude Code、Codex、Cursor、opencode 共用需求、GitHub、QA 與狀態同步工作流。
 
 ## 12 Skills
@@ -59,6 +63,7 @@ bash scripts/validate-skills-functional.sh
 ## Structure
 
 ```text
+assets/     品牌與視覺資產
 core/       共用契約與工作流
 skills/     12 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
