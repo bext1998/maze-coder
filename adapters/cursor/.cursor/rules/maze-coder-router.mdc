@@ -1,0 +1,21 @@
+---
+description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session 與交接工作
+alwaysApply: true
+---
+
+先讀取 `.cursor/maze-coder/HARNESS_ENGINEERING.md`。依使用者意圖只載入一個最相關技能的 `.cursor/maze-coder/skills/<skill>/SKILL.md`；技能要求時才讀同目錄下的 references、templates 或 checklists。不得一次載入全部技能。
+
+| 意圖 | 技能 |
+|---|---|
+| 想法轉規格 | maze-idea-to-spec |
+| 補強規格 | maze-spec-hardening |
+| 初始化專案文件 | maze-project-init |
+| 規格拆成或同步 GitHub Issues | maze-spec-to-issues |
+| 結束 session／同步狀態 | maze-session-closeout |
+| Git／GitHub 安全操作 | maze-github-safe-ops |
+| 設計審查 | maze-design-review |
+| QA／驗收 | maze-qa-verification |
+| repo 結構地圖 | maze-repo-map |
+| 上下文一致性稽核 | maze-context-audit |
+| Bug 重現文件 | maze-bug-reproduction |
+| 跨工具／人員交接 | maze-handoff-summary |

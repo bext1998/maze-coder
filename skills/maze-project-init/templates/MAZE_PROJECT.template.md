@@ -1,36 +1,32 @@
-# MAZE_PROJECT — 專案定位錨點
+# MAZE_PROJECT — [專案名稱] 定位與工作流設定
 
-> 此文件由 `maze-project-init` 技能產生，供 coding agent 快速定位專案文件。
-> agent 讀取任何規格文件前，必須先查此文件取得 spec 的實際路徑。
-> 不得手動修改路徑欄位（除非對應文件已搬移）。
-
----
+> 由 `maze-project-init` 建立。Agent 讀取規格前必須先由此取得實際路徑。
+> 文件搬移或設定變更時才更新；不得記錄 token、API key、密碼或私密憑證。
 
 ## 專案資訊
 
-- **專案名稱**：[專案名稱]
-- **目標工具**：[Claude Code / Codex / Cursor / opencode]
-- **建立日期**：[YYYY-MM-DD]
+- 專案名稱：[專案名稱]
+- 目標工具：[Claude Code / Codex / Cursor / opencode]
+- 建立日期：[YYYY-MM-DD]
 
----
+## 文件
 
-## 規格文件（Spec）
+- Spec：[規格實際相對路徑]
+- Project Brief：PROJECT_BRIEF.md
+- Status：STATUS.md
+- Next Action：NEXT_ACTION.md
+- Decisions：DECISIONS.md
 
-- **實際路徑**：[spec.md 的相對路徑，例如 docs/spec.md 或 spec.md]
+## GitHub
 
----
-
-## 關鍵文件位置
-
-| 文件 | 路徑 |
-|---|---|
-| PROJECT_BRIEF.md | [路徑] |
-| STATUS.md | [路徑] |
-| NEXT_ACTION.md | [路徑] |
-| DECISIONS.md | [路徑] |
-
----
+- Repository：[owner/repo 或 URL]
+- Issue tracking：enabled / disabled
+- Spec to Issues：enabled / disabled
+- Priority label convention：[例如 P1 或 priority: P1]
+- Category label convention：[例如 bug 或 type: bug]
+- Default assignee policy：[ask / self / none / specified]
+- Allow label creation：yes / no
 
 ## 備注
 
-[可選：其他需要 agent 知道的定位資訊，例如特殊目錄結構或多 spec 情況]
+[可選：特殊目錄、多 spec 或其他定位資訊]

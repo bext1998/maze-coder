@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-10 — Issue #5 成為 v2.0 規格基準
+
+**決策**：Issue #5 本文與第 26 節留言取代未落地的 v1.5 擴充提案；本版新增 `maze-spec-to-issues`，完成後共 12 個技能。
+
+**原因**：Issue #5 定義完整的 Spec → Issues、Closeout、Adapter 與 Token 效率契約；保留 v1.5 未落地技能會造成技能數量與工作流衝突。
+
+**影響範圍**：`docs/spec.md`、`skills/`、`core/`、`adapters/`、`scripts/`、`templates/`、README。
+
+**狀態**：確認
+
+---
+
 ## 2026-05-20 — 技能包語言選擇中文
 
 **決策**：SKILL.md 的主要語言使用繁體中文。

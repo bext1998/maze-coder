@@ -1,56 +1,28 @@
 ---
 name: maze-repo-map
-description: |
-  產生 repo 的結構地圖文件（REPO_MAP.md），幫助 agent 快速理解專案佈局。
-  當使用者說「幫我建立 repo map」、「讓 agent 了解這個專案」、「進入新 repo」時觸發。
+description: 產生 repo 結構地圖與關鍵路徑說明。當使用者要求建立 repo map、進入陌生 repo 或協助 agent 理解專案時使用。
 ---
 
-# repo-map：Repo 結構地圖
+# repo-map
 
-## 技能目標
+## 目標
 
-進入陌生 repo 或長期未工作後，coding agent 需要時間重建對專案結構的理解。本技能產出一份結構地圖，讓 agent 在下一個 session 開始時快速定位關鍵檔案。
+建立能快速定位入口、核心邏輯、設定、介面與測試的 `REPO_MAP.md`。
 
-## 前置條件（Preconditions）
+## 前置條件
 
-- 需要能讀取目標 repo 的目錄結構
-- 若 repo 太大（超過 100 個目錄），先聚焦在使用者指定的範圍
+- 必須能讀取目標 repo；超過 100 個目錄時先要求或推定合理範圍並標明。
 
 ## 執行流程
 
-### Phase 1：掃描目錄結構
+1. 掃描頂層與 2–3 層關鍵路徑，辨識入口、設定、文件、測試與主要模組。
+2. 標記核心邏輯、介面定義、設定及測試位置，不展開生成物或依賴目錄。
+3. 填寫 `templates/REPO_MAP.template.md`，附技術棧摘要與未知項目。
 
-列出 repo 的頂層目錄和關鍵檔案，識別：
-- 進入點（`main.py`、`index.ts`、`app.js` 等）
-- 設定檔（`.env.example`、`package.json`、`pyproject.toml` 等）
-- 文件目錄
-- 測試目錄
+## 輸出契約
 
-### Phase 2：識別關鍵路徑
+- 產出 `REPO_MAP.md`，包含精簡樹狀結構、關鍵檔案用途及技術棧。
 
-標注以下類型的檔案：
-- **核心邏輯**：主要業務邏輯所在
-- **介面定義**：API 端點、型別定義
-- **設定**：環境設定、部署設定
-- **測試**：測試檔案位置
+## 邊界
 
-### Phase 3：產出 REPO_MAP.md
-
-填寫 `REPO_MAP.template.md`，包含：
-- 樹狀目錄結構（2-3 層深）
-- 關鍵檔案說明
-- 技術棧摘要
-
-## 輸出（Output Contract）
-
-- **位置**：`REPO_MAP.md`（使用者指定目錄）
-- **格式**：符合 `REPO_MAP.template.md` 的 Markdown 文件
-- **更新**：每次 repo 結構有重大變更後需重新產出
-
-## 技能邊界（本技能不做的事）
-
-- 不分析程式碼邏輯或業務流程
-- 不評估程式碼品質
-- 不產出程式碼文件（docstring 等）
-- 不做依賴分析（只記錄目錄結構）
-- 不修改任何 repo 內的檔案
+- 不修改 repo、不評估品質、不推測業務流程、不產生 docstring 或完整依賴分析。

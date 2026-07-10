@@ -1,311 +1,162 @@
 #!/usr/bin/env bash
-# sync-adapters.sh — 從 skills/ 同步內容到 adapters/ 和根目錄 templates/
-#
-# 冪等覆蓋策略：每次執行都完整覆寫 adapter 檔案（INV-6、OQ-2）
-# 只讀 skills/，只寫 adapters/ 和根目錄 templates/（INV-6）
+# 從 skills/ 與 core/ 產生四種 Adapter 及根 templates/。
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHANGES=0
-WARNINGS=0
 
-info() { echo "  [INFO]  $1"; }
-warn() { echo "  [WARN]  $1" >&2; WARNINGS=$((WARNINGS + 1)); }
+SKILLS=(
+  maze-idea-to-spec
+  maze-spec-hardening
+  maze-project-init
+  maze-spec-to-issues
+  maze-session-closeout
+  maze-github-safe-ops
+  maze-design-review
+  maze-qa-verification
+  maze-repo-map
+  maze-context-audit
+  maze-bug-reproduction
+  maze-handoff-summary
+)
 
-# 複製檔案，僅在內容有變更時計入 CHANGES
-copy_if_changed() {
+[ -d "${ROOT_DIR}/skills" ] || { echo "ERROR: 找不到 skills/" >&2; exit 1; }
+
+same_dir() {
+  [ -d "$1" ] && diff -qr "$1" "$2" >/dev/null 2>&1
+}
+
+sync_dir() {
+  local src="$1" dst="$2" label="$3"
+  if same_dir "${src}" "${dst}"; then
+    echo "  [SAME] ${label}"
+    return
+  fi
+  mkdir -p "$(dirname "${dst}")"
+  rm -rf "${dst}"
+  cp -R "${src}" "${dst}"
+  echo "  [SYNC] ${label}"
+  CHANGES=$((CHANGES + 1))
+}
+
+copy_file() {
   local src="$1" dst="$2" label="$3"
   mkdir -p "$(dirname "${dst}")"
   if [ -f "${dst}" ] && cmp -s "${src}" "${dst}"; then
-    echo "  [SAME]  ${label}"
+    echo "  [SAME] ${label}"
   else
     cp "${src}" "${dst}"
-    echo "  [SYNC]  ${label}"
+    echo "  [SYNC] ${label}"
     CHANGES=$((CHANGES + 1))
   fi
 }
 
-synced() { echo "  [SYNC]  $1"; CHANGES=$((CHANGES + 1)); }
+write_if_changed() {
+  local dst="$1" label="$2"
+  local tmp="${dst}.tmp"
+  mkdir -p "$(dirname "${dst}")"
+  cat > "${tmp}"
+  if [ -f "${dst}" ] && cmp -s "${tmp}" "${dst}"; then
+    rm "${tmp}"
+    echo "  [SAME] ${label}"
+  else
+    mv "${tmp}" "${dst}"
+    echo "  [SYNC] ${label}"
+    CHANGES=$((CHANGES + 1))
+  fi
+}
 
-# ── 確認在正確的目錄執行 ──────────────────────────────────────────────────────
-if [ ! -d "${ROOT_DIR}/skills" ]; then
-  echo "ERROR: 必須在 maze-coder 根目錄執行本腳本（找不到 skills/ 目錄）" >&2
-  exit 1
-fi
+router_body() {
+  local skill_root="$1" harness="$2"
+  cat <<EOF
+先讀取 \`${harness}\`。依使用者意圖只載入一個最相關技能的 \`${skill_root}/<skill>/SKILL.md\`；技能要求時才讀同目錄下的 references、templates 或 checklists。不得一次載入全部技能。
+
+| 意圖 | 技能 |
+|---|---|
+| 想法轉規格 | maze-idea-to-spec |
+| 補強規格 | maze-spec-hardening |
+| 初始化專案文件 | maze-project-init |
+| 規格拆成或同步 GitHub Issues | maze-spec-to-issues |
+| 結束 session／同步狀態 | maze-session-closeout |
+| Git／GitHub 安全操作 | maze-github-safe-ops |
+| 設計審查 | maze-design-review |
+| QA／驗收 | maze-qa-verification |
+| repo 結構地圖 | maze-repo-map |
+| 上下文一致性稽核 | maze-context-audit |
+| Bug 重現文件 | maze-bug-reproduction |
+| 跨工具／人員交接 | maze-handoff-summary |
+EOF
+}
 
 echo "=== maze-coder sync-adapters ==="
-echo ""
 
-SKILLS=(
-  "maze-idea-to-spec"
-  "maze-spec-hardening"
-  "maze-project-init"
-  "maze-session-closeout"
-  "maze-github-safe-ops"
-  "maze-design-review"
-  "maze-qa-verification"
-  "maze-repo-map"
-  "maze-context-audit"
-  "maze-bug-reproduction"
-  "maze-handoff-summary"
-)
+echo "--- Claude Code ---"
+sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/claude-code/.claude/skills" "完整技能資源"
+copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
 
-# ── 1. 同步 claude-code adapter ───────────────────────────────────────────────
-echo "--- 同步 claude-code adapter ---"
-CLAUDE_SKILLS_DIR="${ROOT_DIR}/adapters/claude-code/.claude/skills"
-
-for skill in "${SKILLS[@]}"; do
-  src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-  dst_dir="${CLAUDE_SKILLS_DIR}/${skill}"
-  dst="${dst_dir}/SKILL.md"
-
-  if [ ! -f "${src}" ]; then
-    warn "skills/${skill}/SKILL.md 不存在，跳過同步"
-    continue
-  fi
-
-  copy_if_changed "${src}" "${dst}" "skills/${skill}/SKILL.md → adapters/claude-code/.claude/skills/${skill}/SKILL.md"
+for adapter in codex opencode; do
+  echo "--- ${adapter} ---"
+  sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/skills" "完整技能資源"
+  copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/HARNESS_ENGINEERING.md" "共用規則"
+  {
+    if [ "${adapter}" = codex ]; then
+      echo "# maze-coder — Codex Router"
+    else
+      echo "# maze-coder — opencode Router"
+    fi
+    echo
+    echo "> 由 sync-adapters.sh 產生，請勿手動編輯。"
+    echo
+    router_body ".maze-coder/skills" ".maze-coder/HARNESS_ENGINEERING.md"
+  } | write_if_changed "${ROOT_DIR}/adapters/${adapter}/AGENTS.md" "精簡 Router"
 done
 
-echo ""
-
-# ── 2. 同步 codex adapter（整合 11 個技能到 AGENTS.md）────────────────────────
-echo "--- 同步 codex adapter ---"
-CODEX_DIR="${ROOT_DIR}/adapters/codex"
-mkdir -p "${CODEX_DIR}"
-CODEX_AGENTS="${CODEX_DIR}/AGENTS.md"
-
+echo "--- Cursor ---"
+sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/skills" "完整技能資源"
+copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
 {
-  echo "# maze-coder — Codex Agent 指令"
-  echo ""
-  echo "> 本文件由 sync-adapters.sh 自動產生，請勿手動編輯。"
-  echo "> source of truth：skills/ 目錄下的各 SKILL.md"
-  echo ""
   echo "---"
-  echo ""
-
-  for skill in "${SKILLS[@]}"; do
-    src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-    if [ ! -f "${src}" ]; then
-      warn "skills/${skill}/SKILL.md 不存在，跳過加入 codex AGENTS.md"
-      continue
-    fi
-    echo "## 技能：${skill}"
-    echo ""
-    cat "${src}"
-    echo ""
-    echo "---"
-    echo ""
-  done
-} > "${CODEX_AGENTS}.tmp"
-if [ -f "${CODEX_AGENTS}" ] && cmp -s "${CODEX_AGENTS}.tmp" "${CODEX_AGENTS}"; then
-  echo "  [SAME]  11 個技能 → adapters/codex/AGENTS.md"
-  rm "${CODEX_AGENTS}.tmp"
-else
-  mv "${CODEX_AGENTS}.tmp" "${CODEX_AGENTS}"
-  echo "  [SYNC]  11 個技能 → adapters/codex/AGENTS.md"
-  CHANGES=$((CHANGES + 1))
-fi
-
-echo ""
-
-# ── 3. 同步 opencode adapter（格式同 codex）──────────────────────────────────
-echo "--- 同步 opencode adapter ---"
-OPENCODE_DIR="${ROOT_DIR}/adapters/opencode"
-mkdir -p "${OPENCODE_DIR}"
-OPENCODE_AGENTS="${OPENCODE_DIR}/AGENTS.md"
-
-{
-  echo "# maze-coder — opencode Agent 指令"
-  echo ""
-  echo "> 本文件由 sync-adapters.sh 自動產生，請勿手動編輯。"
-  echo "> source of truth：skills/ 目錄下的各 SKILL.md"
-  echo ""
+  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session 與交接工作"
+  echo "alwaysApply: true"
   echo "---"
-  echo ""
+  echo
+  router_body ".cursor/maze-coder/skills" ".cursor/maze-coder/HARNESS_ENGINEERING.md"
+} | write_if_changed "${ROOT_DIR}/adapters/cursor/.cursor/rules/maze-coder-router.mdc" "精簡 Router"
 
-  for skill in "${SKILLS[@]}"; do
-    src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-    if [ ! -f "${src}" ]; then
-      warn "skills/${skill}/SKILL.md 不存在，跳過加入 opencode AGENTS.md"
-      continue
-    fi
-    echo "## 技能：${skill}"
-    echo ""
-    cat "${src}"
-    echo ""
-    echo "---"
-    echo ""
-  done
-} > "${OPENCODE_AGENTS}.tmp"
-if [ -f "${OPENCODE_AGENTS}" ] && cmp -s "${OPENCODE_AGENTS}.tmp" "${OPENCODE_AGENTS}"; then
-  echo "  [SAME]  11 個技能 → adapters/opencode/AGENTS.md"
-  rm "${OPENCODE_AGENTS}.tmp"
-else
-  mv "${OPENCODE_AGENTS}.tmp" "${OPENCODE_AGENTS}"
-  echo "  [SYNC]  11 個技能 → adapters/opencode/AGENTS.md"
-  CHANGES=$((CHANGES + 1))
-fi
-
-echo ""
-
-# ── 4. 同步 cursor adapter（4 個 .mdc 檔案）──────────────────────────────────
-echo "--- 同步 cursor adapter ---"
-CURSOR_RULES_DIR="${ROOT_DIR}/adapters/cursor/.cursor/rules"
-mkdir -p "${CURSOR_RULES_DIR}"
-
-sync_mdc() {
-  local dst="$1" label="$2"
-  shift 2
-  local tmpfile="${dst}.tmp"
-  cat > "${tmpfile}"
-  if [ -f "${dst}" ] && cmp -s "${tmpfile}" "${dst}"; then
-    echo "  [SAME]  ${label}"
-    rm "${tmpfile}"
-  else
-    mv "${tmpfile}" "${dst}"
-    echo "  [SYNC]  ${label}"
+for legacy in maze-coder-core.mdc maze-coder-qa.mdc maze-coder-git.mdc maze-coder-design-review.mdc; do
+  path="${ROOT_DIR}/adapters/cursor/.cursor/rules/${legacy}"
+  if [ -e "${path}" ]; then
+    rm -f "${path}"
+    echo "  [REMOVE] 舊版 ${legacy}"
     CHANGES=$((CHANGES + 1))
   fi
-}
-
-# maze-coder-core.mdc：maze-idea-to-spec, maze-spec-hardening, maze-project-init, maze-session-closeout, maze-repo-map, maze-context-audit
-{
-  echo "---"
-  echo "description: maze-coder 核心工作流技能"
-  echo "---"
-  echo ""
-  for skill in "maze-idea-to-spec" "maze-spec-hardening" "maze-project-init" "maze-session-closeout" "maze-repo-map" "maze-context-audit"; do
-    src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-    [ -f "${src}" ] && cat "${src}" && echo "" && echo "---" && echo ""
-  done
-} | sync_mdc "${CURSOR_RULES_DIR}/maze-coder-core.mdc" "6 個核心技能 → adapters/cursor/.cursor/rules/maze-coder-core.mdc"
-
-# maze-coder-qa.mdc：maze-qa-verification, maze-bug-reproduction
-{
-  echo "---"
-  echo "description: maze-coder QA 與 Bug 追蹤技能"
-  echo "---"
-  echo ""
-  for skill in "maze-qa-verification" "maze-bug-reproduction"; do
-    src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-    [ -f "${src}" ] && cat "${src}" && echo "" && echo "---" && echo ""
-  done
-} | sync_mdc "${CURSOR_RULES_DIR}/maze-coder-qa.mdc" "2 個 QA 技能 → adapters/cursor/.cursor/rules/maze-coder-qa.mdc"
-
-# maze-coder-git.mdc：maze-github-safe-ops
-{
-  echo "---"
-  echo "description: maze-coder Git 安全操作技能"
-  echo "---"
-  echo ""
-  src="${ROOT_DIR}/skills/maze-github-safe-ops/SKILL.md"
-  [ -f "${src}" ] && cat "${src}"
-} | sync_mdc "${CURSOR_RULES_DIR}/maze-coder-git.mdc" "github-safe-ops → adapters/cursor/.cursor/rules/maze-coder-git.mdc"
-
-# maze-coder-design-review.mdc：maze-design-review, maze-handoff-summary
-{
-  echo "---"
-  echo "description: maze-coder 設計審查與交接技能"
-  echo "---"
-  echo ""
-  for skill in "maze-design-review" "maze-handoff-summary"; do
-    src="${ROOT_DIR}/skills/${skill}/SKILL.md"
-    [ -f "${src}" ] && cat "${src}" && echo "" && echo "---" && echo ""
-  done
-} | sync_mdc "${CURSOR_RULES_DIR}/maze-coder-design-review.mdc" "2 個設計技能 → adapters/cursor/.cursor/rules/maze-coder-design-review.mdc"
-
-echo ""
-
-# ── 5. 同步根目錄 templates/（從 skills/*/templates/ 複製）──────────────────
-echo "--- 同步根目錄 templates/ ---"
-TEMPLATES_DIR="${ROOT_DIR}/templates"
-mkdir -p "${TEMPLATES_DIR}"
-
-# 定義 skills/ 模板到根目錄 templates/ 的映射
-declare -A TEMPLATE_MAP=(
-  ["maze-idea-to-spec/templates/spec.template.md"]="spec.md"
-  ["maze-project-init/templates/AGENTS.template.md"]="AGENTS.md"
-  ["maze-project-init/templates/PROJECT_BRIEF.template.md"]="PROJECT_BRIEF.md"
-  ["maze-project-init/templates/STATUS.template.md"]="STATUS.md"
-  ["maze-project-init/templates/NEXT_ACTION.template.md"]="NEXT_ACTION.md"
-  ["maze-project-init/templates/DECISIONS.template.md"]="DECISIONS.md"
-  ["maze-project-init/templates/MAZE_PROJECT.template.md"]="MAZE_PROJECT.md"
-  ["maze-qa-verification/templates/QA_REPORT.template.md"]="QA_REPORT.md"
-  ["maze-design-review/templates/DESIGN_REVIEW.template.md"]="DESIGN_REVIEW.md"
-  ["maze-repo-map/templates/REPO_MAP.template.md"]="REPO_MAP.md"
-  ["maze-handoff-summary/templates/HANDOFF.template.md"]="HANDOFF.md"
-)
-
-for src_rel in "${!TEMPLATE_MAP[@]}"; do
-  src="${ROOT_DIR}/skills/${src_rel}"
-  dst="${TEMPLATES_DIR}/${TEMPLATE_MAP[$src_rel]}"
-  if [ -f "${src}" ]; then
-    copy_if_changed "${src}" "${dst}" "skills/${src_rel} → templates/${TEMPLATE_MAP[$src_rel]}"
-  else
-    warn "skills/${src_rel} 不存在，跳過同步"
-  fi
 done
 
-# TASK_PLAN.md — 獨立模板（無對應技能）
-TASK_PLAN="${TEMPLATES_DIR}/TASK_PLAN.md"
-if [ ! -f "${TASK_PLAN}" ]; then
-  {
-    echo "# [專案名稱] — 任務計畫"
-    echo ""
-    echo "> 建立日期：[日期]"
-    echo ""
-    echo "---"
-    echo ""
-    echo "## 目標"
-    echo ""
-    echo "[本次任務要達成什麼。]"
-    echo ""
-    echo "---"
-    echo ""
-    echo "## 任務拆解"
-    echo ""
-    echo "- [ ] [子任務一]"
-    echo "- [ ] [子任務二]"
-    echo "- [ ] [子任務三]"
-    echo ""
-    echo "---"
-    echo ""
-    echo "## 驗收條件"
-    echo ""
-    echo "- [任務完成的判斷標準]"
-  } > "${TASK_PLAN}"
-  synced "建立 templates/TASK_PLAN.md"
-fi
+echo "--- Root templates ---"
+TEMPLATE_MAP=(
+  "maze-idea-to-spec/templates/spec.template.md:spec.md"
+  "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
+  "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"
+  "maze-project-init/templates/PROJECT_BRIEF.template.md:PROJECT_BRIEF.md"
+  "maze-project-init/templates/STATUS.template.md:STATUS.md"
+  "maze-project-init/templates/NEXT_ACTION.template.md:NEXT_ACTION.md"
+  "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
+  "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"
+  "maze-design-review/templates/DESIGN_REVIEW.template.md:DESIGN_REVIEW.md"
+  "maze-repo-map/templates/REPO_MAP.template.md:REPO_MAP.md"
+  "maze-handoff-summary/templates/HANDOFF.template.md:HANDOFF.md"
+)
 
-echo ""
+for mapping in "${TEMPLATE_MAP[@]}"; do
+  src_rel="${mapping%%:*}"
+  dst_rel="${mapping#*:}"
+  copy_file "${ROOT_DIR}/skills/${src_rel}" "${ROOT_DIR}/templates/${dst_rel}" "templates/${dst_rel}"
+done
 
-# ── 6. 檢查 skills/ 下是否有新技能尚未在 adapter 中 ─────────────────────────
-echo "--- 檢查新技能同步狀態 ---"
-while IFS= read -r -d '' skill_md; do
-  skill_dir="$(basename "$(dirname "${skill_md}")")"
-  found=0
-  for known_skill in "${SKILLS[@]}"; do
-    [ "${skill_dir}" = "${known_skill}" ] && found=1 && break
-  done
-  if [ "${found}" -eq 0 ]; then
-    warn "以下技能尚未同步到所有 adapter：${skill_dir}"
-  fi
-done < <(find "${ROOT_DIR}/skills" -name "SKILL.md" -print0)
-
-echo ""
-
-# ── 結果 ─────────────────────────────────────────────────────────────────────
 if [ "${CHANGES}" -eq 0 ]; then
   echo "=== synced（no changes）==="
 else
-  echo "=== synced（${CHANGES} 個檔案已更新）==="
+  echo "=== synced（${CHANGES} 個受管理產物已更新）==="
 fi
-
-if [ "${WARNINGS}" -gt 0 ]; then
-  echo "=== ${WARNINGS} 個警告，請檢查上方輸出 ===" >&2
-fi
-
-exit 0
