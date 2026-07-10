@@ -1,78 +1,31 @@
 ---
 name: maze-project-init
-description: |
-  初始化專案的指揮文件集（PROJECT_BRIEF、STATUS、NEXT_ACTION、DECISIONS、AGENTS）。
-  當使用者說「幫我建立專案文件」、「初始化這個專案」、「設定 coding agent 指令」時觸發。
+description: 初始化專案的指揮文件與 GitHub 工作流設定。當使用者要求建立專案文件或設定 coding agent 指令時使用。
 ---
 
-# project-init：專案初始化
+# project-init
 
-## 技能目標
+## 目標
 
-新專案開始時，缺少清晰的文件讓 coding agent 容易失去方向。本技能產出一套完整的專案指揮文件，讓 agent 在每個 session 開始前都能快速定位當前狀態和下一步。
+依模板建立 `MAZE_PROJECT.md`、`PROJECT_BRIEF.md`、`STATUS.md`、`NEXT_ACTION.md`、`DECISIONS.md` 與目標工具指令。
 
-## 前置條件（Preconditions）
+## 前置條件
 
-- **必須**提供專案名稱 — 缺少時停止並詢問，不得使用「untitled」或自行命名
-- **必須**說明至少一個目標工具（Claude Code / Codex / Cursor / opencode）
-- 建議先完成 `spec.md`，但非強制
+- 取得專案名稱、目標目錄、至少一個工具、技術棧及規格實際路徑。
+- 先掃描目標文件；已存在時逐一提供跳過、覆蓋或查看後決定，不得靜默處理。
 
 ## 執行流程
 
-### Phase 0：確認輸入
+1. 記錄專案摘要、技術棧、文件路徑與工具。
+2. 詢問是否使用 GitHub Issues、Repository URL、spec-to-issues、標籤慣例、預設 Assignee 策略及是否允許新增標籤。
+3. 依 `templates/` 建立文件；不得把 token、密碼或憑證寫入設定。
+4. 列出建立、覆蓋、跳過與未建立的文件。
 
-確認：
-- 專案名稱（確切名稱，非描述）
-- 目標工具（可多選）
-- 技術棧（語言、框架）
-- 是否已有 `spec.md`
+## 輸出契約
 
-### Phase 1：產出 PROJECT_BRIEF.md
+- 文件位於使用者指定的專案根目錄，內容符合對應模板。
+- `MAZE_PROJECT.md` 必須記錄規格實際路徑與 GitHub 設定；至少同時產出 Project Brief、Status、Next Action。
 
-填寫：
-- 專案名稱與一句話說明
-- 核心問題
-- 目標技術棧
-- 連結到 `spec.md`（若已存在）
+## 邊界
 
-### Phase 2：產出 STATUS.md
-
-初始狀態：
-- 當前階段：初始化
-- 完成的事項：（空）
-- 待完成事項：開始第一個 coding session
-
-### Phase 3：產出 NEXT_ACTION.md
-
-初始下一步：
-- 閱讀 `spec.md`（若存在）
-- 建立 repo 結構
-- 設定開發環境
-
-### Phase 4：產出 DECISIONS.md
-
-初始決策紀錄：
-- 選擇使用的工具與原因
-- 技術棧決策
-
-### Phase 5：產出 AGENTS.md（依目標工具）
-
-依使用者指定的工具，填寫對應的 AGENTS.md 模板，包含：
-- 專案說明
-- 技術棧摘要
-- 工作流指引
-- 檢查清單引用
-
-## 輸出（Output Contract）
-
-- **位置**：使用者指定的專案目錄根目錄
-- **格式**：符合各 `*.template.md` 結構的 Markdown 文件集
-- **完整性**：至少產出 PROJECT_BRIEF.md、STATUS.md、NEXT_ACTION.md 三份文件
-
-## 技能邊界（本技能不做的事）
-
-- 不建立 git repo 或初始化版本控制
-- 不撰寫程式碼或設定開發環境
-- 不修改 `spec.md`（那是 `idea-to-spec` 和 `spec-hardening` 的工作）
-- 不決定技術棧（只記錄使用者的決策）
-- 不評估技術選擇的優劣
+- 不初始化 Git、不撰寫程式碼、不修改規格內容、不替使用者選擇技術棧或自動建立 GitHub 資源。

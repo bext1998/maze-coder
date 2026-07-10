@@ -1,80 +1,31 @@
 ---
 name: maze-github-safe-ops
-description: |
-  提供安全的 Git / GitHub 操作步驟與檢查清單，防止高風險操作導致的資料損失。
-  當使用者要執行任何 Git 操作（commit、push、merge、rebase 等）時觸發。
+description: 提供安全的 Git／GitHub 操作檢查與 Issue 關聯規則。當使用者要 commit、push、merge、rebase 或建立 PR 時使用。
 ---
 
-# github-safe-ops：Git 安全操作
+# github-safe-ops
 
-## 技能目標
+## 目標
 
-不謹慎的 Git 操作容易造成無法恢復的資料損失。本技能為每個 Git 操作提供安全步驟和對應的確認清單，並對高風險操作發出明確警告。
+在不遺失資料、洩漏敏感資訊或錯誤關閉 Issue 的前提下指引 Git／GitHub 操作。
 
-## 前置條件（Preconditions）
+## 前置條件
 
-- 使用者必須說明 Git 操作意圖（commit / push / merge / rebase / 其他）
-- 本技能不需要讀取任何輸入文件，但需要知道操作目標（哪個分支 / 哪個 remote）
+- 取得操作意圖、branch、remote 與對應 Issue；無法判斷 Issue 時先詢問。
+- 依需要讀取 `checklists/` 的 commit、push 或 conflict 清單。
 
 ## 執行流程
 
-### Phase 0：識別操作類型與風險等級
+1. 檢查 status、staged diff、目標 branch、敏感檔案與未同步變更。
+2. Commit message 依專案慣例引用 Issue；建立 PR 前確認 Issue、QA 與適用的 CI。
+3. 完整完成使用 `Closes #N`；部分完成只用 `Related to #N`。多 Issue 必須逐一確認，多 PR 只讓最後一個完整 PR 關閉 Issue。
+4. 合併後確認 Issue 已關閉且 AC、QA、CI、文件均完成；否則回報 `merged-awaiting-close`。
+5. Rebase、reset hard 或 force push 必須先確認；Force push 到 main / master 可能覆蓋其他人的工作，應停止並改用 `git revert` 等替代方案。
 
-| 操作 | 風險等級 |
-|---|---|
-| `git add` / `git commit` | 低 |
-| `git push`（非 force）| 中 |
-| `git merge`（非 main）| 中 |
-| `git rebase` | 高 |
-| `git push --force` / `git push -f` | **極高** |
-| `git reset --hard` | 高 |
-| `git push --force` 到 `main` / `master` | **禁止** |
+## 輸出契約
 
-### Phase 1：高風險操作警告
+- 提供風險、前置檢查、可執行步驟及 PR 關聯文字；禁止情境只提供警告與替代方案。
 
-若使用者要求 **force push 到 main / master**：
-- 立即停止
-- 輸出警告：「⚠️ Force push 到 main / master 可能覆蓋其他人的工作，並使已發布的 commit 歷史不一致。此操作不建議執行。」
-- 不提供 `git push --force` 指令
-- 提供替代方案說明（如：用 `git revert` 撤銷、與團隊溝通後使用 Protected Branch 例外流程）
+## 邊界
 
-### Phase 2：標準操作流程
-
-#### Commit 前
-
-1. 執行 `git status` 確認已暫存的檔案
-2. 執行 `git diff --staged` 確認變更內容
-3. 確認不包含敏感檔案（`.env`、API key 等）
-4. 確認 commit message 清楚描述變更
-
-#### Push 前
-
-1. 執行 `git pull --rebase` 同步遠端最新狀態
-2. 確認本地 commit 歷史正確
-3. 確認目標分支正確（非直接 push 到 main）
-
-#### Merge / Rebase
-
-1. 確認在正確的分支上執行
-2. 確認有備份（stash 或 branch）
-3. Rebase 前確認是否有共享的 commit（若有，改用 merge）
-
-### Phase 3：提供對應的指令與檢查清單
-
-依操作類型，引導使用者閱讀對應的 checklist：
-- Commit 前：`pre-commit-checklist.md`
-- Push 前：`pre-push-checklist.md`
-- Merge conflict：`conflict-checklist.md`
-
-## 輸出（Output Contract）
-
-- **格式**：步驟說明 + 對應的 git 指令（高風險操作除外）
-- **高風險操作**：輸出警告文字 + 替代方案，不輸出危險指令
-
-## 技能邊界（本技能不做的事）
-
-- 不直接執行任何 git 指令
-- 不在使用者未確認前建立 commit
-- 不提供 `git push --force` 到保護分支的指令
-- 不評估程式碼品質（那是 `qa-verification` 的工作）
-- 不建立 Pull Request（引導使用者自行操作）
+- 不自行執行 Git、建立 commit／PR、合併、批准 review，亦不提供 force push 到 main／master 的指令。

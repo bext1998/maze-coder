@@ -1,62 +1,34 @@
 # maze-coder — 當前狀態
 
-> 最後更新：2026-05-20 — Phase 1 完成，T-001 ~ T-012 全部通過，`maze-` 前綴落地，完全符合 spec v1.4
+> 最後同步：2026-07-10
+> Branch：maze/2026-07-10-9ce890
+> Working tree：dirty（Issue #5 實作尚未 commit）
 
----
+## 進行中 Issues
 
-## 當前階段
+- #5：Spec → GitHub Issues 工作流、Session Closeout 與 Token 效率重構；本機實作及驗證完成，尚待 commit／PR／merge。
 
-Phase 1 完成，進入迴歸驗證與後續維護。
+## 阻塞 Issues
 
----
+- 無
 
-## 已完成
+## 等待 Review
 
-- 規格書補強（v1.4，所有 OQ 確認，INV-7 `maze-` 前綴落地）
-- `core/` 下 4 個基礎文件
-- 11 個 `skills/maze-*/SKILL.md` + 附屬 templates / checklists（**含 `maze-` 前綴**）
-- `scripts/validate-skills-functional.sh`（T-004 ~ T-008 通過）
-- T-009 迴歸測試通過（修改 SKILL.md 後 validate-skillpack.sh 仍 exit 0）
-- T-010 通過：缺少「技能邊界」時 validate exit 1，列出檔案路徑
-- T-011 通過：sync-adapters.sh 第二次執行輸出「no changes」，exit 0
-- T-012 通過：`docs/` 目錄下無空白模板佔位符
-- 清理根目錄舊版 `maze-coder-spec-hardened.md`（`docs/spec.md` v1.4 為 source of truth）
-- `scripts/sync-adapters.sh`（冪等覆蓋，SKILLS array 含 `maze-` 前綴）
-- `scripts/validate-skillpack.sh`（SKILLS array 含 `maze-` 前綴）
-- `adapters/claude-code/`（11 個 `maze-*` 技能 SKILL.md）
-- `adapters/codex/AGENTS.md`
-- `adapters/cursor/.cursor/rules/`（4 個 .mdc）
-- `adapters/opencode/AGENTS.md`
-- `templates/`（11 個使用者範本，由 sync-adapters.sh 同步）
-- `docs/`（自身專案文件）
-- `README.md`、`LICENSE`
+- 無；尚未建立 PR。
 
----
+## 等待 Merge
 
-## 進行中
+- 無
 
-無
+## 已合併待關閉
 
----
+- 無
 
-## 待完成（後續 Sprint）
+## 最近完成
 
-無。Phase 1 已全數完成，完全符合 spec v1.4。
+- 12 個來源技能與四種 Adapter 的 v2.0 本機實作。
+- `validate-skillpack.sh`、`validate-skills-functional.sh`、Adapter 安裝煙霧與同步冪等驗證通過。
 
----
+## 未追蹤本機工作
 
-## 已決策（本次 Session）
-
-- **不建立 git repo**（保持純檔案系統，無版本控制依賴）
-
----
-
-## 已知問題
-
-無
-
----
-
-## 阻塞項目
-
-無
+- Issue #5 的新增與修改檔案尚未 commit；依完成契約仍為 `in-progress`。

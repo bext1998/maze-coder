@@ -1,114 +1,76 @@
 # maze-coder
 
-**Portable Harness Engineering Skills Pack**
-可攜式 AI Coding 工作流技能包，讓 Claude Code、Codex、Cursor、opencode 共用同一套工程規範。
+**Portable Harness Engineering Skills Pack** — 讓 Claude Code、Codex、Cursor、opencode 共用需求、GitHub、QA 與狀態同步工作流。
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-blue)](adapters/claude-code)
-[![Codex](https://img.shields.io/badge/Codex-compatible-green)](adapters/codex)
-[![Cursor](https://img.shields.io/badge/Cursor-compatible-purple)](adapters/cursor)
-[![opencode](https://img.shields.io/badge/opencode-compatible-orange)](adapters/opencode)
+## 12 Skills
 
----
+| Skill | 用途 |
+|---|---|
+| `maze-idea-to-spec` | 模糊想法 → spec |
+| `maze-spec-hardening` | 補強工程契約與驗收條件 |
+| `maze-project-init` | 初始化專案文件與 GitHub 設定 |
+| `maze-spec-to-issues` | spec → GitHub Issues Dry Run／同步 |
+| `maze-session-closeout` | 同步 Git、GitHub、STATUS 與 NEXT_ACTION |
+| `maze-github-safe-ops` | 安全 Git／PR／Issue 關聯 |
+| `maze-design-review` | 前端設計審查 |
+| `maze-qa-verification` | 規格驗收與 QA 報告 |
+| `maze-repo-map` | Repo 結構地圖 |
+| `maze-context-audit` | 上下文一致性稽核 |
+| `maze-bug-reproduction` | Bug 最小重現文件 |
+| `maze-handoff-summary` | 跨工具／人員交接 |
 
-## What is this?
+## Workflow
 
-maze-coder is an **11-skill workflow framework** for AI coding agents. It gives your agent a consistent, repeatable process for turning vague ideas into shipped code — across any tool.
-
-- 將模糊想法轉換成工程規格書
-- 安全地執行 Git 操作，避免破壞性錯誤
-- 降低 AI 產生的 UI slop
-- 在 coding session 之間保持連續性與上下文
-- 在不同 coding agent 工具之間無縫遷移
-
-**Markdown-first. Zero dependencies.**
-
----
-
-## Quick Start
-
-### Claude Code
-
-```bash
-cp -r adapters/claude-code/.claude/ /your-project/
+```text
+idea-to-spec → spec-hardening → project-init → spec-to-issues
+→ coding／QA → github-safe-ops → Review／CI／Merge → session-closeout
 ```
 
-### Codex / opencode
+`skills/` 是 source of truth。Adapter 使用精簡 Router，只在觸發後載入對應技能與按需資源。
+
+## Install
 
 ```bash
+# Claude Code
+cp -r adapters/claude-code/.claude /your-project/
+
+# Codex
 cp adapters/codex/AGENTS.md /your-project/
-# or
+cp -r adapters/codex/.maze-coder /your-project/
+
+# Cursor
+cp -r adapters/cursor/.cursor /your-project/
+
+# opencode
 cp adapters/opencode/AGENTS.md /your-project/
+cp -r adapters/opencode/.maze-coder /your-project/
 ```
 
-### Cursor
-
-```bash
-cp -r adapters/cursor/.cursor/ /your-project/
-```
-
----
-
-## 11 Skills
-
-| Skill | 用途 | 觸發時機 |
-|---|---|---|
-| `idea-to-spec` | 想法 → spec.md | 「我想做一個...」 |
-| `spec-hardening` | 補強 spec.md 邊界條件 | 「幫我補強規格書」 |
-| `project-init` | 初始化專案文件 | 「幫我建立專案文件」 |
-| `session-closeout` | Session 結束，更新記憶與任務 | 「今天先到這裡」 |
-| `github-safe-ops` | 安全 Git 操作清單 | 任何 git 操作前 |
-| `design-review` | 前端設計審查，減少 slop | 「幫我審查 UI」 |
-| `qa-verification` | 功能完成後的 QA 驗證 | 功能完成後 |
-| `repo-map` | 產生 Repo 結構地圖 | 進入新 repo |
-| `context-audit` | 上下文一致性稽核 | 懷疑 agent 搞錯了 |
-| `bug-reproduction` | 結構化 Bug 重現文件 | 「幫我記錄這個 bug」 |
-| `handoff-summary` | 工具或人員交接摘要 | 換工具或換人前 |
-
----
-
-## Validate & Sync
-
-驗證技能包完整性：
-
-```bash
-bash scripts/validate-skillpack.sh
-# Expected: === All checks passed ===
-```
-
-修改 `skills/` 下的技能後，同步所有 adapter：
+## Sync and Validate
 
 ```bash
 bash scripts/sync-adapters.sh
+bash scripts/validate-skillpack.sh
+bash scripts/validate-skills-functional.sh
 ```
 
----
+同步腳本只更新受管理的 Adapter／根模板；連續執行兩次時，第二次應輸出 `no changes`。
 
-## Directory Structure
+## Structure
 
+```text
+core/       共用契約與工作流
+skills/     12 個來源技能及按需資源
+adapters/   四種工具的 Router 與資源包
+templates/  由技能模板同步的使用者文件
+scripts/    同步與驗證
+docs/       maze-coder 自身規格與狀態
 ```
-maze-coder/
-  core/         ← Harness Engineering 原則與工作流模型
-  skills/       ← 11 個技能（source of truth）
-  adapters/     ← 四個工具的格式適配（Claude Code / Codex / Cursor / opencode）
-  templates/    ← 使用者可複製的空白範本
-  scripts/      ← validate + sync 腳本
-  docs/         ← maze-coder 自身的專案文件
-```
-
----
 
 ## Contributing
 
-1. Fork this repo
-2. Create a branch: `git checkout -b feat/your-skill-name`
-3. Edit skills under `skills/` (the source of truth)
-4. Run `bash scripts/validate-skillpack.sh` to verify
-5. Run `bash scripts/sync-adapters.sh` to propagate changes to adapters
-6. Open a Pull Request
+1. 只修改 `skills/`、`core/` 或同步腳本的 source of truth。
+2. 執行同步、結構驗證與功能驗證。
+3. 確認第二次同步無差異後再提交 PR。
 
----
-
-## License
-
-[MIT License](LICENSE) © 2026 maze-coder contributors
+[MIT License](LICENSE)

@@ -1,29 +1,23 @@
 # maze-coder — 下一步行動
 
-> 最後更新：2026-05-20 — Phase 1 完成，T-001 ~ T-012 全部通過
+> 最後同步：2026-07-10
 
----
+## 下一個 Session 目標
 
-## 當前狀態
+完成 Issue #5 的變更審查與 GitHub PR 流程，不在 PR 合併及 Issue 關閉前宣告 completed。
 
-Phase 1 全數完成。所有驗收測試（T-001 ~ T-012）通過，spec v1.4 要求的 `maze-` 前綴已落地。
+## 優先行動
 
----
+1. 檢視 Issue #5 的完整 diff，確認技能契約、生成產物及刪除項目符合範圍。
+2. 依 `maze-github-safe-ops` commit、push 並建立含 `Closes #5` 的 PR；提交前重跑同步與兩份驗證腳本。
+3. 完成 Review、適用 CI 與合併後，確認 #5 已關閉，再執行 `maze-session-closeout`。
 
-## 下一個 Session 的目標（可選）
+## 阻塞與待決策
 
-- 在 Ubuntu 22.04 環境複製 repo，執行 `validate-skillpack.sh`（T-008 跨平台驗證）
-- 考慮建立 git repo 並 push 到 GitHub
+- Ubuntu 原生執行案例尚未在目前 Windows 工作區驗證；Git Bash 語法與功能測試已通過。
 
----
+## 參考
 
-## 需要決定的事項
-
-- 是否為 maze-coder 建立 git repo 並 push 到 GitHub？
-
----
-
-## 參考資料
-
-- 測試計畫：`docs/spec.md` Section 12
-- 驗收標準：`docs/spec.md` Section 11
+- Issue #5：https://github.com/bext1998/maze-coder/issues/5
+- 規格：docs/spec.md
+- 測試結果：docs/TEST_REPORT.md
