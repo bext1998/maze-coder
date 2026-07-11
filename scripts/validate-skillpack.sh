@@ -128,6 +128,17 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
+grep -q '所有 13 個技能' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 13 個技能" || err "核心 Harness 未標示 13 個技能"
+for readme in \
+  "adapters/claude-code/README.md" \
+  "adapters/codex/README.md" \
+  "adapters/cursor/README.md" \
+  "adapters/opencode/README.md"; do
+  grep -q '13 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 13 個技能" || err "${readme} 未標示 13 個技能"
+done
+
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
   [ -f "${ROOT_DIR}/${router}" ] || { err "缺少 ${router}"; continue; }
   for skill in "${SKILLS[@]}"; do
