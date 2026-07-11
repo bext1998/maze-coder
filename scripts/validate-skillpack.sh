@@ -7,7 +7,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ERRORS=0
 WARNINGS=0
 TOTAL_CHARS=0
-BASELINE_CHARS=14000
+BASELINE_CHARS=13168
 
 UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
 [ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
