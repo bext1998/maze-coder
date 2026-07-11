@@ -16,7 +16,7 @@ SKILLS=(
   maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
 )
 SECTIONS=(目標 前置條件 執行流程 輸出契約 邊界)
 
@@ -68,11 +68,11 @@ validate_skill() {
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
 ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 12 ] || err "skills/ 必須恰有 12 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
+[ "${ACTUAL_SKILLS}" -eq 13 ] || err "skills/ 必須恰有 13 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
 for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
 
 [ "${TOTAL_CHARS}" -lt "${BASELINE_CHARS}" ] \
-  && ok "12 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於基準 ${BASELINE_CHARS}" \
+  && ok "13 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於基準 ${BASELINE_CHARS}" \
   || err "SKILL.md 總字元 ${TOTAL_CHARS} 未低於基準 ${BASELINE_CHARS}"
 
 echo "--- Duplicate paragraphs ---"
@@ -128,6 +128,17 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
+grep -q '所有 13 個技能' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 13 個技能" || err "核心 Harness 未標示 13 個技能"
+for readme in \
+  "adapters/claude-code/README.md" \
+  "adapters/codex/README.md" \
+  "adapters/cursor/README.md" \
+  "adapters/opencode/README.md"; do
+  grep -q '13 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 13 個技能" || err "${readme} 未標示 13 個技能"
+done
+
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
   [ -f "${ROOT_DIR}/${router}" ] || { err "缺少 ${router}"; continue; }
   for skill in "${SKILLS[@]}"; do
@@ -160,7 +171,7 @@ for mapping in "${TEMPLATE_MAP[@]}"; do
     && ok "templates/${dst}" || err "templates/${dst} 未同步"
 done
 
-grep -q '## 12 Skills' "${ROOT_DIR}/README.md" || err "README 未標示 12 Skills"
+grep -q '## 13 Skills' "${ROOT_DIR}/README.md" || err "README 未標示 13 Skills"
 if [ -d "${ROOT_DIR}/skills/maze-session-closeout/templates" ] \
   && find "${ROOT_DIR}/skills/maze-session-closeout/templates" -type f | grep -q .; then
   err "closeout 仍含 Session Report templates"

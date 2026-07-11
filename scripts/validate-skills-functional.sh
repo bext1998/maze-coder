@@ -21,6 +21,13 @@ require_text "skills/maze-spec-hardening/SKILL.md" "Contract.*Invariants.*Edge C
 require_text "skills/maze-github-safe-ops/SKILL.md" "Force push 到 main / master 可能覆蓋其他人的工作" "保留 force-push 明確警告"
 require_text "skills/maze-github-safe-ops/SKILL.md" "git revert" "保留安全替代方案"
 
+echo "--- token-efficiency-review contracts ---"
+TOKEN_REVIEW="skills/maze-token-efficiency-review/SKILL.md"
+require_text "${TOKEN_REVIEW}" "重複讀取.*過度探索.*錯誤技能／模型.*可腳本化工作.*無效輸出" "token 稽核範圍完整"
+require_text "${TOKEN_REVIEW}" "可驗證且維持正確性、覆蓋率與能力" "token 變更不得降低能力"
+require_text "${TOKEN_REVIEW}" "證據不足" "證據不足僅建議"
+require_text "${TOKEN_REVIEW}" "發現.*已採變更.*驗證結果.*剩餘風險" "token 稽核輸出完整"
+
 echo "--- spec-to-issues contracts ---"
 SPEC="skills/maze-spec-to-issues/SKILL.md"
 require_text "${SPEC}" "預設輸出完整 Dry Run" "預設 Dry Run"

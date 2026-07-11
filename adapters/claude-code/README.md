@@ -6,4 +6,4 @@
 cp -r .claude /your-project/
 ```
 
-共 12 個 `maze-*` 技能。內容由 `scripts/sync-adapters.sh` 產生，請修改根 `skills/`，不要直接編輯此目錄。
+共 13 個 `maze-*` 技能。內容由 `scripts/sync-adapters.sh` 產生，請修改根 `skills/`，不要直接編輯此目錄。

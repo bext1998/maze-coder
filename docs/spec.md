@@ -4,7 +4,7 @@
 
 ## 1. 目標
 
-maze-coder 提供 12 個可攜式技能，將需求、規格、GitHub Issues、PR、QA 與 Session 狀態串成可追蹤工作流，並讓 Claude Code、Codex、Cursor、opencode 載入相同邏輯。
+maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、PR、QA 與 Session 狀態串成可追蹤工作流，並讓 Claude Code、Codex、Cursor、opencode 載入相同邏輯。
 
 本版新增 `maze-spec-to-issues`，重構 `maze-session-closeout`，並在功能等價與安全限制不變的前提下精簡所有 SKILL.md。
 
@@ -22,6 +22,7 @@ maze-coder 提供 12 個可攜式技能，將需求、規格、GitHub Issues、P
 10. `maze-context-audit`
 11. `maze-bug-reproduction`
 12. `maze-handoff-summary`
+13. `maze-token-efficiency-review`
 
 ## 3. Spec → Issues 契約
 
@@ -70,21 +71,21 @@ maze-coder 提供 12 個可攜式技能，將需求、規格、GitHub Issues、P
 - frontmatter 只有 `name`、`description`；本文使用目標、前置條件、執行流程、輸出契約、邊界。
 - 高頻流程與高風險限制保留在 SKILL.md；長規則、模板、範例與低頻例外按需載入。
 - 不得刪除必要輸入、停止條件、確認點、寫入、輸出、禁止行為、錯誤處理、冪等性與技能邊界。
-- 12 份 SKILL.md 總字元數低於精簡前 11 份的 13,168；單檔超過 3,000 字元只警告。
+- 13 份 SKILL.md 總字元數低於精簡前 11 份的 13,168；單檔超過 3,000 字元只警告。
 
 ## 9. 驗收條件
 
-- [ ] 共 12 個來源技能且四個 Adapter 全部可解析。
+- [ ] 共 13 個來源技能且四個 Adapter 全部可解析。
 - [ ] `maze-spec-to-issues` 具備讀取、抽取、去重、拆解、標籤、Dry Run、確認、部分失敗與規格同步規則。
 - [ ] 正式 Issue 優先級互斥；候選與 P0–P4 互斥；每項至少一個類別。
 - [ ] Issue template 包含 AC、完成條件與機器可辨識 marker。
 - [ ] Closeout 能判定八種狀態，且未滿足全部條件時不宣告完成。
 - [ ] STATUS／NEXT_ACTION／MAZE_PROJECT 模板已更新，Session Summary 模板已移除。
-- [ ] README、核心文件、同步與驗證腳本均使用 12 技能。
+- [ ] README、核心文件、同步與驗證腳本均使用 13 技能。
 - [ ] 所有 Adapter 資源與 source of truth 一致，引用路徑可解析。
 - [ ] 驗證拒絕無 frontmatter、空必要章節、TODO／FIXME、技能數量或 Adapter 不一致。
 - [ ] 同步第二次無差異，功能驗證與 shell syntax 通過。
-- [ ] 12 份 SKILL.md 總字元數低於 13,168，且行為基準未退化。
+- [ ] 13 份 SKILL.md 總字元數低於 13,168，且行為基準未退化。
 
 ## 10. 非目標
 
