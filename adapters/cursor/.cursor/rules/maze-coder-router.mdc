@@ -1,5 +1,5 @@
 ---
-description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session 與交接工作
+description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session、交接與 token 效率稽核
 alwaysApply: true
 ---
 
@@ -19,3 +19,4 @@ alwaysApply: true
 | 上下文一致性稽核 | maze-context-audit |
 | Bug 重現文件 | maze-bug-reproduction |
 | 跨工具／人員交接 | maze-handoff-summary |
+| Token 效率稽核 | maze-token-efficiency-review |
