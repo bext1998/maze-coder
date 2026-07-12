@@ -7,6 +7,7 @@
 - [ ] `git branch` — 確認目前在正確的分支
 - [ ] 不是直接 push 到 `main` / `master`（應透過 PR）
 - [ ] 分支名稱清楚描述功能（`feature/xxx` 或 `fix/xxx`）
+- [ ] 若此變更會與其他進行中分支平行修改重疊檔案，先用 git worktree add 建立獨立工作區，避免共用 working tree 互相覆蓋
 
 ## 本地狀態確認
 
