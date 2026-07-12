@@ -2,7 +2,7 @@
 
 > 由 sync-adapters.sh 產生，請勿手動編輯。
 
-先讀取 `.maze-coder/HARNESS_ENGINEERING.md`。依使用者意圖只載入一個最相關技能的 `.maze-coder/skills/<skill>/SKILL.md`；技能要求時才讀同目錄下的 references、templates 或 checklists。不得一次載入全部技能。
+先讀取 `.maze-coder/HARNESS_ENGINEERING.md`，依 Host 與模型能力選擇最輕可用 Profile，再按需載入一份 Model Overlay。依意圖只載入一個最相關的公開技能；技能明示組合時才載入 internal skill，其他 references、templates 或 checklists 也只按指標讀取。
 
 | 意圖 | 技能 |
 |---|---|
@@ -19,3 +19,6 @@
 | Bug 重現文件 | maze-bug-reproduction |
 | 跨工具／人員交接 | maze-handoff-summary |
 | Token 效率稽核 | maze-token-efficiency-review |
+| 新增功能、修 Bug、可觀察行為變更／TDD | maze-risk-driven-tdd |
+| 逐題壓力測試 | maze-grill |
+| 逐題壓力測試並同步文件 | maze-grill-with-docs |

@@ -1,18 +1,19 @@
 # maze-coder — 下一步行動
 
-> 最後同步：2026-07-11
+> 最後同步：2026-07-12
 
 ## 下一個 Session 目標
 
-Issue #5 已完成並關閉；目前無進行中或待處理的 Issue／PR。下一個 Session 待新需求或優先事項指派。
+PR #8 已建立並等待 review；目前沒有可確認的 Issue 關聯，工作區與遠端分支同步。
 
 ## 優先行動
 
-1. （可選）在 Linux 或 CI 環境補驗 Ubuntu 原生執行相容性；目前僅在 Windows／Git Bash 驗證通過。
+1. 等待並處理 PR #8 review；確認 review 通過後再決定是否轉為 ready／合併。
+2. （可選）在 Ubuntu 與真實 GPT-5.6／較弱本地模型補做動態情境量測。
 
 ## 阻塞與待決策
 
-- 無阻塞；Ubuntu 原生執行相容性為已知殘留風險，非阻塞項目。
+- 無實作阻塞；PR 尚待 review，Ubuntu 與真實模型 trace 為已知未驗證風險。
 
 ## 參考
 

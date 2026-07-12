@@ -1,6 +1,7 @@
 ---
 name: maze-spec-hardening
 description: 補強既有規格的工程契約、邊界與驗收條件。當使用者要求補強、完善或工程化 spec 時使用。
+invocation: both
 ---
 
 # spec-hardening

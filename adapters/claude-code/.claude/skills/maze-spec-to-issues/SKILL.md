@@ -1,6 +1,7 @@
 ---
 name: maze-spec-to-issues
 description: 將規格中的未完成工作轉成可追蹤、可驗收的 GitHub Issues，並同步規格變更。當使用者要求把 spec 拆成 Issues、建立開發待辦或同步 spec 與 GitHub 時使用。
+disable-model-invocation: true
 ---
 
 # spec-to-issues

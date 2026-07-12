@@ -1,6 +1,7 @@
 ---
 name: maze-context-audit
 description: 比對 agent 當前理解與專案文件，找出過期或矛盾假設。當使用者懷疑 agent 搞錯方向或上下文失真時使用。
+invocation: both
 ---
 
 # context-audit

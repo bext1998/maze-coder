@@ -1,6 +1,7 @@
 ---
 name: maze-idea-to-spec
 description: 將模糊想法整理成結構化規格。當使用者說「我想做一個…」、「幫我寫規格」或提出尚未成形的產品想法時使用。
+invocation: both
 ---
 
 # idea-to-spec

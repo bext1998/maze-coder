@@ -21,6 +21,11 @@ SKILLS=(
   maze-bug-reproduction
   maze-handoff-summary
   maze-token-efficiency-review
+  maze-risk-driven-tdd
+  maze-grill
+  maze-grill-with-docs
+  maze-grilling
+  maze-domain-modeling
 )
 
 [ -d "${ROOT_DIR}/skills" ] || { echo "ERROR: 找不到 skills/" >&2; exit 1; }
@@ -72,7 +77,7 @@ write_if_changed() {
 router_body() {
   local skill_root="$1" harness="$2"
   cat <<EOF
-先讀取 \`${harness}\`。依使用者意圖只載入一個最相關技能的 \`${skill_root}/<skill>/SKILL.md\`；技能要求時才讀同目錄下的 references、templates 或 checklists。不得一次載入全部技能。
+先讀取 \`${harness}\`，依 Host 與模型能力選擇最輕可用 Profile，再按需載入一份 Model Overlay。依意圖只載入一個最相關的公開技能；技能明示組合時才載入 internal skill，其他 references、templates 或 checklists 也只按指標讀取。
 
 | 意圖 | 技能 |
 |---|---|
@@ -89,19 +94,54 @@ router_body() {
 | Bug 重現文件 | maze-bug-reproduction |
 | 跨工具／人員交接 | maze-handoff-summary |
 | Token 效率稽核 | maze-token-efficiency-review |
+| 新增功能、修 Bug、可觀察行為變更／TDD | maze-risk-driven-tdd |
+| 逐題壓力測試 | maze-grill |
+| 逐題壓力測試並同步文件 | maze-grill-with-docs |
 EOF
+}
+
+sync_claude_skills() {
+  local tmp_root skill file invocation transformed
+  tmp_root="$(mktemp -d)"
+  cp -R "${ROOT_DIR}/skills" "${tmp_root}/skills"
+  for skill in "${SKILLS[@]}"; do
+    file="${tmp_root}/skills/${skill}/SKILL.md"
+    invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
+    transformed="${file}.tmp"
+    awk -v mode="${invocation}" '
+      /^invocation:/ {
+        if (mode == "user") print "disable-model-invocation: true"
+        else if (mode == "model") print "user-invocable: false"
+        else if (mode == "internal") {
+          print "user-invocable: false"
+          print "disable-model-invocation: true"
+        }
+        next
+      }
+      { print }
+    ' "${file}" > "${transformed}"
+    mv "${transformed}" "${file}"
+  done
+  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/claude-code/.claude/skills" "完整技能資源與 invocation metadata"
+  rm -rf "${tmp_root}"
 }
 
 echo "=== maze-coder sync-adapters ==="
 
 echo "--- Claude Code ---"
-sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/claude-code/.claude/skills" "完整技能資源"
+sync_claude_skills
 copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
+sync_dir "${ROOT_DIR}/core" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/core" "核心契約"
+sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/profiles" "Guidance Profiles"
+sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/model-overlays" "Model Overlays"
 
 for adapter in codex opencode; do
   echo "--- ${adapter} ---"
   sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/skills" "完整技能資源"
   copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/HARNESS_ENGINEERING.md" "共用規則"
+  sync_dir "${ROOT_DIR}/core" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/core" "核心契約"
+  sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/profiles" "Guidance Profiles"
+  sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/${adapter}/.maze-coder/model-overlays" "Model Overlays"
   {
     if [ "${adapter}" = codex ]; then
       echo "# maze-coder — Codex Router"
@@ -118,9 +158,12 @@ done
 echo "--- Cursor ---"
 sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/skills" "完整技能資源"
 copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
+sync_dir "${ROOT_DIR}/core" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/core" "核心契約"
+sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/profiles" "Guidance Profiles"
+sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/model-overlays" "Model Overlays"
 {
   echo "---"
-  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session、交接與 token 效率稽核"
+  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、TDD、Session、交接與 token 效率稽核"
   echo "alwaysApply: true"
   echo "---"
   echo

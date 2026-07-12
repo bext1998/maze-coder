@@ -1,6 +1,7 @@
 ---
 name: maze-github-safe-ops
 description: 提供安全的 Git／GitHub 操作檢查與 Issue 關聯規則。當使用者要 commit、push、merge、rebase 或建立 PR 時使用。
+invocation: both
 ---
 
 # github-safe-ops

@@ -21,6 +21,30 @@ require_text "skills/maze-spec-hardening/SKILL.md" "Contract.*Invariants.*Edge C
 require_text "skills/maze-github-safe-ops/SKILL.md" "Force push 到 main / master 可能覆蓋其他人的工作" "保留 force-push 明確警告"
 require_text "skills/maze-github-safe-ops/SKILL.md" "git revert" "保留安全替代方案"
 
+echo "--- adaptive and grill contracts ---"
+require_text "core/invariants.md" "階段.*可調整.*契約.*不可省略" "核心自適應原則"
+require_text "core/workflow-model.md" "只有出現具體失敗才依序加強" "Profile 只因具體失敗加強"
+require_text "core/workflow-model.md" "scaffolded" "Profile 加強包含 scaffolded"
+require_text "profiles/minimal.md" "不得要求固定 Phase、Todo、進度報告" "Minimal 不強制重型流程"
+require_text "model-overlays/gpt-5.6.md" "原生代理" "GPT-5.6 保留原生代理"
+require_text "model-overlays/gpt-5.6.md" "Subagent 或平行工具" "GPT-5.6 保留平行與委派"
+require_text "skills/maze-grilling/SKILL.md" "每次只問一個.*推薦答案.*理由" "Grill 逐題契約"
+require_text "skills/maze-grilling/SKILL.md" "查證.*事實" "Grill 自行查證"
+require_text "skills/maze-domain-modeling/SKILL.md" "難以逆轉.*缺背景.*替代方案" "ADR 三項門檻"
+require_text "skills/maze-grill/SKILL.md" "不建立文件" "Grill 無文件輸出"
+require_text "skills/maze-spec-to-issues/references/issue-model.md" "乾淨 Context Window" "Issue 單一 Context"
+require_text "skills/maze-spec-to-issues/references/issue-model.md" "垂直切片" "Issue 垂直切片"
+require_text "skills/maze-spec-to-issues/references/issue-model.md" "阻塞.*可執行前線" "Issue 阻塞前線"
+
+echo "--- risk-driven-tdd contracts ---"
+RISK_TDD="skills/maze-risk-driven-tdd/SKILL.md"
+require_text "${RISK_TDD}" "最小可觀察驗證" "TDD 定義最小可觀察驗證"
+require_text "${RISK_TDD}" "修改前因正確原因失敗" "TDD 要求修改前失敗證據"
+require_text "${RISK_TDD}" "原因、預期失敗的替代證據與未覆蓋風險" "TDD 無自動紅燈時揭露替代證據與風險"
+require_text "${RISK_TDD}" "基線失敗必須分列" "TDD 區分既有基線失敗"
+require_text "${RISK_TDD}" "純文件、格式、生成物同步.*機械重構不適用" "TDD 排除零行為變更"
+require_text "${RISK_TDD}" "不得因測試困難跳過驗證、忽略退出碼、弱化斷言或修改測試迎合錯誤結果" "TDD 禁止弱化驗證"
+
 echo "--- token-efficiency-review contracts ---"
 TOKEN_REVIEW="skills/maze-token-efficiency-review/SKILL.md"
 require_text "${TOKEN_REVIEW}" "重複讀取.*過度探索.*錯誤技能／模型.*可腳本化工作.*無效輸出" "token 稽核範圍完整"
@@ -61,6 +85,7 @@ fi
 echo "--- portability ---"
 bash -n "${ROOT_DIR}/scripts/sync-adapters.sh" && ok "sync-adapters.sh syntax" || err "sync-adapters.sh syntax"
 bash -n "${ROOT_DIR}/scripts/validate-skillpack.sh" && ok "validate-skillpack.sh syntax" || err "validate-skillpack.sh syntax"
+bash -n "${ROOT_DIR}/scripts/validate-adaptive-scenarios.sh" && ok "validate-adaptive-scenarios.sh syntax" || err "validate-adaptive-scenarios.sh syntax"
 if [[ "$(uname -s)" == Linux ]]; then
   ok "Linux runtime"
 else

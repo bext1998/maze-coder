@@ -1,6 +1,7 @@
 ---
 name: maze-handoff-summary
 description: 建立跨人員或工具的 HANDOFF.md。當使用者要換工具、換人接手或要求交接文件時使用。
+disable-model-invocation: true
 ---
 
 # handoff-summary

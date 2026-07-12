@@ -1,6 +1,7 @@
 ---
 name: maze-qa-verification
 description: 依規格驗收功能並產出 QA_REPORT.md。當使用者要求 QA、驗收、測試功能或確認是否可合併時使用。
+invocation: user
 ---
 
 # qa-verification
