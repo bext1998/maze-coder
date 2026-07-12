@@ -22,6 +22,7 @@ SKILLS=(
   maze-handoff-summary
   maze-token-efficiency-review
   maze-risk-driven-tdd
+  maze-skill-authoring
   maze-grill
   maze-grill-with-docs
   maze-grilling
@@ -95,6 +96,7 @@ router_body() {
 | 跨工具／人員交接 | maze-handoff-summary |
 | Token 效率稽核 | maze-token-efficiency-review |
 | 新增功能、修 Bug、可觀察行為變更／TDD | maze-risk-driven-tdd |
+| 評估是否新增或擴充技能 | maze-skill-authoring |
 | 逐題壓力測試 | maze-grill |
 | 逐題壓力測試並同步文件 | maze-grill-with-docs |
 EOF
