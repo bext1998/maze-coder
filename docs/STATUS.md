@@ -1,8 +1,8 @@
 # maze-coder — 當前狀態
 
 > 最後同步：2026-07-12
-> Branch：maze/2026-07-12-564d3b
-> Working tree：dirty；commit `a50532a`（PR #10 已合併）之上有未提交的本機變更（`maze-skill-authoring` 技能＋ PRINCIPLES.md 防呆原則）
+> Branch：maze/2026-07-12-49314a（worktree：`.worktrees/maze-2026-07-12-49314a`）
+> Working tree：clean；已推送至 origin，對應 PR #11（待合併）
 
 ## 進行中 Issues
 
@@ -18,7 +18,7 @@
 
 ## 等待 Merge
 
-- 無
+- PR #11：新增 `maze-skill-authoring` 技能與 PRINCIPLES.md 防呆原則（技能數 18→19）＋對抗式壓力驗證方法論；已對 `maze-risk-driven-tdd` 做 6 組壓力測試（3 組 Claude、3 組真實 Codex/gpt-5.6-luna）全數守住，`model-overlays/gpt-5.6.md` 首次有真實動態驗證紀錄。
 
 ## 已合併待關閉
 
@@ -33,6 +33,6 @@
 
 ## 未追蹤本機工作
 
-- 新增 `maze-skill-authoring` 技能與 `core/PRINCIPLES.md` 第 8 節防呆原則（技能總數 18→19），已通過 `sync-adapters.sh`（二次執行 no changes）、`validate-skillpack.sh`、`validate-skills-functional.sh`、`validate-adaptive-scenarios.sh`；尚未提交、無對應 Issue／PR。
-- PR #8、PR #9、PR #10 均無可確認的 Issue 關聯，未使用 `Closes` 或 `Related to`（延續先前 session 已記錄的判斷）。
-- Ubuntu 原生執行與真實外部模型 trace 尚未驗證（延續自上一輪，本次未處理）。
+- `maze-github-safe-ops` 的兩個功能性擴充（code review 結構化 checklist、worktree／subagent 派發操作指引）已決定做法但尚未動手，無對應 Issue。
+- PR #8、PR #9、PR #10、PR #11 均無可確認的 Issue 關聯，未使用 `Closes` 或 `Related to`（延續先前 session 已記錄的判斷）。
+- Gemini／較弱本地模型的真實動態驗證與 Ubuntu 原生執行尚未做（範圍縮小：GPT-5.6／Claude 已對 risk-driven-tdd 完成真實壓力測試）。
