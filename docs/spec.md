@@ -2,7 +2,7 @@
 
 ## 1. 目標
 
-maze-coder 提供 18 個跨 Host canonical skills。技能只補充專案知識、風險邊界、輸出契約與完成條件；模型自行選擇探索、規劃、工具、平行與 Subagent 方式。
+maze-coder 提供 19 個跨 Host canonical skills。技能只補充專案知識、風險邊界、輸出契約與完成條件；模型自行選擇探索、規劃、工具、平行與 Subagent 方式。
 
 核心原則：階段可調整，契約不可省略；只有觀察到具體失敗才增加最小必要 Guidance。
 
@@ -40,10 +40,10 @@ maze-coder 提供 18 個跨 Host canonical skills。技能只補充專案知識�
 
 ## 6. 驗收條件
 
-- [ ] 18 個來源技能具有完整 frontmatter、合法 invocation、必要行為與輸出契約。
+- [ ] 19 個來源技能具有完整 frontmatter、合法 invocation、必要行為與輸出契約。
 - [ ] 三個 Profiles、四個 Overlays、核心不變量與自適應工作模型存在。
 - [ ] GPT-5.6 Overlay 保持精簡，不重教一般代理能力。
-- [ ] 四種 Adapter 與 canonical resources 一致，Router 只公開 16 個非 internal 技能。
+- [ ] 四種 Adapter 與 canonical resources 一致，Router 只公開 17 個非 internal 技能。
 - [ ] README、Adapter 文件、同步及驗證腳本的技能數量一致。
 - [ ] 無空白必要章節、未完成佔位、失效資源引用或強制 Session Report。
 - [ ] 同步第二次無差異，Shell syntax、結構、功能與情境驗證通過。

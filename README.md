@@ -6,7 +6,7 @@
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 18 Canonical Skills
+## 19 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
@@ -24,6 +24,7 @@
 | `maze-handoff-summary` | 跨工具／人員交接 |
 | `maze-token-efficiency-review` | 執行 trace 與 token 效率稽核 |
 | `maze-risk-driven-tdd` | 低上下文、風險導向的行為驗證與實作 |
+| `maze-skill-authoring` | 評估是否新增或擴充技能 |
 | `maze-grill` | 逐題壓力測試，不產生文件 |
 | `maze-grill-with-docs` | 壓力測試並同步必要領域文件 |
 | `maze-grilling` | Grill 共用邏輯（internal） |
@@ -73,7 +74,7 @@ assets/     品牌與視覺資產
 core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
-skills/     18 個來源技能及按需資源
+skills/     19 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證

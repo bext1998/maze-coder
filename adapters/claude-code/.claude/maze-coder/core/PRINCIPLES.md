@@ -48,3 +48,11 @@ Agent 最容易犯的錯誤是「越界補充」— 在完成技能目標後，�
 差異更新在「技能內容改變但 adapter 舊版殘留」時容易產生語意不一致。冪等覆蓋確保 adapter 永遠是 `skills/` 的完整反映，不會有過期的殘留。
 
 代價是每次 sync 都重新寫入全部 adapter 檔案，但對於 Markdown 文件這個代價可以接受。
+
+## 8. 為什麼新增能力優先擴充既有技能，而非開新 SKILL.md
+
+每個公開技能都會出現在 Adapter 的 Router 表格（codex／opencode／cursor 是常駐於專案根目錄的 AGENTS.md／.mdc，每個 session 都會被讀入）；技能數量直接疊加使用者的訂閱方案 token 消耗。
+
+其他技能包常見的做法是把每個能力都拆成獨立技能，短期容易維護，但長期讓 Router 表格與可選技能清單線性膨脹。maze-coder 反過來：先問「能不能塞進既有技能的 checklist／reference／template」，只有真的無法歸類、且會重複出現的能力缺口，才新增一個 SKILL.md（判斷流程見 `maze-skill-authoring`）。
+
+代價是偶爾要在既有技能檔案裡多寫幾行，而不是另開新檔案更省事；換來的是技能包不會隨時間線性膨脹成無法負擔的常駐內容。
