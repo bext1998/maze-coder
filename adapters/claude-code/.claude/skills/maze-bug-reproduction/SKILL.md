@@ -1,6 +1,7 @@
 ---
 name: maze-bug-reproduction
 description: 將問題整理成可重現的 Bug 文件。當使用者要求記錄 bug、建立重現步驟或撰寫 bug report 時使用。
+disable-model-invocation: true
 ---
 
 # bug-reproduction

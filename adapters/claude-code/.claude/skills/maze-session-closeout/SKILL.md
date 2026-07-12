@@ -1,6 +1,7 @@
 ---
 name: maze-session-closeout
 description: 在 Coding Session 結束時同步 Git、GitHub、QA 與專案文件狀態。當使用者說「結束 session」、「更新狀態」或「今天先到這裡」時使用。
+disable-model-invocation: true
 ---
 
 # session-closeout

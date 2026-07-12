@@ -1,6 +1,6 @@
-# Harness Engineering 規則
+# 自適應 Harness 契約
 
-> 供 AI agent 與 Adapter 使用的共用執行契約。
+> 供 AI agent 與 Adapter 使用。先讀 `core/invariants.md` 與 `core/workflow-model.md`；階段可調整，契約不可省略。
 
 ## 範圍與證據
 
@@ -26,7 +26,7 @@
 - `skills/` 是技能 source of truth；模板與 references 跟隨技能保存，根 `templates/` 與 Adapter 由同步腳本產生。
 - 技能缺少必要輸入時停止並列出缺漏；同名輸出已存在時不得靜默覆蓋。
 - SKILL.md 只保留觸發、必要流程、確認點、輸出與邊界；長規則、模板與低頻例外放入一層深資源。
-- 所有 14 個技能必須出現在各 Adapter；Adapter 只能改變包裝與載入方式，不得改變技能邏輯。
+- 所有 18 個 canonical skills、Profiles、Overlays 與核心契約必須出現在各 Adapter；Adapter 只能改變包裝與載入方式，不得改變技能邏輯。
 
 ## Adapter 與 Token 效率
 

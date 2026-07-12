@@ -17,9 +17,16 @@ SKILLS=(
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-repo-map maze-context-audit
   maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
-  maze-risk-driven-tdd
+  maze-risk-driven-tdd maze-grill maze-grill-with-docs maze-grilling
+  maze-domain-modeling
 )
-SECTIONS=(目標 前置條件 執行流程 輸出契約 邊界)
+PUBLIC_SKILLS=(
+  maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
+  maze-session-closeout maze-github-safe-ops maze-design-review
+  maze-qa-verification maze-repo-map maze-context-audit
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
+  maze-risk-driven-tdd maze-grill maze-grill-with-docs
+)
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }
@@ -39,20 +46,24 @@ validate_skill() {
   local skill="$1" file="${ROOT_DIR}/skills/${skill}/SKILL.md"
   [ -f "${file}" ] || { err "缺少 skills/${skill}/SKILL.md"; return; }
 
-  local first last name fields chars
+  local first last name fields chars invocation
   first="$(head -n 1 "${file}")"
   last="$(awk '/^---$/{count++; if (count==2) {print NR; exit}}' "${file}")"
   [ "${first}" = "---" ] && [ "${last}" -gt 1 ] || err "${skill}: frontmatter 格式錯誤"
 
   name="$(awk 'NR>1 && /^---$/{exit} /^name:[[:space:]]*/{sub(/^name:[[:space:]]*/, ""); print}' "${file}")"
   [ "${name}" = "${skill}" ] || err "${skill}: name 與目錄不一致"
-  fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description") print}' "${file}")"
-  [ -z "${fields}" ] || err "${skill}: frontmatter 只能包含 name、description"
+  fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description" && $0 != "invocation") print}' "${file}")"
+  [ -z "${fields}" ] || err "${skill}: frontmatter 含未知欄位 ${fields}"
   awk 'NR>1 && /^---$/{exit} /^description:[[:space:]]*[^[:space:]]/{found=1} END{exit !found}' "${file}" || err "${skill}: description 不得為空"
+  invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
+  case "${invocation}" in user|model|both|internal) ;; *) err "${skill}: invocation 必須為 user、model、both 或 internal" ;; esac
 
-  for section in "${SECTIONS[@]}"; do
-    section_nonempty "${file}" "${section}" || err "${skill}: 缺少或留空「${section}」"
-  done
+  section_nonempty "${file}" "目標" || err "${skill}: 缺少或留空「目標」"
+  section_nonempty "${file}" "輸出契約" || err "${skill}: 缺少或留空「輸出契約」"
+  section_nonempty "${file}" "邊界" || err "${skill}: 缺少或留空「邊界」"
+  (section_nonempty "${file}" "前置條件" || section_nonempty "${file}" "必要輸入") || err "${skill}: 缺少必要輸入"
+  (section_nonempty "${file}" "執行流程" || section_nonempty "${file}" "核心行為") || err "${skill}: 缺少核心行為"
   if grep -En 'TODO|FIXME' "${file}" >/dev/null; then
     err "${skill}: 含 TODO/FIXME"
   fi
@@ -69,12 +80,12 @@ validate_skill() {
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
 ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 14 ] || err "skills/ 必須恰有 14 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
+[ "${ACTUAL_SKILLS}" -eq 18 ] || err "skills/ 必須恰有 18 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
 for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
 
 [ "${TOTAL_CHARS}" -lt "${BASELINE_CHARS}" ] \
-  && ok "14 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於基準 ${BASELINE_CHARS}" \
-  || err "SKILL.md 總字元 ${TOTAL_CHARS} 未低於基準 ${BASELINE_CHARS}"
+  && ok "18 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於歷史基準 ${BASELINE_CHARS}" \
+  || err "SKILL.md 總字元 ${TOTAL_CHARS} 未低於歷史基準 ${BASELINE_CHARS}"
 
 RISK_TDD_CHARS="$(wc -m < "${ROOT_DIR}/skills/maze-risk-driven-tdd/SKILL.md" | tr -d ' ')"
 [ "${RISK_TDD_CHARS}" -le 1200 ] \
@@ -120,7 +131,25 @@ compare_tree() {
   fi
 }
 
-compare_tree "${ROOT_DIR}/adapters/claude-code/.claude/skills" "Claude Code"
+for skill in "${SKILLS[@]}"; do
+  canonical="${ROOT_DIR}/skills/${skill}/SKILL.md"
+  claude="${ROOT_DIR}/adapters/claude-code/.claude/skills/${skill}/SKILL.md"
+  [ -f "${claude}" ] || { err "Claude Code 缺少 ${skill}"; continue; }
+  diff -u \
+    <(grep -vE '^(invocation|user-invocable|disable-model-invocation):' "${canonical}") \
+    <(grep -vE '^(invocation|user-invocable|disable-model-invocation):' "${claude}") >/dev/null \
+    || err "Claude ${skill} 行為內容與 canonical 不一致"
+  invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${canonical}")"
+  case "${invocation}" in
+    user) grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發" ;;
+    model) grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} 未停用使用者入口" ;;
+    internal)
+      grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} internal 仍可由使用者觸發"
+      grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} internal 仍可由模型觸發"
+      ;;
+  esac
+done
+ok "Claude Code invocation metadata 已轉譯"
 compare_tree "${ROOT_DIR}/adapters/codex/.maze-coder/skills" "Codex"
 compare_tree "${ROOT_DIR}/adapters/opencode/.maze-coder/skills" "opencode"
 compare_tree "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/skills" "Cursor"
@@ -134,22 +163,23 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
-grep -q '所有 14 個技能' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
-  && ok "核心 Harness 標示 14 個技能" || err "核心 Harness 未標示 14 個技能"
+grep -q '所有 18 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 18 個技能" || err "核心 Harness 未標示 18 個技能"
 for readme in \
   "adapters/claude-code/README.md" \
   "adapters/codex/README.md" \
   "adapters/cursor/README.md" \
   "adapters/opencode/README.md"; do
-  grep -q '14 個' "${ROOT_DIR}/${readme}" \
-    && ok "${readme} 標示 14 個技能" || err "${readme} 未標示 14 個技能"
+  grep -q '18 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 18 個技能" || err "${readme} 未標示 18 個技能"
 done
 
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
   [ -f "${ROOT_DIR}/${router}" ] || { err "缺少 ${router}"; continue; }
-  for skill in "${SKILLS[@]}"; do
+  for skill in "${PUBLIC_SKILLS[@]}"; do
     grep -q "${skill}" "${ROOT_DIR}/${router}" || err "${router} 缺少 ${skill} 路由"
   done
+  grep -q 'maze-grilling\|maze-domain-modeling' "${ROOT_DIR}/${router}" && warn "${router} 提及 internal skill，確認未公開成入口"
   ok "${router}"
 done
 
@@ -177,7 +207,25 @@ for mapping in "${TEMPLATE_MAP[@]}"; do
     && ok "templates/${dst}" || err "templates/${dst} 未同步"
 done
 
-grep -q '## 14 Skills' "${ROOT_DIR}/README.md" || err "README 未標示 14 Skills"
+grep -q '## 18 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 18 Canonical Skills"
+
+echo "--- Adaptive architecture ---"
+for file in core/invariants.md core/workflow-model.md profiles/minimal.md profiles/standard.md profiles/scaffolded.md model-overlays/gpt-5.6.md model-overlays/claude.md model-overlays/gemini.md model-overlays/local-small-model.md; do
+  [ -s "${ROOT_DIR}/${file}" ] && ok "${file}" || err "缺少或空白 ${file}"
+done
+for root in \
+  adapters/claude-code/.claude/maze-coder \
+  adapters/codex/.maze-coder \
+  adapters/opencode/.maze-coder \
+  adapters/cursor/.cursor/maze-coder; do
+  diff -qr "${ROOT_DIR}/core" "${ROOT_DIR}/${root}/core" >/dev/null 2>&1 || err "${root}/core 未同步"
+  diff -qr "${ROOT_DIR}/profiles" "${ROOT_DIR}/${root}/profiles" >/dev/null 2>&1 || err "${root}/profiles 未同步"
+  diff -qr "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/${root}/model-overlays" >/dev/null 2>&1 || err "${root}/model-overlays 未同步"
+done
+
+if grep -R -En 'TODO|FIXME' "${ROOT_DIR}/skills" "${ROOT_DIR}/core" "${ROOT_DIR}/profiles" "${ROOT_DIR}/model-overlays" | grep -v 'TODO/FIXME\|禁止使用' >/dev/null; then
+  err "canonical 內容含 TODO/FIXME"
+fi
 if [ -d "${ROOT_DIR}/skills/maze-session-closeout/templates" ] \
   && find "${ROOT_DIR}/skills/maze-session-closeout/templates" -type f | grep -q .; then
   err "closeout 仍含 Session Report templates"

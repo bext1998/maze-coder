@@ -4,9 +4,9 @@
   <img src="./assets/maze-coder-logo.svg" alt="maze-coder animated workflow logo" width="720">
 </p>
 
-**Portable Harness Engineering Skills Pack** — 讓 Claude Code、Codex、Cursor、opencode 共用需求、GitHub、QA 與狀態同步工作流。
+**Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 14 Skills
+## 18 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
@@ -24,15 +24,19 @@
 | `maze-handoff-summary` | 跨工具／人員交接 |
 | `maze-token-efficiency-review` | 執行 trace 與 token 效率稽核 |
 | `maze-risk-driven-tdd` | 低上下文、風險導向的行為驗證與實作 |
+| `maze-grill` | 逐題壓力測試，不產生文件 |
+| `maze-grill-with-docs` | 壓力測試並同步必要領域文件 |
+| `maze-grilling` | Grill 共用邏輯（internal） |
+| `maze-domain-modeling` | 領域模型與重大決策同步（internal） |
 
-## Workflow
+## Adaptive Model
 
 ```text
-idea-to-spec → spec-hardening → project-init → spec-to-issues
-→ coding／QA → github-safe-ops → Review／CI／Merge → session-closeout
+core invariants + Guidance Profile + optional Model Overlay
+→ one relevant skill → on-demand references → evidence-based completion
 ```
 
-`skills/` 是 source of truth。Adapter 使用精簡 Router，只在觸發後載入對應技能與按需資源。
+`skills/` 是 source of truth。Adapter 使用精簡 Router；依能力選擇 `minimal`、`standard` 或 `scaffolded`，只有具體失敗才加強 Guidance。
 
 ## Install
 
@@ -66,8 +70,10 @@ bash scripts/validate-skills-functional.sh
 
 ```text
 assets/     品牌與視覺資產
-core/       共用契約與工作流
-skills/     14 個來源技能及按需資源
+core/       不變量與自適應工作模型
+profiles/   三級 Guidance Profile
+model-overlays/ 輕量模型偏差修正
+skills/     18 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證

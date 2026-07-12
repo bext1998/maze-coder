@@ -6,4 +6,4 @@
 cp -r .claude /your-project/
 ```
 
-共 14 個 `maze-*` 技能。內容由 `scripts/sync-adapters.sh` 產生，請修改根 `skills/`，不要直接編輯此目錄。
+共 18 個 canonical skills（16 個公開入口、2 個 internal）。內容由 `scripts/sync-adapters.sh` 產生，請修改根 source of truth，不要直接編輯此目錄。

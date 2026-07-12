@@ -1,6 +1,7 @@
 ---
 name: maze-design-review
 description: 審查前端視覺、UX 與 AI slop，產出設計報告。當使用者要求 UI 設計審查、前端 QA 或視覺品質評估時使用。
+invocation: user
 ---
 
 # design-review

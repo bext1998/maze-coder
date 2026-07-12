@@ -1,6 +1,7 @@
 ---
 name: maze-project-init
 description: 初始化專案的指揮文件與 GitHub 工作流設定。當使用者要求建立專案文件或設定 coding agent 指令時使用。
+disable-model-invocation: true
 ---
 
 # project-init

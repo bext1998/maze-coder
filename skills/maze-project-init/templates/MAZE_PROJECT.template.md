@@ -17,6 +17,13 @@
 - Next Action：NEXT_ACTION.md
 - Decisions：DECISIONS.md
 
+## 自適應 Guidance
+
+- Default profile：[minimal / standard / scaffolded]
+- Model overlay：[none / gpt-5.6 / claude / gemini / local-small-model]
+- Host capabilities：[工具、Subagent、平行工具與 Context 限制]
+- Profile escalation evidence：[只有發生具體失敗時記錄]
+
 ## GitHub
 
 - Repository：[owner/repo 或 URL]

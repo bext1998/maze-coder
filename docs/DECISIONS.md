@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-07-12 — 採用自適應技能包架構
+
+**決策**：以核心不變量、Guidance Profiles、輕量 Model Overlays、Host Adapters、canonical skills 與按需 references 取代單一固定工作流；詳見 `docs/adr/0001-adaptive-skillpack.md`。
+
+**原因**：保留安全與完成契約，同時避免技能限制前沿模型的原生代理、工具與平行能力。
+
+**狀態**：確認
+
+---
+
 ## 2026-07-10 — Issue #5 成為 v2.0 規格基準
 
 **決策**：Issue #5 本文與第 26 節留言取代未落地的 v1.5 擴充提案；本版新增 `maze-spec-to-issues`，完成後共 12 個技能。

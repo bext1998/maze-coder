@@ -1,6 +1,7 @@
 ---
 name: maze-repo-map
 description: 產生 repo 結構地圖與關鍵路徑說明。當使用者要求建立 repo map、進入陌生 repo 或協助 agent 理解專案時使用。
+disable-model-invocation: true
 ---
 
 # repo-map
