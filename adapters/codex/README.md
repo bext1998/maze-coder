@@ -1,6 +1,6 @@
 # Codex Adapter
 
-`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 13 個按需技能、模板與共用規則，兩者必須一起安裝。
+`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 14 個按需技能、模板與共用規則，兩者必須一起安裝。
 
 ```bash
 cp AGENTS.md /your-project/

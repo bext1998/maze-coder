@@ -6,7 +6,7 @@
 
 **Portable Harness Engineering Skills Pack** — 讓 Claude Code、Codex、Cursor、opencode 共用需求、GitHub、QA 與狀態同步工作流。
 
-## 13 Skills
+## 14 Skills
 
 | Skill | 用途 |
 |---|---|
@@ -23,6 +23,7 @@
 | `maze-bug-reproduction` | Bug 最小重現文件 |
 | `maze-handoff-summary` | 跨工具／人員交接 |
 | `maze-token-efficiency-review` | 執行 trace 與 token 效率稽核 |
+| `maze-risk-driven-tdd` | 低上下文、風險導向的行為驗證與實作 |
 
 ## Workflow
 
@@ -66,7 +67,7 @@ bash scripts/validate-skills-functional.sh
 ```text
 assets/     品牌與視覺資產
 core/       共用契約與工作流
-skills/     13 個來源技能及按需資源
+skills/     14 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證

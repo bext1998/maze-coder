@@ -1,10 +1,10 @@
-# maze-coder 規格 v2.0
+# maze-coder 規格 v2.1
 
 > Issue #5 本文與第 26 節留言為本版需求基準。v1.5 未落地的 `maze-writing-skills`、`maze-update` 與 `update-skillpack.sh` 不屬於本版。
 
 ## 1. 目標
 
-maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、PR、QA 與 Session 狀態串成可追蹤工作流，並讓 Claude Code、Codex、Cursor、opencode 載入相同邏輯。
+maze-coder 提供 14 個可攜式技能，將需求、規格、測試驅動實作、GitHub Issues、PR、QA 與 Session 狀態串成可追蹤工作流，並讓 Claude Code、Codex、Cursor、opencode 載入相同邏輯。
 
 本版新增 `maze-spec-to-issues`，重構 `maze-session-closeout`，並在功能等價與安全限制不變的前提下精簡所有 SKILL.md。
 
@@ -23,8 +23,17 @@ maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、P
 11. `maze-bug-reproduction`
 12. `maze-handoff-summary`
 13. `maze-token-efficiency-review`
+14. `maze-risk-driven-tdd`
 
-## 3. Spec → Issues 契約
+## 3. Risk-driven TDD 契約
+
+- 適用於新增功能、Bug 修復與可觀察行為變更；純文件、格式、生成物同步及已證明不改變行為的機械重構排除，無法確認時視為適用。
+- 先定義最小可觀察驗證並證明修改前因正確原因失敗，再做最小完整修改、確認通過及執行相關回歸；只在仍有價值時重構。
+- 模型自行決定測試層級、工具與實作方式，不強制每個內部步驟機械遵循 Red→Green→Refactor。
+- 無法先建立自動化紅燈時，實作前記錄原因、預期失敗的替代證據與未覆蓋風險；不得跳過驗證、忽略退出碼、弱化斷言或修改測試迎合錯誤結果。
+- `SKILL.md` 不超過 1,200 個 Unicode 字元，不依賴、複製或修改 Superpowers 技能。
+
+## 4. Spec → Issues 契約
 
 - Repository 與 spec 路徑必須來自 `MAZE_PROJECT.md`；缺漏或 repo 不一致時停止。
 - 讀取規格、專案文件、Open/Closed Issues、Open/Merged PR、標籤與必要 Git 歷史。
@@ -36,14 +45,14 @@ maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、P
 - 使用穩定 task-id 與 spec revision marker 去重；重試不得重建成功 Issue。
 - Parent／Child 使用 GitHub Sub-issue；部分關聯失敗只重試原 Issue 的缺少操作。
 
-## 4. 規格變更同步
+## 5. 規格變更同步
 
 - 新需求建立草稿；尚未開始的修改顯示 diff 後更新。
 - 進行中修改標為 Scope Change，由使用者選擇更新或另建 Issue。
 - 刪除未開始需求只建議 `not planned`；已完成需求保留歷史。
 - 與已合併成果衝突時建立新修正 Issue，不改寫歷史 Issue。
 
-## 5. Session Closeout 契約
+## 6. Session Closeout 契約
 
 - 依 Git branch、working tree、commit、Issue、PR、CI、QA、STATUS 與 NEXT_ACTION 判定狀態。
 - 支援 `in-progress`、`blocked`、`awaiting-review`、`awaiting-merge`、`merged-awaiting-close`、`completed`、`research-only`、`untracked`。
@@ -51,13 +60,13 @@ maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、P
 - GitHub 寫入先顯示 diff 並確認；不得自動 close／reopen、改優先級、改 Assignee、merge 或執行 QA。
 - 必要輸出只有更新後的 `STATUS.md` 與 `NEXT_ACTION.md`；不建立任何 Session Summary／Report。
 
-## 6. 專案文件
+## 7. 專案文件
 
 `maze-project-init` 產出 `MAZE_PROJECT.md`、`PROJECT_BRIEF.md`、`STATUS.md`、`NEXT_ACTION.md`、`DECISIONS.md` 與工具指令。
 
 `MAZE_PROJECT.md` 記錄：spec 路徑、Repository、Issue tracking、Spec to Issues、優先級／類別標籤慣例、預設 Assignee 策略及是否允許建立標籤；不得包含憑證。
 
-## 7. Adapter 與同步
+## 8. Adapter 與同步
 
 - `skills/` 為唯一技能 source of truth；同步必須包含 SKILL.md 及其 references、templates、checklists。
 - Claude Code 使用完整 `.claude/skills/`。
@@ -66,16 +75,18 @@ maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、P
 - Adapter 只能轉換載入與包裝方式，不得增刪技能行為。
 - `sync-adapters.sh` 只更新受管理產物；第二次執行不得產生差異。
 
-## 8. SKILL.md 效率契約
+## 9. SKILL.md 效率契約
 
 - frontmatter 只有 `name`、`description`；本文使用目標、前置條件、執行流程、輸出契約、邊界。
 - 高頻流程與高風險限制保留在 SKILL.md；長規則、模板、範例與低頻例外按需載入。
 - 不得刪除必要輸入、停止條件、確認點、寫入、輸出、禁止行為、錯誤處理、冪等性與技能邊界。
-- 13 份 SKILL.md 總字元數低於精簡前 11 份的 13,168；單檔超過 3,000 字元只警告。
+- 14 份 SKILL.md 總字元數低於精簡前 11 份的 13,168；一般單檔超過 3,000 字元只警告，`maze-risk-driven-tdd` 超過 1,200 字元則失敗。
 
-## 9. 驗收條件
+## 10. 驗收條件
 
-- [ ] 共 13 個來源技能且四個 Adapter 全部可解析。
+- [ ] 共 14 個來源技能且四個 Adapter 全部可解析。
+- [ ] `maze-risk-driven-tdd` 保留修改前失敗、最小完整修改、修改後通過與相關回歸四個檢查點，且不超過 1,200 個 Unicode 字元。
+- [ ] 無自動化紅燈時記錄原因、替代證據與殘餘風險；既有基線失敗須與本次結果分列。
 - [ ] `maze-spec-to-issues` 具備讀取、抽取、去重、拆解、標籤、Dry Run、確認、部分失敗與規格同步規則。
 - [ ] 正式 Issue 優先級互斥；候選與 P0–P4 互斥；每項至少一個類別。
 - [ ] Issue template 包含 AC、完成條件與機器可辨識 marker。
@@ -85,9 +96,19 @@ maze-coder 提供 13 個可攜式技能，將需求、規格、GitHub Issues、P
 - [ ] 所有 Adapter 資源與 source of truth 一致，引用路徑可解析。
 - [ ] 驗證拒絕無 frontmatter、空必要章節、TODO／FIXME、技能數量或 Adapter 不一致。
 - [ ] 同步第二次無差異，功能驗證與 shell syntax 通過。
-- [ ] 13 份 SKILL.md 總字元數低於 13,168，且行為基準未退化。
+- [ ] 14 份 SKILL.md 總字元數低於 13,168，且行為基準未退化。
 
-## 10. 非目標
+## 11. 非目標
 
 - 自動產品 Roadmap、Milestone、GitHub Project、merge、review、產品決策、優先級變更、候選升級、Issue 刪除或歷史 Issue 改寫。
 - 自動建立 Session Report／日期型摘要，或以 AI 判斷取代人工 QA。
+- 複製、刪除或修改 Superpowers 技能，或規定特定語言、測試框架、覆蓋率、mock 與測試命名。
+
+## 12. 補強契約
+
+- **Invariants**：來源目錄、frontmatter 名稱、同步清單與四套 Adapter 路由一致；Adapter 不得改變技能行為。
+- **Edge Cases**：無測試框架、既有測試失敗、非 ASCII 路徑、錯誤目錄、中途中斷與重複執行時不得誤報成功。
+- **Acceptance Criteria／Test Plan**：結構、字元預算、功能契約、同步一致性、同步冪等與 Shell syntax 皆由腳本驗證。
+- **FROZEN**：風險導向、獨立替代、1,200 字元上限，以及無自動紅燈時採證據替代並揭露風險。
+- **Drift Risk**：長篇教學、框架範例或重複通用測試知識均視為上下文膨脹，由字元上限阻止。
+- **Open Questions**：無。

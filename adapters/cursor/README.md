@@ -1,6 +1,6 @@
 # Cursor Adapter
 
-單一 `maze-coder-router.mdc` 只路由意圖；`.cursor/maze-coder/` 保存 13 個按需技能與資源。
+單一 `maze-coder-router.mdc` 只路由意圖；`.cursor/maze-coder/` 保存 14 個按需技能與資源。
 
 ```bash
 cp -r .cursor /your-project/

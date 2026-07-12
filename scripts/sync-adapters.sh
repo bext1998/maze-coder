@@ -21,6 +21,7 @@ SKILLS=(
   maze-bug-reproduction
   maze-handoff-summary
   maze-token-efficiency-review
+  maze-risk-driven-tdd
 )
 
 [ -d "${ROOT_DIR}/skills" ] || { echo "ERROR: 找不到 skills/" >&2; exit 1; }
@@ -89,6 +90,7 @@ router_body() {
 | Bug 重現文件 | maze-bug-reproduction |
 | 跨工具／人員交接 | maze-handoff-summary |
 | Token 效率稽核 | maze-token-efficiency-review |
+| 新增功能、修 Bug、可觀察行為變更／TDD | maze-risk-driven-tdd |
 EOF
 }
 
@@ -120,7 +122,7 @@ sync_dir "${ROOT_DIR}/skills" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/sk
 copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
 {
   echo "---"
-  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、Session、交接與 token 效率稽核"
+  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、TDD、Session、交接與 token 效率稽核"
   echo "alwaysApply: true"
   echo "---"
   echo
