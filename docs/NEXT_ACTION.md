@@ -13,6 +13,7 @@ v3.1 Review／GitHub CLI 規格已完成本地決策，canonical source 為 `doc
 3. 補上 `maze-github-safe-ops` 的 worktree／subagent 派發操作指引；原 code review checklist 待辦已由 `maze-pr-review` 取代。
 4. 清理已合併分支：worktree `.worktrees/maze-2026-07-12-49314a`、遠端分支 `maze/2026-07-12-49314a` 與 `maze/2026-07-12-6f2a1c`（先前已暫停，待使用者指示再繼續）。
 5. （可選）補 Gemini／較弱本地模型的真實動態驗證；Ubuntu 原生執行仍未驗證。
+6. 建立 `release:major`／`release:minor`／`release:patch` labels；PR 合併時帶上對應 label 即可由 `.github/workflows/auto-tag-release.yml` 自動驗證、計算版號並打 tag，再由既有 `release.yml` 打包發布；仍保留手動 push `vX.Y.Z` tag 的舊路徑。
 
 ## 阻塞與待決策
 
