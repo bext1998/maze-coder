@@ -19,8 +19,9 @@ description: 提供安全的 Git／GitHub 操作檢查與 Issue 關聯規則。�
 1. 檢查 status、staged diff、目標 branch、敏感檔案與未同步變更。
 2. Commit message 依專案慣例引用 Issue；建立 PR 前確認 Issue、QA 與適用的 CI。
 3. 完整完成使用 `Closes #N`；部分完成只用 `Related to #N`。多 Issue 必須逐一確認，多 PR 只讓最後一個完整 PR 關閉 Issue。
-4. 合併後確認 Issue 已關閉且 AC、QA、CI、文件均完成；否則回報 `merged-awaiting-close`。
-5. Rebase、reset hard 或 force push 必須先確認；Force push 到 main / master 可能覆蓋其他人的工作，應停止並改用 `git revert` 等替代方案。
+4. GitHub 遠端寫入只在使用者明確請求、完整預覽與確認後，委派 internal `maze-github-cli`；本技能不自行發起寫入。
+5. 合併後確認 Issue 已關閉且 AC、QA、CI、文件均完成；否則回報 `merged-awaiting-close`。
+6. Rebase、reset hard 或 force push 必須先確認；Force push 到 main / master 可能覆蓋其他人的工作，應停止並改用 `git revert` 等替代方案。
 
 ## 輸出契約
 
