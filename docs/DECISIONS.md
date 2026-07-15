@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-07-15 — Review 能力採 2 public＋1 internal 拓撲
+
+**決策**：v3.1 新增公開技能 `maze-spec-review`、`maze-pr-review`，以及 internal `maze-github-cli`。完成後共 22 個 canonical skills（19 public／model-visible、3 internal）；internal CLI 不進 Router，首版只供 PR review 與 `maze-github-safe-ops` 組合。
+
+**原因**：規格唯讀審查與 PR review 各有獨立輸入、輸出及停止條件，併入既有技能會混合修改與審查責任；GitHub CLI 是跨工作流的操作契約，設為 internal 可重用安全規則又不增加公開 Router 負擔。
+
+**既有決策調整**：先前規劃併入 `maze-github-safe-ops` 的 code review 結構化 checklist 由 `maze-pr-review` 取代；worktree／subagent 派發指引仍保留為未完成工作。
+
+**影響範圍**：`docs/spec.md`、`skills/`、`core/`、`adapters/`、`scripts/`、`tests/`、`templates/`、README。
+
+**狀態**：確認
+
+---
+
 ## 2026-07-12 — 採用自適應技能包架構
 
 **決策**：以核心不變量、Guidance Profiles、輕量 Model Overlays、Host Adapters、canonical skills 與按需 references 取代單一固定工作流；詳見 `docs/adr/0001-adaptive-skillpack.md`。
