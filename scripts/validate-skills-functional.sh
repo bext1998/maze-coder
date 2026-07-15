@@ -87,6 +87,37 @@ else
   ok "closeout 無 summary/status-update 產物"
 fi
 
+echo "--- v3.1 review and GitHub CLI contracts ---"
+SPEC_REVIEW="skills/maze-spec-review/SKILL.md"
+require_text "${SPEC_REVIEW}" "六面向" "Spec review 六面向"
+require_text "${SPEC_REVIEW}" "SR-xxx" "Spec review 穩定 finding ID"
+require_text "${SPEC_REVIEW}" "Blocker.*Major.*Minor.*Suggestion" "Spec review 四級 finding"
+require_text "${SPEC_REVIEW}" "\\-\\-verify.*複審" "Spec review verify trigger"
+require_text "skills/maze-spec-review/references/verify-rules.md" "resolved.*open.*partial.*unverifiable" "Spec review verify 狀態"
+require_text "skills/maze-spec-review/references/verify-rules.md" "revision.*核心範圍.*停止" "Spec review 來源變更停止"
+require_text "${SPEC_REVIEW}" "不修改原規格" "Spec review 唯讀邊界"
+for heading in Summary Findings "Undecided Items" "Suggested Acceptance Criteria" "Suggested Revision Order" "Unverified Limitations" "Source Identification"; do
+  require_text "skills/maze-spec-review/templates/SPEC_REVIEW.template.md" "^## ${heading}$" "SPEC_REVIEW template: ${heading}"
+done
+
+PR_REVIEW="skills/maze-pr-review/SKILL.md"
+require_text "${PR_REVIEW}" "PR 說明.*base.*head.*diff.*checks.*comments" "PR review 證據來源"
+require_text "${PR_REVIEW}" "Blocker.*Major.*Minor.*Nit" "PR review 四級 finding"
+require_text "${PR_REVIEW}" "Request changes.*Comment.*Approve.*Insufficient evidence" "PR review 結論映射"
+require_text "${PR_REVIEW}" "降級.*不得 Approve" "PR review 降級限制"
+require_text "${PR_REVIEW}" "已審查且未發現問題" "PR review 覆蓋範圍"
+require_text "${PR_REVIEW}" "不留言.*批准.*request changes" "PR review 遠端唯讀邊界"
+
+CLI="skills/maze-github-cli/SKILL.md"
+require_text "${CLI}" "gh.*可用且已登入" "GitHub CLI auth 前置檢查"
+require_text "${CLI}" "repository.*remote.*branch" "GitHub CLI repo/remote 前置檢查"
+require_text "${CLI}" "\\-\\-json.*\\-\\-jq" "GitHub CLI 結構化輸出"
+require_text "${CLI}" "Read.*Create／Update.*Destructive" "GitHub CLI 操作分級"
+require_text "${CLI}" "預覽.*明確確認" "GitHub CLI 寫入確認"
+require_text "${CLI}" "\\-\\-admin.*force.*保護規則" "GitHub CLI 禁止繞過"
+require_text "${CLI}" "失敗後重新查詢.*重試未完成" "GitHub CLI 冪等失敗處理"
+require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*預覽.*確認.*委派.*internal" "safe-ops internal CLI 委派"
+
 echo "--- portability ---"
 bash -n "${ROOT_DIR}/scripts/sync-adapters.sh" && ok "sync-adapters.sh syntax" || err "sync-adapters.sh syntax"
 bash -n "${ROOT_DIR}/scripts/validate-skillpack.sh" && ok "validate-skillpack.sh syntax" || err "validate-skillpack.sh syntax"

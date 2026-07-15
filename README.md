@@ -6,7 +6,7 @@
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 19 Canonical Skills
+## 22 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
@@ -14,6 +14,8 @@
 | `maze-spec-hardening` | 補強工程契約與驗收條件 |
 | `maze-project-init` | 初始化專案文件與 GitHub 設定 |
 | `maze-spec-to-issues` | spec → GitHub Issues Dry Run／同步 |
+| `maze-spec-review` | 規格完整審查與 `--verify` 複審 |
+| `maze-pr-review` | GitHub PR 高訊號唯讀審查 |
 | `maze-session-closeout` | 同步 Git、GitHub、STATUS 與 NEXT_ACTION |
 | `maze-github-safe-ops` | 安全 Git／PR／Issue 關聯 |
 | `maze-design-review` | 前端設計審查 |
@@ -29,6 +31,7 @@
 | `maze-grill-with-docs` | 壓力測試並同步必要領域文件 |
 | `maze-grilling` | Grill 共用邏輯（internal） |
 | `maze-domain-modeling` | 領域模型與重大決策同步（internal） |
+| `maze-github-cli` | GitHub CLI 安全操作契約（internal） |
 
 ## Adaptive Model
 
@@ -74,7 +77,7 @@ assets/     品牌與視覺資產
 core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
-skills/     19 個來源技能及按需資源
+skills/     22 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證
