@@ -6,7 +6,7 @@
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 19 Canonical Skills
+## 21 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
@@ -18,6 +18,8 @@
 | `maze-github-safe-ops` | 安全 Git／PR／Issue 關聯 |
 | `maze-design-review` | 前端設計審查 |
 | `maze-qa-verification` | 規格驗收與 QA 報告 |
+| `maze-design-system` | 建立／演進設計語言、Design Tokens 與指定元件 |
+| `maze-gui-prototyping` | 桌面 GUI 與 HTML/CSS/SVG 原型執導 |
 | `maze-repo-map` | Repo 結構地圖 |
 | `maze-context-audit` | 上下文一致性稽核 |
 | `maze-bug-reproduction` | Bug 最小重現文件 |
@@ -74,7 +76,7 @@ assets/     品牌與視覺資產
 core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
-skills/     19 個來源技能及按需資源
+skills/     21 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證

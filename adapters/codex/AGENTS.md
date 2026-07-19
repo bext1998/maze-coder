@@ -14,6 +14,8 @@
 | Git／GitHub 安全操作 | maze-github-safe-ops |
 | 設計審查 | maze-design-review |
 | QA／驗收 | maze-qa-verification |
+| 建立／演進設計語言、Design Tokens 或指定元件 | maze-design-system |
+| 桌面 GUI／HTML、CSS、SVG 原型 | maze-gui-prototyping |
 | repo 結構地圖 | maze-repo-map |
 | 上下文一致性稽核 | maze-context-audit |
 | Bug 重現文件 | maze-bug-reproduction |

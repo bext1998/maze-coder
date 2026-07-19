@@ -7,7 +7,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ERRORS=0
 WARNINGS=0
 TOTAL_CHARS=0
-BASELINE_CHARS=13168
+BASELINE_CHARS=17000
 
 UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
 [ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
@@ -15,7 +15,7 @@ UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UT
 SKILLS=(
   maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-repo-map maze-context-audit
+  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
   maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs maze-grilling
   maze-domain-modeling
@@ -23,7 +23,7 @@ SKILLS=(
 PUBLIC_SKILLS=(
   maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-repo-map maze-context-audit
+  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
   maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
 )
@@ -80,11 +80,11 @@ validate_skill() {
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
 ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 19 ] || err "skills/ 必須恰有 19 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
+[ "${ACTUAL_SKILLS}" -eq 21 ] || err "skills/ 必須恰有 21 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
 for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
 
 [ "${TOTAL_CHARS}" -lt "${BASELINE_CHARS}" ] \
-  && ok "19 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於歷史基準 ${BASELINE_CHARS}" \
+  && ok "21 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於預算 ${BASELINE_CHARS}" \
   || err "SKILL.md 總字元 ${TOTAL_CHARS} 未低於歷史基準 ${BASELINE_CHARS}"
 
 RISK_TDD_CHARS="$(wc -m < "${ROOT_DIR}/skills/maze-risk-driven-tdd/SKILL.md" | tr -d ' ')"
@@ -163,15 +163,15 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
-grep -q '所有 19 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
-  && ok "核心 Harness 標示 19 個技能" || err "核心 Harness 未標示 19 個技能"
+grep -q '所有 21 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 21 個技能" || err "核心 Harness 未標示 21 個技能"
 for readme in \
   "adapters/claude-code/README.md" \
   "adapters/codex/README.md" \
   "adapters/cursor/README.md" \
   "adapters/opencode/README.md"; do
-  grep -q '19 個' "${ROOT_DIR}/${readme}" \
-    && ok "${readme} 標示 19 個技能" || err "${readme} 未標示 19 個技能"
+  grep -q '21 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 21 個技能" || err "${readme} 未標示 21 個技能"
 done
 
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
@@ -198,6 +198,8 @@ TEMPLATE_MAP=(
   "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
   "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"
   "maze-design-review/templates/DESIGN_REVIEW.template.md:DESIGN_REVIEW.md"
+  "maze-design-system/templates/DESIGN_SYSTEM.template.md:DESIGN_SYSTEM.md"
+  "maze-gui-prototyping/templates/PROTOTYPE_BRIEF.template.md:PROTOTYPE_BRIEF.md"
   "maze-repo-map/templates/REPO_MAP.template.md:REPO_MAP.md"
   "maze-handoff-summary/templates/HANDOFF.template.md:HANDOFF.md"
 )
@@ -207,7 +209,7 @@ for mapping in "${TEMPLATE_MAP[@]}"; do
     && ok "templates/${dst}" || err "templates/${dst} 未同步"
 done
 
-grep -q '## 19 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 19 Canonical Skills"
+grep -q '## 21 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 21 Canonical Skills"
 
 echo "--- Adaptive architecture ---"
 for file in core/invariants.md core/workflow-model.md profiles/minimal.md profiles/standard.md profiles/scaffolded.md model-overlays/gpt-5.6.md model-overlays/claude.md model-overlays/gemini.md model-overlays/local-small-model.md; do

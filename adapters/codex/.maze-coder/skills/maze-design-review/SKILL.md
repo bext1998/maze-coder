@@ -17,8 +17,8 @@ invocation: user
 
 ## 執行流程
 
-1. 依 `checklists/anti-ai-slop-checklist.md`、`frontend-ux-checklist.md`、`visual-quality-checklist.md` 審查。
-2. 對 Anti-AI-Slop、UX、視覺品質各給 0–10 分，附證據、扣分原因與改善方式。
+1. 依 `checklists/anti-ai-slop-checklist.md`、`frontend-ux-checklist.md`、`visual-quality-checklist.md` 審查；桌面 GUI 或存在正式設計系統時再讀 `checklists/desktop-design-system-checklist.md`。
+2. 對 Anti-AI-Slop、UX、視覺品質各給 0–10 分；有正式系統時另評 Design System Conformance，附 render 證據、扣分原因與改善方式。桌面尺寸以 Brief 為準，不強制套用行動版尺寸。
 3. 依影響排序問題，最多突出 2–3 個優先修正項。
 4. 填寫 `templates/DESIGN_REVIEW.template.md`。
 
