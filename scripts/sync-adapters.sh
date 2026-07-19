@@ -19,6 +19,8 @@ SKILLS=(
   maze-github-safe-ops
   maze-design-review
   maze-qa-verification
+  maze-design-system
+  maze-gui-prototyping
   maze-repo-map
   maze-context-audit
   maze-bug-reproduction
@@ -95,6 +97,8 @@ router_body() {
 | Git／GitHub 安全操作 | maze-github-safe-ops |
 | 設計審查 | maze-design-review |
 | QA／驗收 | maze-qa-verification |
+| 建立／演進設計語言、Design Tokens 或指定元件 | maze-design-system |
+| 桌面 GUI／HTML、CSS、SVG 原型 | maze-gui-prototyping |
 | repo 結構地圖 | maze-repo-map |
 | 上下文一致性稽核 | maze-context-audit |
 | Bug 重現文件 | maze-bug-reproduction |
@@ -170,7 +174,7 @@ sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/
 sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/model-overlays" "Model Overlays"
 {
   echo "---"
-  echo "description: maze-coder 技能路由；處理規格、Issues、Git、QA、TDD、Session、交接與 token 效率稽核"
+  echo "description: maze-coder 技能路由；處理規格、Issues、Git、設計系統、GUI 原型、QA、TDD、Session、交接與 token 效率稽核"
   echo "alwaysApply: true"
   echo "---"
   echo
@@ -197,6 +201,8 @@ TEMPLATE_MAP=(
   "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
   "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"
   "maze-design-review/templates/DESIGN_REVIEW.template.md:DESIGN_REVIEW.md"
+  "maze-design-system/templates/DESIGN_SYSTEM.template.md:DESIGN_SYSTEM.md"
+  "maze-gui-prototyping/templates/PROTOTYPE_BRIEF.template.md:PROTOTYPE_BRIEF.md"
   "maze-repo-map/templates/REPO_MAP.template.md:REPO_MAP.md"
   "maze-handoff-summary/templates/HANDOFF.template.md:HANDOFF.md"
   "maze-spec-review/templates/SPEC_REVIEW.template.md:SPEC_REVIEW.md"

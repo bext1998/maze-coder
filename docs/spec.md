@@ -14,7 +14,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 ## Solution
 
-新增兩個 `user` invocation 的公開技能 `maze-spec-review`、`maze-pr-review`，以及一個只供技能組合的 internal 技能 `maze-github-cli`。完成後 maze-coder 共有 22 個 canonical skills：19 個公開或可由模型觸發的技能、3 個 internal skills。
+在現有 21 個技能（19 public／model-visible、2 internal）上，新增兩個 `user` invocation 的公開技能 `maze-spec-review`、`maze-pr-review`，以及一個只供技能組合的 internal 技能 `maze-github-cli`。完成後 maze-coder 共有 24 個 canonical skills：21 個公開或可由模型觸發的技能、3 個 internal skills。
 
 `maze-spec-review` 以 `SPEC_REVIEW.md` 留下穩定 finding ID 與複審基準，不修改規格；`maze-pr-review` 以 GitHub PR 為主要審查單位，輸出本地 review 結果但不寫入遠端；`maze-github-cli` 集中管理 `gh` 的結構化輸出、非互動操作、前置檢查與寫入確認，首版只由 `maze-pr-review` 與 `maze-github-safe-ops` 使用。
 
@@ -24,8 +24,8 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 - AC-01 至 AC-17 全數成立，沒有 `unverifiable` 的完成宣告。
 - 三支 validator、Shell syntax 與 `git diff --check` exit 0；第二次 sync 明確輸出 `no changes`。
-- 11 個 adaptive scenarios 全數通過且估計指標不比 baseline 退化。
-- 22 個 SKILL.md 總字元低於 16,500，三個新主檔各自符合上限。
+- 13 個 adaptive scenarios 全數通過且估計指標不比 baseline 退化。
+- 24 個 SKILL.md 總字元低於 19,500，三個新主檔各自符合上限。
 - Router 只增加兩個公開 review 入口，任何 Adapter 都不公開 `maze-github-cli`。
 
 ## User Stories
@@ -71,7 +71,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 | `maze-pr-review` | `user` | PR review／審查 PR | 使用者 |
 | `maze-github-cli` | `internal` | 不進 Router | `maze-pr-review`、`maze-github-safe-ops` |
 
-- 完成後總數固定為 22：19 public／model-visible、3 internal。
+- 完成後總數固定為 24：21 public／model-visible、3 internal。
 - `maze-spec-preview` 是筆誤，不得成為名稱、別名或 Router 入口。
 - 舊的「在 `maze-github-safe-ops` 加入 code review checklist」待辦由 `maze-pr-review` 取代；worktree／subagent 派發指引仍是獨立未完成工作。
 - MCR-31-001 至 MCR-31-004 全部是 v3.1 Must-have；本版沒有 Nice-to-have 功能，未列入 Work items 的改善不得阻擋交付。
@@ -151,7 +151,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 - `SPEC_REVIEW.md` 加入文件模型；canonical template 位於 `maze-spec-review` 的按需資源，根 `templates/` 版本由同步腳本產生。
 - 只有 `maze-spec-review` 與 `maze-pr-review` 加入 Router；`maze-github-cli` 只加入 canonical skill arrays 與 Adapter 資源。
-- README、核心 Harness、四個 Adapter README、同步與驗證腳本的技能數量全部改為 22／19／3，並修正舊 spec 的 19／18 不一致。
+- README、核心 Harness、四個 Adapter README、同步與驗證腳本的技能數量全部改為 24／21／3。
 - SKILL.md 保持精簡：詳細審查清單、報告格式與命令模式放入按需 checklists、templates 或 references。
 
 ### Work items
@@ -168,7 +168,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - Review 結果必須以證據區分已查證事實、推論與未驗證限制。
 - Review 技能不得修改其審查來源或外部 GitHub 狀態。
 - Internal CLI 不得擴張外層技能與使用者授權。
-- Adapter 必須完整包含 22 個 canonical skills，且 internal skill 不得出現在公開 Router。
+- Adapter 必須完整包含 24 個 canonical skills，且 internal skill 不得出現在公開 Router。
 - 未通過本規格 Acceptance Criteria 與適用驗證時，不得宣告 v3.1 完成。
 
 ### Invariants
@@ -203,7 +203,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - `maze-spec-review` 唯讀且固定產生 `SPEC_REVIEW.md`；`maze-pr-review` 不產生持久文件且不寫遠端。
 - `maze-github-cli` 首版只接 `maze-pr-review`、`maze-github-safe-ops`。
 - 測試接縫固定為既有 Shell validators，不新增真實 GitHub 整合測試。
-- 完成後技能數固定為 22／19／3。
+- 完成後技能數固定為 24／21／3。
 - 變更上述 FROZEN 決策時，必須同步更新本規格、`DECISIONS.md`、Router、canonical skill arrays、四個 Adapter 文件、validators 與 adaptive scenarios，不能只修改單一技能。
 
 ## Testing Decisions
@@ -216,7 +216,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 ### Structural validation
 
-- `validate-skillpack.sh` 固定驗證 22 個 SKILL.md、19 public、3 internal；Router 必須包含兩個新 review 技能且不得公開 `maze-github-cli`。
+- `validate-skillpack.sh` 固定驗證 24 個 SKILL.md、21 public、3 internal；Router 必須包含兩個新 review 技能且不得公開 `maze-github-cli`。
 - 四個 Adapter 必須與 canonical resources 一致；Claude invocation metadata 必須正確轉譯。
 - `SPEC_REVIEW.md` canonical template、根 template 與文件模型必須存在且同步。
 - 所有 README、Harness、spec 與 validator 的技能數量必須一致。
@@ -232,12 +232,12 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 | Test ID | 層次 | 驗證內容 | 自動化 | 通過門檻 | FROZEN |
 |---|---|---|---|---|---|
-| T-31-001 | 結構 | 22／19／3 計數、invocation、Router 與 Adapter tree | 是 | validator exit 0，internal 不出現在 Router | 是 |
+| T-31-001 | 結構 | 24／21／3 計數、invocation、Router 與 Adapter tree | 是 | validator exit 0，internal 不出現在 Router | 是 |
 | T-31-002 | 功能契約 | Spec review 六面向、finding、verify、唯讀邊界 | 是 | 所有必要契約 pattern 存在 | 是 |
 | T-31-003 | 功能契約 | PR review 證據、分級、降級、輸出與遠端唯讀 | 是 | 所有必要契約 pattern 存在 | 是 |
 | T-31-004 | 功能契約 | CLI 前置檢查、結構化輸出、操作分級、確認與冪等 | 是 | 所有必要契約 pattern 存在 | 是 |
 | T-31-005 | 文件／模板 | `SPEC_REVIEW.md` canonical／root template 與文件模型 | 是 | 檔案存在、必要章節存在且同步一致 | 是 |
-| T-31-006 | 情境 | 更新 PR review 並新增 spec review，總計 11 scenarios | 是 | scenario validator exit 0 且指標不退化 | 是 |
+| T-31-006 | 情境 | 更新 PR review 並新增 spec review，總計 13 scenarios | 是 | scenario validator exit 0 且指標不退化 | 是 |
 | T-31-007 | 整合 | 四種 Adapter 同步與第二次 sync 冪等 | 是 | 第一次完成同步，第二次輸出 `no changes` | 是 |
 | T-31-008 | 可攜性 | Shell syntax、UTF-8 內容與跨平台既有契約 | 是；Ubuntu runtime 依環境 | syntax／validator exit 0；無環境時明列未驗證 | 否 |
 
@@ -247,8 +247,8 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 ### Adaptive scenarios and token budget
 
 - 將既有 `pr-review` scenario 的 entry skill 改為 `maze-pr-review`，allowed resources 包含 `maze-github-cli`，並保留「可定位 finding、不寫遠端、正確 Issue 關聯」契約。
-- 新增 `spec-review` scenario，驗證唯讀、證據分級、穩定 finding 與 verify 不擴張範圍；scenario 總數由 10 改為 11。
-- SKILL.md 總字元上限固定為 16,500；`maze-spec-review`、`maze-pr-review`、`maze-github-cli` 主檔分別不超過 1,000／1,000／800 字元，詳細內容使用按需資源。
+- 在目前 12 個 scenarios 上新增 `spec-review`，驗證唯讀、證據分級、穩定 finding 與 verify 不擴張範圍；完成後總數為 13。
+- SKILL.md 總字元上限固定為 19,500；`maze-spec-review`、`maze-pr-review`、`maze-github-cli` 主檔分別不超過 1,000／1,000／800 字元，詳細內容使用按需資源。
 - 保留現有 adaptive 指標不得比 baseline 退化的檢查。
 
 ### Acceptance Criteria
@@ -263,9 +263,9 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - [x] AC-08：唯讀 `gh` 可直接執行；Create／Update 與 Destructive 分別遵守預覽及確認契約。
 - [x] AC-09：internal CLI 使用結構化、非互動輸出，並拒絕未允許的 `--admin`、強制合併與保護規則繞過。
 - [x] AC-10：`maze-github-safe-ops` 的新委派契約不會自行發起 GitHub 寫入。
-- [x] AC-11：canonical skills、public skills、internal skills 數量分別為 22、19、3，Router 只增加兩個公開 review 入口。
+- [x] AC-11：canonical skills、public skills、internal skills 數量分別為 24、21、3，Router 只增加兩個公開 review 入口。
 - [x] AC-12：`SPEC_REVIEW.md` 納入文件模型與根 template 同步。
-- [x] AC-13：adaptive scenarios 共 11 個，PR review 改用新入口且新增 spec review 情境。
+- [x] AC-13：adaptive scenarios 共 13 個，PR review 改用新入口且新增 spec review 情境。
 - [x] AC-14：三個新 SKILL.md 與全部 SKILL.md 總字元不超過指定上限。
 - [x] AC-15：第一次 `bash scripts/sync-adapters.sh` 產生所需更新，第二次輸出 `no changes`。
 - [x] AC-16：`validate-skillpack.sh`、`validate-skills-functional.sh`、`validate-adaptive-scenarios.sh`、Shell syntax 與 `git diff --check` 全數通過。
@@ -300,7 +300,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - Router、validator、README、Harness 與 Adapter README 皆含技能數常數，遺漏任一處會造成跨 Host 語意漂移。
 - `maze-pr-review` 與 `maze-github-safe-ops` 都會引用 internal CLI；若各自重述命令安全規則，未來可能分歧，詳細命令模式應只存在 internal skill 的按需資源。
 - verify 若未綁定來源規格與原 finding ID，容易演變成每次重跑都新增意見的無限審查。
-- 目前 19 個 SKILL.md 共 13,166 字元；新增能力必須以按需資源控制常駐內容，完成後總上限為 16,500。
+- 目前 21 個 SKILL.md 約 15,243 字元；新增能力必須以按需資源控制常駐內容，完成後總上限為 19,500。
 
 ### Existing baseline
 
