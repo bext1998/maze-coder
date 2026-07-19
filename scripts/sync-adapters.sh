@@ -12,6 +12,9 @@ SKILLS=(
   maze-spec-hardening
   maze-project-init
   maze-spec-to-issues
+  maze-spec-review
+  maze-pr-review
+  maze-github-cli
   maze-session-closeout
   maze-github-safe-ops
   maze-design-review
@@ -88,6 +91,8 @@ router_body() {
 | 補強規格 | maze-spec-hardening |
 | 初始化專案文件 | maze-project-init |
 | 規格拆成或同步 GitHub Issues | maze-spec-to-issues |
+| 規格審查／複審 | maze-spec-review |
+| PR review／審查 PR | maze-pr-review |
 | 結束 session／同步狀態 | maze-session-closeout |
 | Git／GitHub 安全操作 | maze-github-safe-ops |
 | 設計審查 | maze-design-review |
@@ -200,6 +205,7 @@ TEMPLATE_MAP=(
   "maze-gui-prototyping/templates/PROTOTYPE_BRIEF.template.md:PROTOTYPE_BRIEF.md"
   "maze-repo-map/templates/REPO_MAP.template.md:REPO_MAP.md"
   "maze-handoff-summary/templates/HANDOFF.template.md:HANDOFF.md"
+  "maze-spec-review/templates/SPEC_REVIEW.template.md:SPEC_REVIEW.md"
 )
 
 for mapping in "${TEMPLATE_MAP[@]}"; do

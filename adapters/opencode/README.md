@@ -1,6 +1,6 @@
 # opencode Adapter
 
-`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 21 個 canonical skills、Profiles、Overlays 與核心契約，兩者必須一起安裝。
+`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 24 個 canonical skills（21 個公開入口、3 個 internal）、Profiles、Overlays 與核心契約，兩者必須一起安裝。
 
 ```bash
 cp AGENTS.md /your-project/

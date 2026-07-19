@@ -4,20 +4,19 @@
 
 ## 下一個 Session 目標
 
-v3.1 Review／GitHub CLI 規格已完成本地決策，canonical source 為 `docs/spec.md`。下一步是在取得遠端寫入確認後建立 `ready-for-agent` label 與單一規格 Issue，再依 MCR-31-001 至 MCR-31-004 實作。
+v3.1 Review／GitHub CLI 的 #16–#19 已完成實作、驗證、提交與推送；draft PR #20 已建立。下一步是標記 ready、取得 CI／Review，然後依明確授權合併並關閉四張 Issue。
 
 ## 優先行動
 
-1. 預覽並確認 GitHub 寫入後，建立 `ready-for-agent` label 與「新增 spec review、PR review 與安全 GitHub CLI 能力」Issue；不設定 Assignee、不拆子 Issue。
-2. 依規格實作 `maze-spec-review`、internal `maze-github-cli`、`maze-pr-review`，最後同步 Router、Adapter、文件與 validators。
-3. 補上 `maze-github-safe-ops` 的 worktree／subagent 派發操作指引；原 code review checklist 待辦已由 `maze-pr-review` 取代。
-4. 清理已合併分支：worktree `.worktrees/maze-2026-07-12-49314a`、遠端分支 `maze/2026-07-12-49314a` 與 `maze/2026-07-12-6f2a1c`（先前已暫停，待使用者指示再繼續）。
-5. （可選）補 Gemini／較弱本地模型的真實動態驗證；Ubuntu 原生執行仍未驗證。
-6. 建立 `release:major`／`release:minor`／`release:patch` labels；PR 合併時帶上對應 label 即可由 `.github/workflows/auto-tag-release.yml` 自動驗證、計算版號並打 tag，再由既有 `release.yml` 打包發布；仍保留手動 push `vX.Y.Z` tag 的舊路徑。
+1. 將 PR #20 標記 ready，等待 GitHub CI／Review。
+2. 取得明確合併授權後合併 PR #20；確認四張 Issue 的 AC、QA、文件與合併證據，再確認 Issue 逐一關閉。
+3. 補上 `maze-github-safe-ops` 的 worktree／subagent 派發操作指引。
+4. （可選）補 Gemini／較弱本地模型的真實動態驗證；Ubuntu 原生執行仍未驗證。
+5. 建立 `release:major`／`release:minor`／`release:patch` labels；PR 合併時帶上對應 label 即可由 `.github/workflows/auto-tag-release.yml` 自動驗證、計算版號並打 tag，再由既有 `release.yml` 打包發布。
 
 ## 阻塞與待決策
 
-- 遠端 Issue 尚待使用者確認寫入預覽；技能實作本身無其他阻塞。
+- PR #20 仍為 draft，且 GitHub 目前沒有回報 CI checks；合併未受保護的 `master` 需明確確認。
 - Gemini／本地弱模型與 Ubuntu 原生執行仍是已知未驗證風險。
 
 ## 參考

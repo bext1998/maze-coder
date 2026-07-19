@@ -253,23 +253,23 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 ### Acceptance Criteria
 
-- [ ] AC-01：存在 `maze-spec-review` public skill，完整模式與 verify 模式符合本規格且不修改來源規格。
-- [ ] AC-02：`SPEC_REVIEW.md` template 包含結論、Findings、未決策事項、建議驗收條件、修訂順序、限制與來源識別。
-- [ ] AC-03：verify 保留 `SR-xxx` ID，只處理既有 Blocker／Major，來源或範圍大幅改變時停止。
-- [ ] AC-04：存在 `maze-pr-review` public skill，能取得完整 PR 證據或輸出明確受限的本地降級審查。
-- [ ] AC-05：PR review 的 finding、結論映射、測試缺口、未發現問題區域與限制符合本規格。
-- [ ] AC-06：PR review 不提交 review、不留言、不批准、不修改 PR／Issue／branch。
-- [ ] AC-07：存在 `maze-github-cli` internal skill，且只由 PR review 與 safe-ops 明示組合。
-- [ ] AC-08：唯讀 `gh` 可直接執行；Create／Update 與 Destructive 分別遵守預覽及確認契約。
-- [ ] AC-09：internal CLI 使用結構化、非互動輸出，並拒絕未允許的 `--admin`、強制合併與保護規則繞過。
-- [ ] AC-10：`maze-github-safe-ops` 的新委派契約不會自行發起 GitHub 寫入。
-- [ ] AC-11：canonical skills、public skills、internal skills 數量分別為 24、21、3，Router 只增加兩個公開 review 入口。
-- [ ] AC-12：`SPEC_REVIEW.md` 納入文件模型與根 template 同步。
-- [ ] AC-13：adaptive scenarios 共 13 個，PR review 改用新入口且新增 spec review 情境。
-- [ ] AC-14：三個新 SKILL.md 與全部 SKILL.md 總字元不超過指定上限。
-- [ ] AC-15：第一次 `bash scripts/sync-adapters.sh` 產生所需更新，第二次輸出 `no changes`。
-- [ ] AC-16：`validate-skillpack.sh`、`validate-skills-functional.sh`、`validate-adaptive-scenarios.sh`、Shell syntax 與 `git diff --check` 全數通過。
-- [ ] AC-17：README、Harness、Adapter README、spec、DECISIONS 與 NEXT_ACTION 不再保留衝突的技能數或 code-review checklist 待辦。
+- [x] AC-01：存在 `maze-spec-review` public skill，完整模式與 verify 模式符合本規格且不修改來源規格。
+- [x] AC-02：`SPEC_REVIEW.md` template 包含結論、Findings、未決策事項、建議驗收條件、修訂順序、限制與來源識別。
+- [x] AC-03：verify 保留 `SR-xxx` ID，只處理既有 Blocker／Major，來源或範圍大幅改變時停止。
+- [x] AC-04：存在 `maze-pr-review` public skill，能取得完整 PR 證據或輸出明確受限的本地降級審查。
+- [x] AC-05：PR review 的 finding、結論映射、測試缺口、未發現問題區域與限制符合本規格。
+- [x] AC-06：PR review 不提交 review、不留言、不批准、不修改 PR／Issue／branch。
+- [x] AC-07：存在 `maze-github-cli` internal skill，且只由 PR review 與 safe-ops 明示組合。
+- [x] AC-08：唯讀 `gh` 可直接執行；Create／Update 與 Destructive 分別遵守預覽及確認契約。
+- [x] AC-09：internal CLI 使用結構化、非互動輸出，並拒絕未允許的 `--admin`、強制合併與保護規則繞過。
+- [x] AC-10：`maze-github-safe-ops` 的新委派契約不會自行發起 GitHub 寫入。
+- [x] AC-11：canonical skills、public skills、internal skills 數量分別為 24、21、3，Router 只增加兩個公開 review 入口。
+- [x] AC-12：`SPEC_REVIEW.md` 納入文件模型與根 template 同步。
+- [x] AC-13：adaptive scenarios 共 13 個，PR review 改用新入口且新增 spec review 情境。
+- [x] AC-14：三個新 SKILL.md 與全部 SKILL.md 總字元不超過指定上限。
+- [x] AC-15：第一次 `bash scripts/sync-adapters.sh` 產生所需更新，第二次輸出 `no changes`。
+- [x] AC-16：`validate-skillpack.sh`、`validate-skills-functional.sh`、`validate-adaptive-scenarios.sh`、Shell syntax 與 `git diff --check` 全數通過。
+- [x] AC-17：README、Harness、Adapter README、spec、DECISIONS 與 NEXT_ACTION 不再保留衝突的技能數或 code-review checklist 待辦。
 
 ### AC automation mapping
 
