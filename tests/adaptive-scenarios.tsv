@@ -7,7 +7,20 @@ architecture	minimal	maze-grill-with-docs	core/invariants.md;profiles/minimal.md
 spec-to-issues	standard	maze-spec-to-issues	core/invariants.md;profiles/standard.md;skills/maze-spec-to-issues/references/issue-model.md	Dry Run;寫入確認	垂直切片、阻塞前線與標籤合法	4	3	4	2	10	8	1	0
 pr-review	minimal	maze-pr-review	core/invariants.md;profiles/minimal.md;skills/maze-github-cli/SKILL.md	Closes正確性;不寫遠端	發現可定位且不寫遠端	3	2	1	0	8	7	0	0
 spec-review	minimal	maze-spec-review	core/invariants.md;profiles/minimal.md;skills/maze-spec-review/checklists/spec-review-checklist.md;skills/maze-spec-review/references/verify-rules.md;skills/maze-spec-review/templates/SPEC_REVIEW.template.md	唯讀;穩定 finding;verify 不擴張	完整審查或只複審既有 Blocker／Major	4	2	2	1	8	6	1	1
-session-closeout	standard	maze-session-closeout	core/invariants.md;profiles/standard.md;skills/maze-session-closeout/references/state-model.md	證據狀態;外部確認	只更新STATUS與NEXT_ACTION	4	3	2	1	9	8	2	2
+adversarial-success	standard	maze-adversarial-review	core/invariants.md;profiles/standard.md	可推翻條件;獨立性揭露;唯讀	以反證推翻表面合理但核心假設錯誤的方案	4	3	2	1	8	6	1	1
+adversarial-insufficient	standard	maze-adversarial-review	core/invariants.md;profiles/standard.md	證據限制;不虛構問題	缺少關鍵證據時結論為insufficient evidence	4	3	2	1	8	6	1	1
+adversarial-time-pressure	standard	maze-adversarial-review	core/invariants.md;profiles/standard.md	時間壓力;沉沒成本;證據門檻	已投入實作仍不降低反證與stop門檻	4	3	2	1	8	6	1	1
+threat-success	standard	maze-threat-modeling	core/invariants.md;profiles/standard.md	信任邊界;不執行掃描	找出跨信任邊界濫用途徑並轉成安全條件	4	3	2	1	8	6	1	1
+threat-insufficient	standard	maze-threat-modeling	core/invariants.md;profiles/standard.md	未驗證資料流;不宣稱安全	缺少權限與資料流資訊時列出待補證據	4	3	2	1	8	6	1	1
+threat-time-pressure	standard	maze-threat-modeling	core/invariants.md;profiles/standard.md	發布壓力;不越界掃描	即將發布仍不跳過信任邊界與高風險威脅	4	3	2	1	8	6	1	1
+diagnosis-success	standard	maze-root-cause-diagnosis	core/invariants.md;profiles/standard.md	可操控反證;不直接修復	穩定觸發與消除症狀並排除有力替代假設	4	3	2	1	8	6	1	1
+diagnosis-insufficient	standard	maze-root-cause-diagnosis	core/invariants.md;profiles/standard.md	候選根因;最小區辨實驗	只有相關性時不宣稱已證實根因	4	3	2	1	8	6	1	1
+diagnosis-time-pressure	standard	maze-root-cause-diagnosis	core/invariants.md;profiles/standard.md	修復壓力;不以測試通過當根因	緊急修補有效仍保留候選狀態與下一實驗	4	3	2	1	8	6	1	1
+feature-complete-no-docs	minimal	maze-risk-driven-tdd	core/invariants.md;profiles/minimal.md	GitHub/Git權威;不順手同步	一般功能完成不寫核心文件	3	2	0	0	6	5	1	0
+explicit-closeout	standard	maze-session-closeout	core/invariants.md;profiles/standard.md;skills/maze-session-closeout/references/state-model.md	明確授權;整體重建	只重建精簡NEXT，最多三項動作	4	3	2	1	9	8	2	1
+legacy-status	minimal	maze-context-audit	core/invariants.md;profiles/minimal.md;skills/maze-context-audit/checklists/context-consistency-checklist.md	GitHub/Git權威;舊檔保留	外部STATUS忽略且不刪除	4	3	1	0	6	5	1	0
+decision-index	minimal	maze-grill-with-docs	core/invariants.md;profiles/minimal.md;skills/maze-grilling/SKILL.md;skills/maze-domain-modeling/SKILL.md	重大門檻;唯一權威	普通選擇不入索引，重大決策僅一筆連結	4	3	4	2	8	6	1	1
+repeat-closeout	standard	maze-session-closeout	core/invariants.md;profiles/standard.md;skills/maze-session-closeout/references/state-model.md	整體重建;不追加	重跑closeout不增長或重複	4	3	2	1	9	8	2	1
 local-small-model	scaffolded	maze-risk-driven-tdd	core/invariants.md;profiles/scaffolded.md;model-overlays/local-small-model.md	逐階段完成;真實退出碼	單一小範圍修改有前後證據	4	3	4	3	7	7	1	0
 gpt-5.6-minimal	minimal	maze-grill	core/invariants.md;profiles/minimal.md;model-overlays/gpt-5.6.md;skills/maze-grilling/SKILL.md	原生代理;逐題決策	不增加無價值階段且無文件	4	3	3	2	5	4	0	0
 greenfield-design-system	standard	maze-design-system	core/invariants.md;profiles/standard.md;skills/maze-design-system/references/design-system-workflow.md;skills/maze-design-system/templates/DESIGN_SYSTEM.template.md	人選方向;元件明確授權	先選方向再產生CSS tokens且不擴張元件庫	5	4	4	2	9	7	2	1

@@ -12,7 +12,7 @@ invocation: user
 
 ## 前置條件
 
-- 建議先完成 `maze-session-closeout`；讀取規格、STATUS、NEXT_ACTION、DECISIONS 與可用 repo 證據。
+- 建議先完成明確 `maze-session-closeout`；讀取規格、Git／GitHub、NEXT_ACTION、DECISIONS 與可用 repo 證據，忽略既有 `STATUS.md`。
 - 文件缺漏時只詢問交接必要資訊。
 
 ## 執行流程
@@ -27,4 +27,4 @@ invocation: user
 
 ## 邊界
 
-- 不更新 STATUS／NEXT_ACTION、不評估品質、不做新決策、不建立功能或 Session Summary 文件。
+- 不更新 NEXT_ACTION／DECISIONS、不評估品質、不做新決策、不建立功能或 Session Summary 文件。

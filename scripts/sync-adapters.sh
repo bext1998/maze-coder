@@ -14,6 +14,9 @@ SKILLS=(
   maze-spec-to-issues
   maze-spec-review
   maze-pr-review
+  maze-adversarial-review
+  maze-threat-modeling
+  maze-root-cause-diagnosis
   maze-github-cli
   maze-session-closeout
   maze-github-safe-ops
@@ -93,6 +96,9 @@ router_body() {
 | 規格拆成或同步 GitHub Issues | maze-spec-to-issues |
 | 規格審查／複審 | maze-spec-review |
 | PR review／審查 PR | maze-pr-review |
+| 實作前挑戰方案／找反證 | maze-adversarial-review |
+| 實作前威脅模型／濫用分析 | maze-threat-modeling |
+| Bug 根因診斷 | maze-root-cause-diagnosis |
 | 結束 session／同步狀態 | maze-session-closeout |
 | Git／GitHub 安全操作 | maze-github-safe-ops |
 | 設計審查 | maze-design-review |
@@ -174,7 +180,7 @@ sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/
 sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/model-overlays" "Model Overlays"
 {
   echo "---"
-  echo "description: maze-coder 技能路由；處理規格、Issues、Git、設計系統、GUI 原型、QA、TDD、Session、交接與 token 效率稽核"
+  echo "description: maze-coder 技能路由；處理規格、對抗審查、威脅模型、根因診斷、Issues、Git、設計系統、GUI 原型、QA、TDD、Session、交接與 token 效率稽核"
   echo "alwaysApply: true"
   echo "---"
   echo
@@ -196,7 +202,6 @@ TEMPLATE_MAP=(
   "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
   "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"
   "maze-project-init/templates/PROJECT_BRIEF.template.md:PROJECT_BRIEF.md"
-  "maze-project-init/templates/STATUS.template.md:STATUS.md"
   "maze-project-init/templates/NEXT_ACTION.template.md:NEXT_ACTION.md"
   "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
   "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"

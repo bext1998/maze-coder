@@ -59,7 +59,6 @@ maze-coder 是一個可攜式 Harness Engineering 技能包，初始建置（Pha
 | 文件 | 路徑 |
 |---|---|
 | 規格書 | `docs/spec.md` |
-| 當前狀態 | `docs/STATUS.md` |
 | 決策紀錄 | `docs/DECISIONS.md` |
 | 驗收標準 | `docs/spec.md` Section 11 |
 | 測試計畫 | `docs/spec.md` Section 12 |

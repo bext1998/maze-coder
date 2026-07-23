@@ -13,10 +13,6 @@
 | `research-only` | 僅調查／實驗，沒有正式程式碼交付 |
 | `untracked` | 有實際程式碼變更但沒有 Issue，且不是研究工作 |
 
-## STATUS 區段
-
-保留進行中 Issues、Blocked Issues、Awaiting Review PR、Awaiting Merge PR、Merged Awaiting Close、最近完成 Issues、未追蹤本機工作及最後同步時間；只摘要並引用編號，不複製 Issue 全文。
-
 ## NEXT_ACTION 排序
 
-依序為未完成 P0、P1、阻塞其他工作的前置 Issue、已開始工作、Awaiting Review、Awaiting Merge、Merged Awaiting Close、P2、P3、P4。候選任務不得自動加入，只保留下一個 Session 真正會執行的少量步驟。
+依序為未完成 P0、P1、阻塞其他工作的前置 Issue、已開始工作、Awaiting Review、Awaiting Merge、Merged Awaiting Close、P2、P3、P4。候選任務不得自動加入；明確 closeout 時只保留下一階段一項成果與最多三項動作，並連到必要的 Issue、PR 或規格。

@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 FILE="${ROOT_DIR}/tests/adaptive-scenarios.tsv"
 
 [ -s "${FILE}" ] || { echo "[FAIL] 缺少情境資料" >&2; exit 1; }
-[ "$(wc -l < "${FILE}" | tr -d ' ')" -eq 14 ] || { echo "[FAIL] 必須有 13 個情境" >&2; exit 1; }
+[ "$(wc -l < "${FILE}" | tr -d ' ')" -eq 27 ] || { echo "[FAIL] 必須有 26 個情境" >&2; exit 1; }
 
 awk -F '\t' '
 NR == 1 {
@@ -21,7 +21,7 @@ NR == 1 {
     print "[FAIL] adaptive 預估退化: " $1 > "/dev/stderr"; exit 1
   }
 }
-END { print "[OK] 13 個代表性情境契約與靜態比較通過" }
+END { print "[OK] 26 個代表性情境契約與靜態比較通過" }
 ' "${FILE}"
 
 while IFS=$'\t' read -r id profile skill resources rest; do

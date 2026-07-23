@@ -13,7 +13,6 @@
 
 - Spec：[規格實際相對路徑]
 - Project Brief：PROJECT_BRIEF.md
-- Status：STATUS.md
 - Next Action：NEXT_ACTION.md
 - Decisions：DECISIONS.md
 

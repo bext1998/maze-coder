@@ -36,7 +36,6 @@
 ## 相關文件
 
 - 規格書：[spec.md 路徑]
-- 當前狀態：[STATUS.md 路徑]
 - 下一步：[NEXT_ACTION.md 路徑]
 - 決策紀錄：[DECISIONS.md 路徑]
 

@@ -16,14 +16,8 @@
 
 1. 只實作任務要求的功能，不添加額外功能或重構
 2. 優先編輯現有檔案，只在嚴格必要時建立新檔案
-3. 每次 session 結束前更新 STATUS.md 和 NEXT_ACTION.md
+3. GitHub Issue／PR 與 Git 是工作狀態權威；只有明確 closeout 才重建 NEXT_ACTION.md
 4. Git 操作前確認 pre-commit-checklist.md
-
----
-
-## 當前狀態
-
-閱讀 `STATUS.md` 了解當前開發狀態。
 
 ---
 
@@ -38,9 +32,8 @@
 | 文件 | 用途 |
 |---|---|
 | `spec.md` | 功能規格與驗收標準 |
-| `STATUS.md` | 當前狀態 |
 | `NEXT_ACTION.md` | 下一步行動 |
-| `DECISIONS.md` | 歷史決策紀錄 |
+| `DECISIONS.md` | 有效重大決策索引 |
 
 ---
 

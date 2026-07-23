@@ -36,7 +36,6 @@ maze-coder 是一套可攜式 Harness Engineering 技能包，讓使用者在 Cl
 ## 相關文件
 
 - 規格書：`docs/spec.md`
-- 當前狀態：`docs/STATUS.md`
 - 下一步：`docs/NEXT_ACTION.md`
 - 決策紀錄：`docs/DECISIONS.md`
 

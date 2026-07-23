@@ -28,7 +28,7 @@ github-safe-ops／session-closeout／handoff-summary
 ## 交接組合
 
 ```text
-session-closeout → 同步 GitHub 與專案文件 → handoff-summary → HANDOFF.md
+session-closeout → 依明確授權重建 NEXT_ACTION → handoff-summary → HANDOFF.md
 ```
 
 `session-closeout` 不建立 Session 報告；只有明確交接需求才建立 `HANDOFF.md`。

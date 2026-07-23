@@ -18,7 +18,7 @@ disable-model-invocation: true
 
 ## 執行流程
 
-1. 讀取規格、PROJECT_BRIEF、DECISIONS、STATUS、Open/Closed Issues、Open/Merged PR、標籤與必要 Git 歷史。
+1. 讀取規格、PROJECT_BRIEF、DECISIONS、Open/Closed Issues、Open/Merged PR、標籤與必要 Git 歷史；GitHub／Git 是工作狀態權威，不讀取 `STATUS.md`。
 2. 抽取正式與候選工作，排除背景、完成、重複、非目標及不可驗證描述。
 3. 以 marker、來源、Issue／PR 關聯與內容判斷已存在、完成、進行中或需建立；不確定時列為候選。
 4. 拆成單一目標且可由主要 PR 驗收的 Issue，套用一個優先級與至少一個類別；大型成果使用 Parent/Sub-issue。

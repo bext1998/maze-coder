@@ -59,7 +59,7 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - 每次意圖只路由一個最相關公開技能；references、templates、checklists 與 internal skill 依需要載入。
 - `maze-grill`、`maze-grill-with-docs`、`maze-grilling` 與 `maze-domain-modeling` 的逐題、查證、收斂、文件與 ADR 門檻不變。
 - `maze-spec-to-issues` 的 Dry Run、穩定 task-id、Parent／Sub-issue、優先級、Assignee 與寫入確認契約不變。
-- `maze-session-closeout` 只同步 `STATUS.md` 與 `NEXT_ACTION.md`，並以 AC、QA、CI、文件、PR 與 Issue 證據判定狀態。
+- `maze-session-closeout` 以 GitHub／Git 為工作狀態權威；只有明確 closeout 才整體重建精簡 `NEXT_ACTION.md`，不寫 `STATUS.md`。
 - 可攜性仍定義為複製目錄即可使用；同步與驗證只依賴 Bash、find、grep 等既有工具，支援 macOS、Linux 與 Windows Git Bash。
 - `gh` 是 GitHub 操作時的可選外部工具；命令必須支援所用的 `--json`／`--jq` 旗標，否則停止並回報，不降級解析表格文字。
 
