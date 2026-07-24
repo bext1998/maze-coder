@@ -75,3 +75,23 @@ jobs:
           } > /tmp/tag-message.txt
           git tag -a "$NEXT_VERSION" -F /tmp/tag-message.txt
           git push origin "$NEXT_VERSION"
+
+      # tag push 用的是本 job 的 GITHUB_TOKEN，GitHub 不會用它觸發 release.yml 的
+      # push-tag 事件，所以打包與建立 Release 必須在同一個 job 內接著做完。
+      - name: Verify adapters are in sync
+        run: |
+          bash scripts/sync-adapters.sh
+          git diff --exit-code
+
+      - name: Build release archive
+        run: |
+          zip -r "maze-coder-adapters-${{ steps.version.outputs.next }}.zip" adapters README.md LICENSE
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.next }}" \
+            "maze-coder-adapters-${{ steps.version.outputs.next }}.zip" \
+            --title "${{ steps.version.outputs.next }}" \
+            --generate-notes
