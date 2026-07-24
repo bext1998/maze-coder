@@ -1,6 +1,6 @@
 ---
 name: maze-session-closeout
-description: 在 Coding Session 結束時同步 Git、GitHub、QA 與專案文件狀態。當使用者說「結束 session」、「更新狀態」或「今天先到這裡」時使用。
+description: 以 Git／GitHub 證據重建 NEXT_ACTION.md，僅在使用者明確要求 closeout 時才寫入。當使用者明確說「closeout」或「結束 session 並更新 NEXT_ACTION」時使用；籠統的「先到這裡」「更新一下狀態」不構成明確授權，只回報現況。
 disable-model-invocation: true
 ---
 
