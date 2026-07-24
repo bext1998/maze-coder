@@ -198,6 +198,27 @@ for legacy in maze-coder-core.mdc maze-coder-qa.mdc maze-coder-git.mdc maze-code
 done
 
 echo "--- Templates and docs ---"
+SPEC_FILE="${ROOT_DIR}/docs/spec.md"
+grep -q '27 個 canonical skills：24 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
+  && ok "spec 標示 27／24／3 技能拓撲" || err "spec 未標示 27／24／3 技能拓撲"
+grep -q '26 個 adaptive scenarios' "${SPEC_FILE}" \
+  && ok "spec 標示 26 個 adaptive scenarios" || err "spec 未標示 26 個 adaptive scenarios"
+grep -q '總字元上限固定為 22,000' "${SPEC_FILE}" \
+  && ok "spec 標示 22,000 字元上限" || err "spec 未標示 22,000 字元上限"
+if grep -Eq '24 個 canonical skills|24 個 SKILL\.md|固定驗證 24 個 SKILL\.md|完成後技能數固定為 24／21／3|13 個 adaptive scenarios|adaptive scenarios 共 13 個|總字元上限固定為 19,500|完成後總上限為 19,500' "${SPEC_FILE}"; then
+  err "spec 仍含過期技能、情境或字元上限"
+else
+  ok "spec 無過期技能、情境或字元上限"
+fi
+awk -F '|' '
+  NR > 6 && NF >= 5 {
+    rows++
+    if ($4 !~ /\]\((adr\/[^)]+|https:\/\/github\.com\/[^/]+\/[^/]+\/(issues|pull)\/[0-9]+)\)/) invalid=1
+  }
+  END { exit !(rows > 0 && !invalid) }
+' "${ROOT_DIR}/docs/DECISIONS.md" \
+  && ok "DECISIONS 僅索引 ADR／Issue／PR" || err "DECISIONS 含非 ADR／Issue／PR 的權威來源"
+
 TEMPLATE_MAP=(
   "maze-idea-to-spec/templates/spec.template.md:spec.md"
   "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
