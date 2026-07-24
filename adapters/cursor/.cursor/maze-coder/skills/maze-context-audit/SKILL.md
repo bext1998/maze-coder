@@ -12,7 +12,7 @@ invocation: both
 
 ## 前置條件
 
-- 讀取可用的 `MAZE_PROJECT.md`、規格、`STATUS.md`、`NEXT_ACTION.md`、`DECISIONS.md`；缺少文件時標記無法稽核範圍。
+- 讀取可用的 `MAZE_PROJECT.md`、規格、Git／GitHub 證據、`NEXT_ACTION.md`、`DECISIONS.md`；忽略外部既有 `STATUS.md`，缺少文件時標記無法稽核範圍。
 
 ## 執行流程
 

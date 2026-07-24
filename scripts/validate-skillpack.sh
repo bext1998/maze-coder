@@ -7,14 +7,15 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ERRORS=0
 WARNINGS=0
 TOTAL_CHARS=0
-MAX_CHARS=19500
+MAX_CHARS=22000
 
 UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
 [ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
 
 SKILLS=(
   maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review maze-github-cli
+  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
+  maze-root-cause-diagnosis maze-github-cli
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
   maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
@@ -23,7 +24,8 @@ SKILLS=(
 )
 PUBLIC_SKILLS=(
   maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review
+  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
+  maze-root-cause-diagnosis
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
   maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
@@ -83,14 +85,14 @@ validate_skill() {
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
 ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 24 ] || err "skills/ 必須恰有 24 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
-[ "${#SKILLS[@]}" -eq 24 ] || err "validator canonical skill array 不是 24"
-[ "${#PUBLIC_SKILLS[@]}" -eq 21 ] || err "validator public skill array 不是 21"
+[ "${ACTUAL_SKILLS}" -eq 27 ] || err "skills/ 必須恰有 27 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
+[ "${#SKILLS[@]}" -eq 27 ] || err "validator canonical skill array 不是 27"
+[ "${#PUBLIC_SKILLS[@]}" -eq 24 ] || err "validator public skill array 不是 24"
 [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] || err "validator internal skill array 不是 3"
 for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
 
 [ "${TOTAL_CHARS}" -lt "${MAX_CHARS}" ] \
-  && ok "24 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於上限 ${MAX_CHARS}" \
+  && ok "27 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於上限 ${MAX_CHARS}" \
   || err "SKILL.md 總字元 ${TOTAL_CHARS} 超過上限 ${MAX_CHARS}"
 
 RISK_TDD_CHARS="$(wc -m < "${ROOT_DIR}/skills/maze-risk-driven-tdd/SKILL.md" | tr -d ' ')"
@@ -169,15 +171,15 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
-grep -q '所有 24 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
-  && ok "核心 Harness 標示 24 個技能" || err "核心 Harness 未標示 24 個技能"
+grep -q '所有 27 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 27 個技能" || err "核心 Harness 未標示 27 個技能"
 for readme in \
   "adapters/claude-code/README.md" \
   "adapters/codex/README.md" \
   "adapters/cursor/README.md" \
   "adapters/opencode/README.md"; do
-  grep -q '24 個' "${ROOT_DIR}/${readme}" \
-    && ok "${readme} 標示 24 個技能" || err "${readme} 未標示 24 個技能"
+  grep -q '27 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 27 個技能" || err "${readme} 未標示 27 個技能"
 done
 
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
@@ -196,12 +198,32 @@ for legacy in maze-coder-core.mdc maze-coder-qa.mdc maze-coder-git.mdc maze-code
 done
 
 echo "--- Templates and docs ---"
+SPEC_FILE="${ROOT_DIR}/docs/spec.md"
+grep -q '27 個 canonical skills：24 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
+  && ok "spec 標示 27／24／3 技能拓撲" || err "spec 未標示 27／24／3 技能拓撲"
+grep -q '26 個 adaptive scenarios' "${SPEC_FILE}" \
+  && ok "spec 標示 26 個 adaptive scenarios" || err "spec 未標示 26 個 adaptive scenarios"
+grep -q '總字元上限固定為 22,000' "${SPEC_FILE}" \
+  && ok "spec 標示 22,000 字元上限" || err "spec 未標示 22,000 字元上限"
+if grep -Eq '24 個 canonical skills|24 個 SKILL\.md|固定驗證 24 個 SKILL\.md|完成後技能數固定為 24／21／3|13 個 adaptive scenarios|adaptive scenarios 共 13 個|總字元上限固定為 19,500|完成後總上限為 19,500' "${SPEC_FILE}"; then
+  err "spec 仍含過期技能、情境或字元上限"
+else
+  ok "spec 無過期技能、情境或字元上限"
+fi
+awk -F '|' '
+  NR > 6 && NF >= 5 {
+    rows++
+    if ($4 !~ /\]\((adr\/[^)]+|https:\/\/github\.com\/[^/]+\/[^/]+\/(issues|pull)\/[0-9]+)\)/) invalid=1
+  }
+  END { exit !(rows > 0 && !invalid) }
+' "${ROOT_DIR}/docs/DECISIONS.md" \
+  && ok "DECISIONS 僅索引 ADR／Issue／PR" || err "DECISIONS 含非 ADR／Issue／PR 的權威來源"
+
 TEMPLATE_MAP=(
   "maze-idea-to-spec/templates/spec.template.md:spec.md"
   "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
   "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"
   "maze-project-init/templates/PROJECT_BRIEF.template.md:PROJECT_BRIEF.md"
-  "maze-project-init/templates/STATUS.template.md:STATUS.md"
   "maze-project-init/templates/NEXT_ACTION.template.md:NEXT_ACTION.md"
   "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
   "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"
@@ -218,7 +240,7 @@ for mapping in "${TEMPLATE_MAP[@]}"; do
     && ok "templates/${dst}" || err "templates/${dst} 未同步"
 done
 
-grep -q '## 24 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 24 Canonical Skills"
+grep -q '## 27 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 27 Canonical Skills"
 
 echo "--- Adaptive architecture ---"
 for file in core/invariants.md core/workflow-model.md profiles/minimal.md profiles/standard.md profiles/scaffolded.md model-overlays/gpt-5.6.md model-overlays/claude.md model-overlays/gemini.md model-overlays/local-small-model.md; do
@@ -240,6 +262,11 @@ fi
 if [ -d "${ROOT_DIR}/skills/maze-session-closeout/templates" ] \
   && find "${ROOT_DIR}/skills/maze-session-closeout/templates" -type f | grep -q .; then
   err "closeout 仍含 Session Report templates"
+fi
+if [ -e "${ROOT_DIR}/docs/STATUS.md" ] || [ -e "${ROOT_DIR}/skills/maze-project-init/templates/STATUS.template.md" ] || [ -e "${ROOT_DIR}/templates/STATUS.md" ]; then
+  err "STATUS.md 不得由 canonical 或根模板保留"
+else
+  ok "STATUS.md 已退休且不再生成"
 fi
 
 echo

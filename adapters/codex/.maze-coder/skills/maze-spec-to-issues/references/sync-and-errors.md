@@ -4,7 +4,7 @@
 
 1. 精確比對 `task-id` marker。
 2. 比對來源路徑、章節與既有 Issue／PR 關聯。
-3. 檢查 Open/Closed Issues、Open/Merged PR、STATUS、規格完成標記及 Git 歷史的等價成果。
+3. 檢查 Open/Closed Issues、Open/Merged PR、規格完成標記及 Git 歷史的等價成果；不以 `STATUS.md` 作為狀態證據。
 4. 語意近似但無法證明相同時，標為候選並要求使用者決定。
 
 - 相同 Open Issue：略過並回報，可建議更新。

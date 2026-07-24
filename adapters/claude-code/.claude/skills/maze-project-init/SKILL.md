@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 ## 目標
 
-依模板建立 `MAZE_PROJECT.md`、`PROJECT_BRIEF.md`、`STATUS.md`、`NEXT_ACTION.md`、`DECISIONS.md` 與目標工具指令。
+依模板建立 `MAZE_PROJECT.md`、`PROJECT_BRIEF.md`、`NEXT_ACTION.md`、`DECISIONS.md` 與目標工具指令。
 
 ## 前置條件
 
@@ -28,7 +28,7 @@ disable-model-invocation: true
 
 - 文件位於使用者指定的專案根目錄，內容符合對應模板。
 - `MAZE_PROJECT.md` 必須記錄專案、工具、規格與關鍵文件實際路徑及 GitHub 設定。
-- 至少產出 MAZE_PROJECT、Project Brief、Status 與 Next Action；既有文件依使用者選擇保留。
+- 至少產出 MAZE_PROJECT、Project Brief 與 Next Action；不得建立 `STATUS.md`，外部既有檔案不刪除。
 
 ## 邊界
 

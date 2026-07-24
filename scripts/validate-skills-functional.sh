@@ -95,6 +95,18 @@ for state in in-progress blocked awaiting-review awaiting-merge merged-awaiting-
 done
 require_text "skills/maze-session-closeout/references/state-model.md" "AC、QA、適用 CI、文件、PR 合併與 Issue 關閉全部成立" "completed 完整門檻"
 require_text "skills/maze-session-closeout/SKILL.md" "不建立 Session Closeout Report" "禁止 Closeout Report"
+require_text "skills/maze-session-closeout/SKILL.md" "明確要求 closeout.*整體重建" "closeout 需明確授權且整體重建"
+require_text "skills/maze-session-closeout/SKILL.md" "不得追加.*STATUS" "closeout 不追加且不寫 STATUS"
+require_text "skills/maze-project-init/SKILL.md" '不得建立 `STATUS.md`' "project-init 不建立 STATUS"
+require_text "skills/maze-context-audit/SKILL.md" '忽略外部既有 `STATUS.md`' "context-audit 忽略舊 STATUS"
+require_text "skills/maze-project-init/templates/NEXT_ACTION.template.md" "整體重建" "NEXT 模板整體重建契約"
+require_text "skills/maze-project-init/templates/NEXT_ACTION.template.md" "最多 3 項" "NEXT 模板最多三項行動"
+require_text "skills/maze-project-init/templates/DECISIONS.template.md" "唯一權威.*更新或移除" "DECISIONS 模板有效索引契約"
+if [ ! -e "${ROOT_DIR}/docs/STATUS.md" ] && [ ! -e "${ROOT_DIR}/skills/maze-project-init/templates/STATUS.template.md" ] && [ ! -e "${ROOT_DIR}/templates/STATUS.md" ]; then
+  ok "STATUS 不再生成且 repo 舊檔已移除"
+else
+  err "STATUS 仍存在於受管理位置"
+fi
 
 if find "${ROOT_DIR}/skills/maze-session-closeout" -iname '*summary*' -o -iname '*status-update*' | grep -q .; then
   err "closeout 含已禁止的 summary/status-update 產物"
@@ -132,6 +144,24 @@ require_text "${CLI}" "預覽.*明確確認" "GitHub CLI 寫入確認"
 require_text "${CLI}" "\\-\\-admin.*force.*保護規則" "GitHub CLI 禁止繞過"
 require_text "${CLI}" "失敗後重新查詢.*重試未完成" "GitHub CLI 冪等失敗處理"
 require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*預覽.*確認.*委派.*internal" "safe-ops internal CLI 委派"
+
+echo "--- adversarial, threat-modeling, and diagnosis contracts ---"
+ADVERSARIAL_REVIEW="skills/maze-adversarial-review/SKILL.md"
+require_text "${ADVERSARIAL_REVIEW}" "核心主張.*隱藏假設.*可推翻條件" "Adversarial review 定義證偽目標"
+require_text "${ADVERSARIAL_REVIEW}" "go.*revise.*stop.*insufficient evidence" "Adversarial review 限定結論"
+require_text "${ADVERSARIAL_REVIEW}" "乾淨上下文.*獨立.*降級.*framing bias" "Adversarial review 揭露 reviewer 獨立性"
+require_text "${ADVERSARIAL_REVIEW}" "不取代.*maze-grill.*maze-spec-review" "Adversarial review 邊界"
+
+THREAT_MODELING="skills/maze-threat-modeling/SKILL.md"
+require_text "${THREAT_MODELING}" "資產.*信任邊界.*攻擊者.*濫用途徑.*緩解" "Threat modeling 核心分析面"
+require_text "${THREAT_MODELING}" "優先威脅.*未驗證假設.*安全條件" "Threat modeling 輸出"
+require_text "${THREAT_MODELING}" "不.*程式碼漏洞掃描.*滲透測試.*security audit" "Threat modeling 不越界掃描"
+
+ROOT_CAUSE="skills/maze-root-cause-diagnosis/SKILL.md"
+require_text "${ROOT_CAUSE}" "候選假設.*預測.*區辨實驗.*觀察結果.*替代假設" "Root cause diagnosis 收斂流程"
+require_text "${ROOT_CAUSE}" "穩定觸發.*消除症狀.*排除至少一個有力替代假設" "Root cause diagnosis 證實門檻"
+require_text "${ROOT_CAUSE}" "證據不足.*候選根因.*下一個最小區辨實驗" "Root cause diagnosis 證據不足輸出"
+require_text "${ROOT_CAUSE}" "不得因.*修正後測試通過.*根因" "Root cause diagnosis 禁止症狀修補誤判"
 
 echo "--- portability ---"
 bash -n "${ROOT_DIR}/scripts/sync-adapters.sh" && ok "sync-adapters.sh syntax" || err "sync-adapters.sh syntax"
