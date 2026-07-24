@@ -1,55 +1,48 @@
-# maze-coder 規格 v3.1 — Review 與 GitHub CLI 能力
+# maze-coder 規格 v3.2 — Pre-Implementation 審查技能與文件治理
 
 > 狀態：決策完成
-> 規格日期：2026-07-15
+> 規格日期：2026-07-24
 > Canonical source：本文件
 
 ## Problem Statement
 
-maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHub 工作，但仍缺少三個可重複使用的明確能力：實作前的唯讀規格審查、以 GitHub PR 為單位的高訊號 code review，以及跨技能共用的安全 `gh` 操作契約。
+maze-coder 已能在實作後審查規格與 PR，但實作前仍缺少可重複使用的「證偽方案」「威脅與濫用面分析」「假設驅動根因診斷」流程；使用者若想在動工前挑戰方案、辨識信任邊界濫用途徑或收斂 bug 根因，仍需依賴一般對話而非固定的可驗收契約與輸出格式。
 
-目前 `maze-spec-hardening` 會修改規格，無法取代「先審查、由人決策後再修訂」的流程；`maze-github-safe-ops` 的既有待辦只規劃 code review checklist，無法涵蓋 PR metadata、diff、checks、comments、規格與測試的完整審查；各 GitHub-facing 工作若自行描述 `gh` 命令，也容易重複安全規則、解析人類可讀輸出或在未確認時改變遠端狀態。
+同時 `docs/STATUS.md` 與 `NEXT_ACTION.md`／`DECISIONS.md` 是追加式 session 流水帳：`STATUS.md` 重複記錄 GitHub Issue／PR 已有的狀態，`NEXT_ACTION.md` 每次 closeout 都疊加而非重建，`DECISIONS.md` 逐筆累積且理由與 ADR／Issue／PR 之間沒有強制連結。這些文件容易與 GitHub／Git 的實際狀態脫節，過期後反而誤導後續 session 的 agent（`maze-context-audit` 的核心風險）。
 
-使用者需要在不增加不必要公開入口、不破壞一次只載入一個公開技能、不讓審查技能擅自修改來源的前提下，取得一致、可追蹤且可驗證的 review 與 GitHub CLI 工作流。
+使用者需要在不新增 internal skill、不破壞既有 review 技能與一次只載入一個公開技能的前提下，取得可重複使用的實作前審查能力，並讓短期專案文件以 GitHub／Git 證據為權威、不再無限累積。
 
 ## Solution
 
-在既有技能包上新增兩個 `user` invocation 的公開技能 `maze-spec-review`、`maze-pr-review`，以及一個只供技能組合的 internal 技能 `maze-github-cli`；後續再加入三個公開 pre-implementation 技能。目前 maze-coder 共有 27 個 canonical skills：24 個公開或可由模型觸發的技能、3 個 internal skills。
+新增三個 `user` invocation 的公開技能：`maze-adversarial-review`（實作前對方案、規格或架構決策做對抗性審查，結論限定為 `go`／`revise`／`stop`／`insufficient evidence`）、`maze-threat-modeling`（輕量威脅與濫用模型，找出跨信任邊界的濫用途徑並轉成可驗收的安全條件）、`maze-root-cause-diagnosis`（以候選假設、區辨實驗與反證收斂 bug 根因，禁止把症狀修補或單次相關性誤判為根因）。三者皆唯讀，不修改方案、不執行滲透測試或程式碼漏洞掃描、不直接修復程式碼。
 
-`maze-spec-review` 以 `SPEC_REVIEW.md` 留下穩定 finding ID 與複審基準，不修改規格；`maze-pr-review` 以 GitHub PR 為主要審查單位，輸出本地 review 結果但不寫入遠端；`maze-github-cli` 集中管理 `gh` 的結構化輸出、非互動操作、前置檢查與寫入確認，首版只由 `maze-pr-review` 與 `maze-github-safe-ops` 使用。
+同時退休 `STATUS.md`：`maze-project-init` 不再建立、`maze-session-closeout` 不再讀寫、`maze-context-audit` 忽略外部既有檔案但不自動刪除。`NEXT_ACTION.md` 改為短期快照，只有使用者明確要求 closeout 時才整體重建（一項下一階段成果、最多三項動作、阻塞／待決策與必要權威連結），不得追加歷史。`DECISIONS.md` 改為有效決策索引，每筆僅一行摘要、狀態與唯一權威來源（ADR、Issue 或 PR 連結），取代或失效時更新或移除，不追加。
 
-主要使用者是撰寫規格與審查 PR 的開發者、維護 maze-coder 技能包的人，以及透過 Claude Code、Codex、Cursor 或 opencode 操作 GitHub 的使用者。
+完成後 maze-coder 共有 27 個 canonical skills：24 個公開或可由模型觸發的技能、3 個 internal skills（較 v3.1 的 24／21／3 增加三個公開技能，internal 數量不變）。
 
 ### Success metrics
 
-- AC-01 至 AC-17 全數成立，沒有 `unverifiable` 的完成宣告。
+- AC-01 至 AC-13 全數成立，沒有 `unverifiable` 的完成宣告。
 - 三支 validator、Shell syntax 與 `git diff --check` exit 0；第二次 sync 明確輸出 `no changes`。
 - 26 個 adaptive scenarios 全數通過且估計指標不比 baseline 退化。
-- 27 個 SKILL.md 總字元低於 22,000，新增主檔各自符合上限。
-- Router 只增加兩個公開 review 入口，任何 Adapter 都不公開 `maze-github-cli`。
+- 全部 SKILL.md 總字元低於 22,000（不記錄瞬時總字元數，避免隨後續技能增減立即失準）。
+- `docs/spec.md` 不含任何前一版本遺留的技能數、情境數或字元上限字串。
 
 ## User Stories
 
-1. 身為規格作者，我希望在實作開始前取得結構化的缺漏與矛盾報告，以免錯誤需求直接進入開發。
-2. 身為維護者，我希望審查能引用相關 repo 證據，以判斷架構、migration、平台與設計系統衝突。
-3. 身為使用者，我希望清楚區分阻擋實作、重大返工風險、次要問題與非必要建議，以安排修訂順序。
-4. 身為規格作者，我希望每個 finding 有穩定 ID，以追蹤修訂前後的狀態。
-5. 身為規格作者，我希望複審只重查前次 Blocker 與 Major，以避免規格審查無限擴張。
-6. 身為需求決策者，我希望審查技能只提出建議、不擅自修改規格，以保留需求決策權。
-7. 身為 PR reviewer，我希望從 PR 說明、base、diff、checks、comments、關聯規格與測試判斷變更是否可合併。
-8. 身為 PR 作者，我希望 finding 可定位並包含觸發條件、影響與修正方向，以便直接採取行動。
-9. 身為 reviewer，我希望報告列出已審查且未發現問題的區域，以確認實際覆蓋範圍。
-10. 身為離線或權限受限的使用者，我希望仍可取得明確標示限制的本地 diff 審查，而不被誤導為完整 PR review。
-11. 身為 GitHub 操作者，我希望 Agent 以 `--json`／`--jq` 取得結構化資料，避免脆弱的文字解析。
-12. 身為 GitHub 操作者，我希望建立或更新遠端資源前看到完整寫入預覽，以防操作錯誤 repo 或資源。
-13. 身為 repo 維護者，我希望破壞性操作、`--admin` 或繞過保護規則不會被隱性執行。
-14. 身為技能包維護者，我希望 Router、Adapter、文件、技能數與 token 預算由既有 Shell 驗證一致，以防同步漂移。
+1. 身為方案作者，我希望在投入實作前有人以證偽為目標挑戰核心假設，而不是只確認方案「聽起來合理」。
+2. 身為維護者，我希望對抗性審查揭露 reviewer 是否獨立於方案形成過程，以判斷結論的可信度。
+3. 身為設計仍可調整的技術負責人，我希望在動工前找出跨信任邊界的濫用途徑，把它們轉成規格裡的驗收條件，而不是實作完成後才做安全稽核。
+4. 身為除錯者，我希望有一個以假設與可反證區辨實驗收斂根因的流程，避免把「錯誤暫時消失」誤判為「已修好」。
+5. 身為使用者，我希望 `NEXT_ACTION.md` 只反映目前真正要做的少量事項，而不是每次 closeout 都疊加成一份無法閱讀的歷史紀錄。
+6. 身為稽核 agent context 的使用者，我希望 `maze-context-audit` 以 Git／GitHub 證據判斷現況，而不是信任可能過期的 `STATUS.md`。
+7. 身為技能包維護者，我希望 `DECISIONS.md` 只保留仍有效、有唯一權威來源的決策，避免過期理由與目前程式碼行為脫鉤卻無人察覺。
 
 ## Implementation Decisions
 
 ### Existing architecture contract
 
-以下 v3.0 契約維持 FROZEN，v3.1 只加入本規格明定的能力：
+以下 v3.0／v3.1 契約維持 FROZEN，v3.2 只加入本規格明定的能力：
 
 - `core/invariants.md` 保存授權、範圍、外部寫入與真實驗證等不可省略規則。
 - `core/workflow-model.md` 依能力選擇 `minimal → standard → scaffolded` Guidance Profile，只有觀察到具體失敗才加強。
@@ -59,7 +52,8 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 - 每次意圖只路由一個最相關公開技能；references、templates、checklists 與 internal skill 依需要載入。
 - `maze-grill`、`maze-grill-with-docs`、`maze-grilling` 與 `maze-domain-modeling` 的逐題、查證、收斂、文件與 ADR 門檻不變。
 - `maze-spec-to-issues` 的 Dry Run、穩定 task-id、Parent／Sub-issue、優先級、Assignee 與寫入確認契約不變。
-- `maze-session-closeout` 以 GitHub／Git 為工作狀態權威；只有明確 closeout 才整體重建精簡 `NEXT_ACTION.md`，不寫 `STATUS.md`。
+- `maze-spec-review`、`maze-pr-review`、`maze-github-cli` 的完整契約（規格 v3.1，已封存於 git 歷史）不變。
+- v3.1 完成時 `maze-session-closeout` 只同步 `STATUS.md` 與 `NEXT_ACTION.md`；本版修改此契約，見下方「文件治理契約」。
 - 可攜性仍定義為複製目錄即可使用；同步與驗證只依賴 Bash、find、grep 等既有工具，支援 macOS、Linux 與 Windows Git Bash。
 - `gh` 是 GitHub 操作時的可選外部工具；命令必須支援所用的 `--json`／`--jq` 旗標，否則停止並回報，不降級解析表格文字。
 
@@ -67,142 +61,87 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 | Skill | Invocation | Router intent | Direct consumers |
 |---|---|---|---|
-| `maze-spec-review` | `user` | 規格審查／複審 | 使用者 |
-| `maze-pr-review` | `user` | PR review／審查 PR | 使用者 |
-| `maze-github-cli` | `internal` | 不進 Router | `maze-pr-review`、`maze-github-safe-ops` |
+| `maze-adversarial-review` | `user` | 實作前挑戰方案／找反證 | 使用者 |
+| `maze-threat-modeling` | `user` | 實作前威脅模型／濫用分析 | 使用者 |
+| `maze-root-cause-diagnosis` | `user` | Bug 根因診斷 | 使用者 |
 
-- 目前總數固定為 27：24 public／model-visible、3 internal。
-- `maze-spec-preview` 是筆誤，不得成為名稱、別名或 Router 入口。
-- 舊的「在 `maze-github-safe-ops` 加入 code review checklist」待辦由 `maze-pr-review` 取代；worktree／subagent 派發指引仍是獨立未完成工作。
-- MCR-31-001 至 MCR-31-004 全部是 v3.1 Must-have；本版沒有 Nice-to-have 功能，未列入 Work items 的改善不得阻擋交付。
+- 目前總數固定為 27：24 public／model-visible、3 internal（較 v3.1 的 24／21／3 增加三個公開技能，internal 數量不變，不新增 internal skill）。
+- 三個新技能皆唯讀；不修改被審查的方案、規格或程式碼，也不自動開始實作或修復。
 
-### `maze-spec-review` contract
+### `maze-adversarial-review` contract
 
-**必要輸入與證據**
+- 取得待審方案、決策目標、已知證據與限制；缺少足以辨識核心主張的內容時停止並要求補充。
+- 優先由未參與方案形成的獨立 agent 執行；降級為同一 agent 執行時，報告必須揭露 reviewer 不獨立及 framing bias 風險。
+- 明列核心主張、隱藏假設、可推翻條件；針對高代價、難回復或證據最弱的主張設計反例與最小反證查核；公平提出至少一個有力替代方案，不存在時記錄搜尋範圍。
+- 結論只能是 `go`、`revise`、`stop` 或 `insufficient evidence`；`go` 只代表在已列攻擊範圍內未找到阻止方案的證據，不代表方案已被證明正確。
+- 唯讀；不修改原方案、不開始實作、不替使用者承擔產品決策。
 
-- 先從 `MAZE_PROJECT.md` 取得規格路徑；未記錄時由使用者明確指定，不猜測根目錄文件。
-- 先讀完整規格，再只針對需求涉及範圍查閱相關實作、型別、測試、文件、資料流與設計元件。
-- 缺少 repo、環境或設計系統證據時，將相應面向標示為 `unverified`；未經證據支持的推測不得升格為 finding。
+### `maze-threat-modeling` contract
 
-**完整審查模式**
+- 取得系統目的、資料流、外部整合、身分／權限模型及部署邊界；缺少內容標為未驗證，不自行假設安全。
+- 盤點資產、信任邊界、入口與具權限操作；描述攻擊者能力與目標；沿資料流建立具體濫用途徑；依影響、可行性與現有控制排序威脅。
+- 輸出範圍、資產與信任邊界、攻擊者、優先威脅與濫用途徑、緩解措施、未驗證假設與安全條件；證據不足時明列需要補充的資料，不宣稱系統安全。
+- 不執行程式碼漏洞掃描、滲透測試或完整 security audit；不主動利用真實系統。
 
-- 檢查需求完整性、邏輯一致性、邊界與失敗情境、可實作性、可驗收性、設計系統相容性。
-- Finding 使用不隨排序重編的 `SR-xxx` ID，包含等級、類型、規格位置、問題、證據、影響、建議補充及是否必須在實作前解決。
-- 等級定義：Blocker 表示核心行為無法安全實作或存在關鍵資料／安全風險；Major 表示可開始但極可能返工；Minor 表示不影響核心實作的缺漏；Suggestion 表示非必要品質改善。
-- 結論映射：有 Blocker 為「阻擋實作」；無 Blocker 但有 Major 為「需修訂」；只有 Minor／Suggestion 為「可開始但有備註」；無 finding 為「可開始」。
-- 固定產生 `SPEC_REVIEW.md`，包含結論與數量、Findings、未決策事項、建議驗收條件、建議修訂順序、未驗證限制及來源規格識別。
+### `maze-root-cause-diagnosis` contract
 
-**複審模式**
+- 取得已驗證的問題行為與最小重現；尚不能穩定重現時先使用 `maze-bug-reproduction`。
+- 依證據列出候選假設與可觀察預測；選擇最能區分假設的最小區辨實驗，一次只改變可追蹤因素；記錄實驗與觀察結果，不以單次相關性升級結論。
+- 只有操控該因素能穩定觸發或消除症狀，且排除至少一個有力替代假設時，才標示為已證實根因；證據不足時只稱候選根因並提供下一個最小區辨實驗。
+- 不修復程式碼、不用大量隨機修改取代區辨實驗；實驗可能破壞資料或需要新權限時，停止並取得明確授權。
 
-- 使用 `--verify` 或自然語言「複審」觸發，讀取既有 `SPEC_REVIEW.md` 與同一來源規格。
-- 只重查前次 Blocker、Major，保留原 ID，狀態只允許 `resolved`、`open`、`partial`、`unverifiable`。
-- 不新增 Minor、Suggestion 或擴張至無關範圍；若規格來源、revision 或核心範圍大幅改變，停止 verify 並要求重新完整審查。
+### Document governance contract
 
-**交接與邊界**
-
-- 不修改原規格、不替使用者決定產品方向、不自動開始實作。
-- 使用者選定要採納的 findings 後，才交由 `maze-spec-hardening` 修改規格；`maze-qa-verification` 只在功能實作後依正式規格驗收。
-
-### `maze-pr-review` contract
-
-**輸入與資料取得**
-
-- 優先接受 PR URL、PR number 或可由目前 repo／branch 唯一辨識的 PR；無法唯一辨識時停止並要求目標。
-- 完整模式取得 PR 說明、base/head、changed files、diff、checks、review threads／comments、關聯 Issue／規格，並讀取相關實作與測試。
-- `gh` 不可用、未登入或權限不足時，可在 base 可確認且 working tree 不會污染結果時降級為 `base…HEAD`；必須列出缺少的 CI、comments 與 metadata，結論不得為 Approve。
-
-**審查與輸出**
-
-- 檢查 PR 說明符合度、行為正確性、錯誤處理、回歸與相容性、狀態／生命週期／競態、資料遺失與安全風險、測試有效性、無關改動及重複實作。
-- UI 變更只有在具備 render／截圖證據時評估可觀察結果；深度設計或安全稽核不足時明列限制並建議使用專用技能。
-- Findings 使用 Blocker、Major、Minor、Nit，只回報可重現、可定位且值得修改的問題；純主觀風格偏好不得列為 finding。
-- 每個 finding 包含檔案／行數（可取得時）、觸發條件、問題、證據、影響與建議修正。
-- 結論映射：有 Blocker／Major 為 `Request changes`；只有 Minor／Nit 為 `Comment`；完整證據且無 finding 才為 `Approve`；資料降級或必要證據不足為 `Insufficient evidence`。
-- 輸出包含結論、Findings、測試缺口、已審查且未發現問題的區域、限制與建議合併條件。可使用 Host 支援的本地 inline finding 格式，但不得提交 GitHub review。
-
-**邊界**
-
-- 不留言、不批准、不 request changes、不修改 PR／branch／Issue，也不修復程式碼。
-- 不因目前 branch 有變更自動觸發；一般未開 PR 的 working-tree review 不屬於本技能。
-
-### `maze-github-cli` contract
-
-**前置檢查**
-
-- 確認 `gh` 可用且已登入，並確認 repository、branch、remote、資源識別與外層技能授權。
-- Repo、remote 或資源無法唯一確認時停止；不得依目前目錄名稱猜測遠端目標。
-
-**操作分級**
-
-- Read：`auth status`、repo／Issue／PR 檢視與搜尋、PR diff／checks／review metadata，可直接執行。
-- Create／Update：建立或編輯 Issue／PR、checkout PR、留言或 review 等，只在外層技能允許且先展示完整目標、欄位與命令效果後執行一次。
-- Destructive：關閉資源、merge 或其他難以回復的操作，必須逐項取得明確確認；未確認時只輸出預覽。
-- 優先使用 `--json` 搭配 `--jq`，禁止互動式 editor、隱性 prompt 與解析為人類顯示而設計的表格文字。
-- 不使用 `--admin`、強制合併或繞過 branch protection，除非使用者明確要求且 `core/invariants.md` 與外層技能同時允許；安全契約禁止時仍應拒絕。
-- 失敗後重新查詢遠端狀態，只重試未完成步驟；不得因輸出不明而重複建立資源。
-
-**組合邊界**
-
-- `maze-pr-review` 只使用 Read 操作，不能藉由 internal skill 寫入 PR。
-- `maze-github-safe-ops` 不得自行發起遠端操作；收到明確使用者請求並完成預覽／確認後，才可委派 `maze-github-cli` 執行 GitHub 操作。
-- `maze-spec-to-issues`、`maze-session-closeout` 與其他 GitHub-facing skills 在 v3.1 維持現況，不改接此 internal skill。
-
-### Document and adapter integration
-
-- `SPEC_REVIEW.md` 加入文件模型；canonical template 位於 `maze-spec-review` 的按需資源，根 `templates/` 版本由同步腳本產生。
-- 只有 `maze-spec-review` 與 `maze-pr-review` 加入 Router；`maze-github-cli` 只加入 canonical skill arrays 與 Adapter 資源。
-- README、核心 Harness、四個 Adapter README、同步與驗證腳本的技能數量全部維持為 27／24／3。
-- SKILL.md 保持精簡：詳細審查清單、報告格式與命令模式放入按需 checklists、templates 或 references。
+- `STATUS.md` 已退休：`maze-project-init` 不建立；`maze-session-closeout` 不讀寫；`maze-context-audit` 忽略外部既有檔案，但不自動刪除使用者專案中的舊檔。
+- `maze-session-closeout` 以 GitHub／Git 為工作狀態權威；僅在使用者明確要求 closeout 時，才以目前證據整體重建 `NEXT_ACTION.md`（一項下一階段成果、最多三項動作、阻塞／待決策與必要權威連結），不得追加、不寫 `STATUS.md`、不複製完整 Issue／PR 狀態。
+- `DECISIONS.md` 只保留仍有效、難以逆轉的決策；每筆僅一行摘要、狀態與唯一權威來源（ADR、Issue 或 PR 連結），取代或失效時更新或移除，不追加。
+- 普通、易逆轉的實作選擇（例如可由測試保護、可直接改程式碼復原的決策）不得進入 `DECISIONS.md`；理由改放在 `core/PRINCIPLES.md`、測試名稱或程式註解，ADR 僅保留給難以逆轉、缺乏背景將無法理解且存在有意義替代方案與取捨的決策（門檻定義於 `core/DOCUMENT_MODEL.md`，三項須同時成立）。
 
 ### Work items
 
 | Task ID | 正式狀態 | Priority | 目標 | 依賴 |
 |---|---|---|---|---|
-| MCR-31-001 | 正式 | P1 | 建立 `maze-spec-review`、審查清單與 `SPEC_REVIEW.md` template | 無 |
-| MCR-31-002 | 正式 | P1 | 建立 internal `maze-github-cli` 安全操作契約 | 無 |
-| MCR-31-003 | 正式 | P1 | 建立 `maze-pr-review` 與高訊號審查清單 | MCR-31-002 |
-| MCR-31-004 | 正式 | P1 | 整合 safe-ops、Router、文件、Adapter 與 validators | MCR-31-001、MCR-31-002、MCR-31-003 |
+| MCR-32-001 | 正式 | P1 | 建立 `maze-adversarial-review` 唯讀證偽技能 | 無 |
+| MCR-32-002 | 正式 | P1 | 建立 `maze-threat-modeling` 輕量威脅模型技能 | 無 |
+| MCR-32-003 | 正式 | P1 | 建立 `maze-root-cause-diagnosis` 假設驅動根因診斷技能 | 無 |
+| MCR-32-004 | 正式 | P1 | 退休 `STATUS.md`，改寫 `NEXT_ACTION.md`／`DECISIONS.md` 為證據驅動索引契約 | 無 |
+| MCR-32-005 | 正式 | P1 | 整合 Router、canonical skill arrays、四個 Adapter、validators 與 adaptive scenarios | MCR-32-001、MCR-32-002、MCR-32-003、MCR-32-004 |
 
 ### Contract
 
-- Review 結果必須以證據區分已查證事實、推論與未驗證限制。
-- Review 技能不得修改其審查來源或外部 GitHub 狀態。
-- Internal CLI 不得擴張外層技能與使用者授權。
+- 三個新技能唯讀，不得修改被審查的方案、規格或程式碼。
+- `maze-adversarial-review` 的結論只能是 `go`／`revise`／`stop`／`insufficient evidence`；`maze-threat-modeling` 不得宣稱系統安全；`maze-root-cause-diagnosis` 未達證實門檻時只能稱候選根因。
+- `DECISIONS.md` 每筆的唯一權威來源必須是 ADR、Issue 或 PR 連結，不得指向會持續變動的一般文件（如整份 `spec.md`）。
+- `NEXT_ACTION.md` 只在使用者明確要求 closeout 時整體重建，不得逐次追加。
 - Adapter 必須完整包含 27 個 canonical skills，且 internal skill 不得出現在公開 Router。
-- 未通過本規格 Acceptance Criteria 與適用驗證時，不得宣告 v3.1 完成。
+- 未通過本規格 Acceptance Criteria 與適用驗證時，不得宣告 v3.2 完成。
 
 ### Invariants
 
 | Invariant | 違反時的可觀察症狀 |
 |---|---|
-| 一次只路由一個公開技能；入口明示時才載入 internal skill | Router 同時載入多個公開技能，或公開列出 `maze-github-cli` |
-| 所有外部寫入先顯示目標與變更，再取得明確確認 | GitHub 資源在預覽或確認前被建立、更新或關閉 |
-| `SPEC_REVIEW.md` 的 finding ID 在 verify 中保持穩定 | 同一問題在複審時換 ID，或新增原報告以外的 Minor／Suggestion |
-| PR 降級審查不得呈現為完整審查或 `Approve` | 缺少 checks／comments／metadata 時仍建議 Approve |
+| 三個新技能不修改被審查來源、不開始實作 | 方案、規格或程式碼在審查後被技能本身變更 |
+| `maze-adversarial-review` 結論限定四種狀態 | 報告出現「大致沒問題」等未定義結論 |
+| `NEXT_ACTION.md` 只在明確 closeout 時整體重建 | 一般回報或籠統收尾語也觸發改寫 `NEXT_ACTION.md` |
+| `DECISIONS.md` 僅索引 ADR／Issue／PR | 出現指向整份文件或無版本錨點的「權威來源」 |
+| `docs/spec.md` 與 README、Harness、validator 的技能數量一致 | 任一處技能數量與其他處不同 |
 | `skills/`、`core/` 與同步腳本是 source of truth | Adapter 手動修改、第二次 sync 仍有變更或 tree 比對失敗 |
-| 不新增主要框架、package manager 或執行時依賴 | 安裝技能包時需要現有 Bash／可選 `gh` 以外的依賴 |
 
 ### Edge Cases
 
-- 規格路徑不存在、來源改變、revision 不可識別或舊報告不屬於目前規格時，verify 停止並要求完整審查。
-- 規格沒有相關 repo 或 UI 證據時，對應面向標示 `unverified`，不假設相容。
-- 找到多個 PR、base branch 不明、shallow clone 缺少 base 或 working tree 會污染 diff 時，停止降級審查。
-- PR checks 尚未完成時，記錄 pending 狀態，不視為通過或失敗。
-- `gh` 未安裝、未登入、token scope 不足或 remote 與 repo 不一致時，不嘗試寫入。
-- GitHub 寫入部分成功時，重新讀取狀態並逐項回報；不得整批重跑造成重複資源。
-- 沒有 finding 時仍需列出審查範圍與證據，不得只輸出「LGTM」。
-- 規格、PR 目標或必要輸入為空時停止並指出缺少欄位，不建立空報告或猜測目標。
-- 在錯誤目錄執行、Git remote 不符或 repo 無法唯一辨識時停止，不依目錄名稱推定 GitHub repo。
-- GitHub 操作中斷時先重新查詢資源狀態，再決定是否重試未完成步驟。
-- Windows Git Bash、macOS 與 Linux 必須保留 UTF-8 中文、特殊符號與路徑；不得以平台專用文字解析作為必要流程。
+- 待審方案證據不足以辨識核心主張時，`maze-adversarial-review` 停止並要求補充，不得虛構問題湊數。
+- 威脅模型缺少資料流或權限模型時，`maze-threat-modeling` 標示未驗證，不假設系統安全。
+- 只有相關性、尚未排除替代假設時，`maze-root-cause-diagnosis` 不得宣稱已找到根因，即使症狀修補後測試通過。
+- 使用者說出籠統收尾語（例如「先到這裡」「更新一下狀態」）但未明確要求 closeout 時，`maze-session-closeout` 只回報現況，不改寫 `NEXT_ACTION.md`。
+- `DECISIONS.md` 的決策失效或被取代時，更新或移除該列，不保留過期理由。
 - 重複執行 sync 必須冪等；重複執行 GitHub Create 不得產生重複資源。
 
 ### FROZEN
 
-- 技能拓撲固定為 2 public＋1 internal；本規格實作不得改成三個公開入口或併回既有技能。
-- `maze-spec-review` 唯讀且固定產生 `SPEC_REVIEW.md`；`maze-pr-review` 不產生持久文件且不寫遠端。
-- `maze-github-cli` 首版只接 `maze-pr-review`、`maze-github-safe-ops`。
-- 測試接縫固定為既有 Shell validators，不新增真實 GitHub 整合測試。
+- 本版新增技能拓撲固定為 3 public、0 internal；不得改成 internal skill 或併回既有技能。
+- 三個新技能唯讀邊界（不修改來源、不開始實作、不修復程式碼）不得放寬。
+- `STATUS.md` 不得由任何 canonical skill 或根模板重新建立。
+- `NEXT_ACTION.md`／`DECISIONS.md` 的重建與索引門檻（僅明確 closeout 重建、僅 ADR／Issue／PR 索引）不得放寬為自動追加。
 - 目前技能數固定為 27／24／3。
 - 變更上述 FROZEN 決策時，必須同步更新本規格、`DECISIONS.md`、Router、canonical skill arrays、四個 Adapter 文件、validators 與 adaptive scenarios，不能只修改單一技能。
 
@@ -216,97 +155,90 @@ maze-coder 已能建立與補強規格、驗收功能及安全處理 Git／GitHu
 
 ### Structural validation
 
-- `validate-skillpack.sh` 固定驗證 27 個 SKILL.md、24 public、3 internal；Router 必須包含公開技能且不得公開 `maze-github-cli`。
+- `validate-skillpack.sh` 固定驗證 27 個 SKILL.md、24 public、3 internal；`STATUS.md` 不得出現在 `docs/`、`templates/` 或 `skills/maze-project-init/templates/`。
+- `docs/spec.md` 不得含有前一版本遺留的技能數、情境數或字元上限字串（自我一致性檢查），且必須標示目前技能拓撲與 adaptive scenarios 數量。
+- `docs/DECISIONS.md` 每一列的唯一權威來源必須是 `adr/` 相對連結或 GitHub Issue／PR 連結。
 - 四個 Adapter 必須與 canonical resources 一致；Claude invocation metadata 必須正確轉譯。
-- `SPEC_REVIEW.md` canonical template、根 template 與文件模型必須存在且同步。
-- 所有 README、Harness、spec 與 validator 的技能數量必須一致。
 
 ### Functional contract validation
 
-- `maze-spec-review` 必須包含六面向、穩定 ID、四級 finding、四種 verify 狀態、來源變更停止條件與禁止修改規格。
-- `maze-pr-review` 必須包含 PR 證據來源、四級 finding、結論映射、降級限制、未發現問題區域與禁止遠端寫入。
-- `maze-github-cli` 必須包含 auth／repo／remote 前置檢查、`--json`／`--jq`、非互動、Read／Create-Update／Destructive 分級、預覽確認與冪等失敗處理。
-- `maze-github-safe-ops` 必須明示只有在使用者請求、預覽與確認後才委派 internal CLI。
+- `maze-adversarial-review` 必須包含核心主張／隱藏假設／可推翻條件、限定的四種結論、reviewer 獨立性揭露與唯讀邊界。
+- `maze-threat-modeling` 必須包含資產／信任邊界／攻擊者／濫用途徑／緩解的核心分析面、輸出契約與不越界掃描的邊界。
+- `maze-root-cause-diagnosis` 必須包含候選假設／預測／區辨實驗／觀察結果／替代假設的收斂流程、證實門檻與禁止症狀修補誤判。
+- `maze-session-closeout` 必須明示僅在明確 closeout 時整體重建 `NEXT_ACTION.md`、不追加、不寫 `STATUS.md`。
+- `maze-project-init` 必須明示不建立 `STATUS.md`；`maze-context-audit` 必須明示忽略外部既有 `STATUS.md`。
 
 ### Test cases
 
 | Test ID | 層次 | 驗證內容 | 自動化 | 通過門檻 | FROZEN |
 |---|---|---|---|---|---|
-| T-31-001 | 結構 | 27／24／3 計數、invocation、Router 與 Adapter tree | 是 | validator exit 0，internal 不出現在 Router | 是 |
-| T-31-002 | 功能契約 | Spec review 六面向、finding、verify、唯讀邊界 | 是 | 所有必要契約 pattern 存在 | 是 |
-| T-31-003 | 功能契約 | PR review 證據、分級、降級、輸出與遠端唯讀 | 是 | 所有必要契約 pattern 存在 | 是 |
-| T-31-004 | 功能契約 | CLI 前置檢查、結構化輸出、操作分級、確認與冪等 | 是 | 所有必要契約 pattern 存在 | 是 |
-| T-31-005 | 文件／模板 | `SPEC_REVIEW.md` canonical／root template 與文件模型 | 是 | 檔案存在、必要章節存在且同步一致 | 是 |
-| T-31-006 | 情境 | PR review、spec review 與 pre-implementation 情境共 26 scenarios | 是 | scenario validator exit 0 且指標不退化 | 是 |
-| T-31-007 | 整合 | 四種 Adapter 同步與第二次 sync 冪等 | 是 | 第一次完成同步，第二次輸出 `no changes` | 是 |
-| T-31-008 | 可攜性 | Shell syntax、UTF-8 內容與跨平台既有契約 | 是；Ubuntu runtime 依環境 | syntax／validator exit 0；無環境時明列未驗證 | 否 |
+| T-32-001 | 結構 | 27／24／3 計數、STATUS.md 退休、spec 自我一致性 | 是 | validator exit 0，無殘留舊計數字串 | 是 |
+| T-32-002 | 功能契約 | Adversarial review 核心主張、限定結論、獨立性揭露、唯讀邊界 | 是 | 所有必要契約 pattern 存在 | 是 |
+| T-32-003 | 功能契約 | Threat modeling 核心分析面、輸出、不越界掃描 | 是 | 所有必要契約 pattern 存在 | 是 |
+| T-32-004 | 功能契約 | Root cause diagnosis 收斂流程、證實門檻、禁止症狀修補誤判 | 是 | 所有必要契約 pattern 存在 | 是 |
+| T-32-005 | 文件治理 | closeout 明確授權整體重建、project-init／context-audit 的 STATUS 契約、DECISIONS 僅索引 ADR／Issue／PR | 是 | 所有必要契約 pattern 存在 | 是 |
+| T-32-006 | 情境 | pre-implementation 與文件治理情境併入 adaptive scenarios，共 26 個 | 是 | scenario validator exit 0 且指標不退化 | 是 |
+| T-32-007 | 整合 | 四種 Adapter 同步與第二次 sync 冪等 | 是 | 第一次完成同步，第二次輸出 `no changes` | 是 |
+| T-32-008 | 可攜性 | Shell syntax、UTF-8 內容與跨平台既有契約 | 是；Ubuntu runtime 依環境 | syntax／validator exit 0；無環境時明列未驗證 | 否 |
 
 - 禁止以 `|| true`、忽略退出碼、弱化 assertion、刪除失敗案例或修改測試迎合錯誤輸出的方式取得通過。
 - 不以 live GitHub 寫入替代 Shell 契約測試；外部狀態沒有測試環境時必須維持未驗證標示。
 
 ### Adaptive scenarios and token budget
 
-- 將既有 `pr-review` scenario 的 entry skill 改為 `maze-pr-review`，allowed resources 包含 `maze-github-cli`，並保留「可定位 finding、不寫遠端、正確 Issue 關聯」契約。
-- adaptive scenarios 目前共 26 個，涵蓋 review、pre-implementation、文件治理與既有代表性情境。
-- SKILL.md 總字元上限固定為 22,000；詳細內容使用按需資源。
+- 移除已被本版取代的 `session-closeout` 舊情境，新增 `adversarial-success`／`adversarial-insufficient`／`adversarial-time-pressure`、`threat-success`／`threat-insufficient`／`threat-time-pressure`、`diagnosis-success`／`diagnosis-insufficient`／`diagnosis-time-pressure`、`feature-complete-no-docs`、`explicit-closeout`、`legacy-status`、`decision-index`、`repeat-closeout`，總數為 26。
+- SKILL.md 總字元上限固定為 22,000；詳細內容使用按需資源，不記錄瞬時總字元數。
 - 保留現有 adaptive 指標不得比 baseline 退化的檢查。
 
 ### Acceptance Criteria
 
-- [x] AC-01：存在 `maze-spec-review` public skill，完整模式與 verify 模式符合本規格且不修改來源規格。
-- [x] AC-02：`SPEC_REVIEW.md` template 包含結論、Findings、未決策事項、建議驗收條件、修訂順序、限制與來源識別。
-- [x] AC-03：verify 保留 `SR-xxx` ID，只處理既有 Blocker／Major，來源或範圍大幅改變時停止。
-- [x] AC-04：存在 `maze-pr-review` public skill，能取得完整 PR 證據或輸出明確受限的本地降級審查。
-- [x] AC-05：PR review 的 finding、結論映射、測試缺口、未發現問題區域與限制符合本規格。
-- [x] AC-06：PR review 不提交 review、不留言、不批准、不修改 PR／Issue／branch。
-- [x] AC-07：存在 `maze-github-cli` internal skill，且只由 PR review 與 safe-ops 明示組合。
-- [x] AC-08：唯讀 `gh` 可直接執行；Create／Update 與 Destructive 分別遵守預覽及確認契約。
-- [x] AC-09：internal CLI 使用結構化、非互動輸出，並拒絕未允許的 `--admin`、強制合併與保護規則繞過。
-- [x] AC-10：`maze-github-safe-ops` 的新委派契約不會自行發起 GitHub 寫入。
-- [x] AC-11：canonical skills、public skills、internal skills 數量分別為 27、24、3，Router 不公開 internal skills。
-- [x] AC-12：`SPEC_REVIEW.md` 納入文件模型與根 template 同步。
-- [x] AC-13：adaptive scenarios 共 26 個，涵蓋 review、pre-implementation 與文件治理情境。
-- [x] AC-14：三個新 SKILL.md 與全部 SKILL.md 總字元不超過指定上限。
-- [x] AC-15：第一次 `bash scripts/sync-adapters.sh` 產生所需更新，第二次輸出 `no changes`。
-- [x] AC-16：`validate-skillpack.sh`、`validate-skills-functional.sh`、`validate-adaptive-scenarios.sh`、Shell syntax 與 `git diff --check` 全數通過。
-- [x] AC-17：README、Harness、Adapter README、spec、DECISIONS 與 NEXT_ACTION 不再保留衝突的技能數或 code-review checklist 待辦。
+- [x] AC-01：存在 `maze-adversarial-review`、`maze-threat-modeling`、`maze-root-cause-diagnosis` 三個公開技能，皆為 `invocation: user` 且唯讀。
+- [x] AC-02：`maze-adversarial-review` 結論只能是 `go`／`revise`／`stop`／`insufficient evidence`，且報告揭露 reviewer 獨立性。
+- [x] AC-03：`maze-threat-modeling` 輸出資產、信任邊界、攻擊者、優先威脅、緩解與安全條件，且不執行程式碼掃描或滲透測試。
+- [x] AC-04：`maze-root-cause-diagnosis` 只有排除至少一個有力替代假設且能穩定觸發／消除症狀時才宣稱根因；證據不足時只稱候選根因。
+- [x] AC-05：`STATUS.md` 不再由 `maze-project-init` 建立、`maze-session-closeout` 不讀寫，且不出現於 `docs/`、`templates/` 或 `skills/maze-project-init/templates/`。
+- [x] AC-06：`maze-session-closeout` 僅在使用者明確要求 closeout 時整體重建 `NEXT_ACTION.md`；不追加歷史、不寫 `STATUS.md`。
+- [x] AC-07：`DECISIONS.md` 只保留仍有效決策，且每筆的唯一權威來源必須是 ADR、Issue 或 PR 連結。
+- [x] AC-08：canonical／public／internal skills 數量分別為 27、24、3，Router 不公開 internal skills。
+- [x] AC-09：adaptive scenarios 共 26 個，涵蓋 pre-implementation 與文件治理情境，且指標不比 baseline 退化。
+- [x] AC-10：全部 SKILL.md 總字元低於 22,000。
+- [x] AC-11：第一次 `bash scripts/sync-adapters.sh` 產生所需更新，第二次輸出 `no changes`。
+- [x] AC-12：三支 validator、Shell syntax 與 `git diff --check` 全數通過。
+- [x] AC-13：`docs/spec.md` 不含任何前一版本遺留的技能數、情境數或字元上限字串。
 
 ### AC automation mapping
 
-- AC-01 至 AC-03 由 T-31-002／T-31-005 驗證；AC-04 至 AC-06 由 T-31-003／T-31-006 驗證。
-- AC-07 至 AC-10 由 T-31-001／T-31-004 驗證；AC-11 至 AC-14 由 T-31-001／T-31-005／T-31-006 驗證。
-- AC-15 至 AC-17 由 T-31-007／T-31-008 及 `git diff --check` 驗證。
+- AC-01 至 AC-04 由 T-32-002／T-32-003／T-32-004 驗證。
+- AC-05 至 AC-07 由 T-32-001／T-32-005 驗證。
+- AC-08 至 AC-10 由 T-32-001／T-32-006 驗證。
+- AC-11 至 AC-13 由 T-32-007／T-32-008 及 `git diff --check` 驗證。
 
 ## Out of Scope
 
-- 本規格撰寫與發布階段不建立三個技能、不同步 Adapter、不發布新版本。
-- 不讓 `maze-spec-review` 自動修改規格、決定產品方向、改架構或開始實作。
-- 不讓 `maze-pr-review` 修復程式碼、寫入 GitHub review、留言、批准或 request changes。
-- 不把一般未開 PR 的 working-tree code review 納入 `maze-pr-review`。
-- 不執行完整安全稽核、滲透測試、完整 a11y、使用者研究或專用視覺設計審查。
-- 不把 `maze-github-cli` 擴接至 `maze-spec-to-issues`、`maze-session-closeout` 或其他 GitHub-facing skills。
-- 不建立完整 Git／GitHub 教學、不支援 Release／Project／Milestone 管理、不新增 live GitHub integration tests。
+- 不新增 internal skill；三個新技能均為公開 `user` invocation。
+- 不讓三個新技能修改被審查的方案、規格或程式碼，也不自動開始實作或修復。
+- 不為 `STATUS.md` 提供自動遷移或匯出工具；退休只影響 canonical 與根模板，使用者專案既有檔案不強制刪除。
+- 不把 `DECISIONS.md` 的歷史決策詳情遷回文件本身；理由只透過 ADR、Issue、PR 或 `core/PRINCIPLES.md` 追溯，過期理由留在 git 歷史。
+- 不執行完整安全稽核、滲透測試或程式碼漏洞掃描。
 - 不新增主要依賴、框架或 package manager，不自動 commit、push、merge、release 或 deploy。
 
 ## Further Notes
 
 ### Dependencies and delivery order
 
-- MCR-31-001 與 MCR-31-002 可獨立實作；MCR-31-003 依賴 internal CLI；MCR-31-004 最後整合並執行完整驗證。
-- 規格發布為單一 `ready-for-agent` GitHub Issue；後續可由 `maze-spec-to-issues` 依上述 Task ID 拆分，但不在本規格發布階段建立子 Issues。
+- MCR-32-001 至 MCR-32-004 可獨立實作；MCR-32-005 最後整合並執行完整驗證。
 
 ### Drift Risk
 
 - Router、validator、README、Harness 與 Adapter README 皆含技能數常數，遺漏任一處會造成跨 Host 語意漂移。
-- `maze-pr-review` 與 `maze-github-safe-ops` 都會引用 internal CLI；若各自重述命令安全規則，未來可能分歧，詳細命令模式應只存在 internal skill 的按需資源。
-- verify 若未綁定來源規格與原 finding ID，容易演變成每次重跑都新增意見的無限審查。
-- 目前 27 個 SKILL.md 共 20,028 字元；新增能力必須以按需資源控制常駐內容，總字元上限固定為 22,000。
+- `docs/spec.md` 若混雜歷史版本的計數與目前值，會讓後續 agent 誤判現況；每次版號變更都必須整份取代舊版內容，而非只置換數字。
+- SKILL.md 總字元只設上限、不記錄瞬時總數，避免文件在下次技能異動後立即漂移。
 
 ### Existing baseline
 
-- `pre-adaptive-refactor` 指向本機 commit `57459a1`：14 個技能共 9,174 字元；結構與功能驗證通過，Ubuntu 原生執行未驗證。
-- v3.1 不改變「階段可調整，契約不可省略」原則，也不因新技能限制模型的探索、工具、平行與 Subagent 能力。
+- v3.1 基準：27／24／3 之前為 24／21／3，26 個 adaptive scenarios 之前為 13 個；細節見 git 歷史中的 v3.1 版本 `docs/spec.md`。
+- v3.2 不改變「階段可調整，契約不可省略」原則，也不因新技能限制模型的探索、工具、平行與 Subagent 能力。
 
 ### Open Questions
 
-- 無。技能拓撲、輸入、輸出、副作用、降級行為、測試接縫、token 上限、發布方式與首版整合範圍均已決定。
+- 無。技能拓撲、輸入、輸出、副作用、降級行為、測試接縫、token 上限、發布方式與本版整合範圍均已決定。
