@@ -46,10 +46,13 @@
 |---|---|---|
 | `consult-claude` | Codex 端：呼叫本機 `claude` CLI 取得第二意見 | `~/.codex/skills/consult-claude/` |
 | `consult-codex` | Claude Code 端：呼叫本機 `codex` CLI 取得第二意見 | `~/.claude/skills/consult-codex/` |
+| `wmux` | 通用：在 wmux 多視窗終端機環境下操作其他 pane、跟另一個互動 agent 交接 | `~/.claude/skills/wmux/`、`~/.codex/skills/wmux/`（或其他支援 SKILL.md 格式的工具對應目錄） |
 
 ```bash
 cp -r extensions/consult-claude ~/.codex/skills/
 cp -r extensions/consult-codex ~/.claude/skills/
+cp -r extensions/wmux ~/.claude/skills/
+cp -r extensions/wmux ~/.codex/skills/
 ```
 
 ## Adaptive Model
