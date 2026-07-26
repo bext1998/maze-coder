@@ -38,6 +38,20 @@
 | `maze-domain-modeling` | 領域模型與重大決策同步（internal） |
 | `maze-github-cli` | GitHub CLI 安全操作契約（internal） |
 
+## Extension Skills
+
+選用、不隨 `sync-adapters.sh` 同步、不保證跨 adapter 可攜；每個技能只服務特定工具組合的使用者。安裝方式是直接複製到該工具自己的使用者層技能目錄，不經過本 repo 的同步／驗證管線。
+
+| Skill | 用途 | 安裝位置 |
+|---|---|---|
+| `consult-claude` | Codex 端：呼叫本機 `claude` CLI 取得第二意見 | `~/.codex/skills/consult-claude/` |
+| `consult-codex` | Claude Code 端：呼叫本機 `codex` CLI 取得第二意見 | `~/.claude/skills/consult-codex/` |
+
+```bash
+cp -r extensions/consult-claude ~/.codex/skills/
+cp -r extensions/consult-codex ~/.claude/skills/
+```
+
 ## Adaptive Model
 
 ```text
@@ -84,6 +98,7 @@ profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
 skills/     27 個來源技能及按需資源
 adapters/   四種工具的 Router 與資源包
+extensions/ 選用、不可攜、不經同步管線的單一工具專屬技能
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證
 docs/       maze-coder 自身規格與狀態
@@ -94,5 +109,6 @@ docs/       maze-coder 自身規格與狀態
 1. 只修改 `skills/`、`core/` 或同步腳本的 source of truth。
 2. 執行同步、結構驗證與功能驗證。
 3. 確認第二次同步無差異後再提交 PR。
+4. `extensions/` 底下的技能不經同步／驗證管線，修改後不需要跑上述步驟；但仍需確認技能本身內容自洽。
 
 [MIT License](LICENSE)
