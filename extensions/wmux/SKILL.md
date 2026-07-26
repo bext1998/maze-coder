@@ -1,6 +1,6 @@
 ---
 name: wmux
-description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另一個在互動運行的 agent 交接，或建立/清除 pane 與分頁時使用。使用者說「轉交給 codex/claude 那個 pane」「跟另一個 pane 說一聲」「切一個新的 pane」等語句、或畫面上出現多個 wmux pane 時觸發。內容以實測驗證為準，不是照抄 `wmux --help`。不涵蓋 `browser`／`markdown` 兩類指令——見使用者全域 CLAUDE.md 的 wmux 章節。
+description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另一個在互動運行的 agent 交接，或建立/清除 pane 與分頁時使用。使用者說「轉交給 codex/claude 那個 pane」「跟另一個 pane 說一聲」「切一個新的 pane」等語句、或畫面上出現多個 wmux pane 時觸發。內容以實測驗證為準，不是照抄 `wmux --help`；驗證環境見下方「驗證環境與適用範圍」。不涵蓋 `browser`／`markdown` 兩類指令——不在本技能範圍內。
 ---
 
 # wmux
@@ -8,6 +8,22 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 ## 目標
 
 在 wmux 多視窗終端機環境下，安全、正確地操作其他 pane：讀取其他 pane 的畫面內容、把文字送進另一個正在互動運行的 agent pane（例如向另一個 coding CLI 交接審查或任務）、或視需要建立/清除 pane 與分頁——同時避開已經實際驗證過的幾個陷阱。
+
+## 驗證環境與適用範圍
+
+以下所有具體行為結論（哪個旗標有效、預設會落在哪個 pane 等）都只在這個環境下實測驗證過：`wmux identify` 回報 `version 0.28.0`、`platform win32`；`wmux capabilities` 回報 `protocols: ["v1","v2"]`、`features: ["workspaces","splits","notifications"]`。**這些是特定版本下實測觀察到的行為，不是保證不變的 API 契約。** 在不同版本、不同平台（例如 macOS/Linux）或回報不同 protocol/feature 的 wmux instance 上，行為可能不同——換到新環境前，先用 `identify`／`capabilities` 核對版本與能力，若版本不同就視同未驗證，用本文件的判斷方法（呼叫前後用唯讀指令核對）重新確認一次，不要直接套用下面列出的具體結論。
+
+## 執行前的授權邊界：四類操作
+
+呼叫任何 wmux 指令前，先判斷它屬於哪一類，套用對應的謹慎程度。這四類跟後面「定位是否可靠」是不同維度，兩者都要顧到：
+
+**唯讀（可自由呼叫，沒有副作用）**：`identify`、`capabilities`、`ping`、`tree`、`list-panes`、`list-surfaces`、`list-windows`、`list-workspaces`、`list-notifications`、`read-screen`、`config show`／`config path`。
+
+**可逆寫入（會改變某個既有 pane 的內容或產生可見狀態，但不會憑空消滅資源）**：`send`、`send-key`、`notify`。**目標 pane 與寫入內容都必須是使用者明確要求、或當下任務直接需要的**，不要自己延伸去操作使用者沒提到的 pane。`notify` 會產生使用者看得到的通知——這是真實、外顯的狀態變更，不是無害的背景查詢，呼叫前一樣要確認是使用者要的動作。
+
+**建立資源（會新增 pane、分頁或 process，佔用畫面與系統資源）**：`split`、`new-surface`、`agent spawn`。只在有明確任務需求時才呼叫（例如使用者要求開新工作區、或需要背景執行一個獨立任務），不要為了「探索指令行為」就隨意建立。
+
+**破壞性（會關閉或終止既有東西，且無法復原內容）**：`pane close`（verb form）、`close-surface`、`agent kill`。**執行前必須確認：(a) 目標 ID 精確無誤——用 `tree`／`list-panes`／`agent list` 核對，不要憑記憶或猜測；(b) 這是使用者明確授權、或當下任務必要的動作。** 即使是「建立資源」類指令意外落在非預期的 pane 上，也不能自行判斷「這應該是空的、關掉沒差」就逕自呼叫破壞性指令清理——那個位置在你查證清楚之前，都可能已經有使用者原本的工作內容，落錯位置本身不構成關閉授權。正確做法：立刻用唯讀指令查清楚實際落在哪裡、目前內容是什麼，回報給使用者，取得明確授權後才清理，不要自作主張。
 
 ## 核心原則：`ok: true` 不代表指令真的做到了
 
@@ -42,14 +58,14 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 1. `tree` 或 `list-panes` 找出目標 pane 的 `customTitle` 對應的 `surfaceId`。
 2. `read-screen --surface <id> --lines 30` 確認目前畫面狀態（例如對方是否正忙碌中）。
 3. `send --surface <id> "<訊息內容>"`——單行文字，避免內嵌換行（多行輸入在互動式 TUI 裡的行為未經驗證，換行可能被解讀成送出）。
-4. **送出前務必再 `read-screen` 一次，確認文字正確出現在對方的輸入框裡，而不是打到別的 pane。** 這一步不可省略——本技能撰寫過程中就發生過文字誤打進呼叫者自己輸入框的真實案例。
-5. 確認無誤後 `send-key enter --surface <id>` 送出。**注意旗標順序：`--surface` 要放在鍵名之後，`send-key --surface <id> enter` 會把 `--surface` 誤判成不合法的鍵名而報錯。**
+4. **按 Enter 提交前務必再 `read-screen` 一次，確認待送文字正確出現在目標 pane 的輸入框裡，而不是打到別的 pane。** 這一步不可省略——本技能撰寫過程中就發生過文字誤打進呼叫者自己輸入框的真實案例。
+5. 確認無誤後 `send-key enter --surface <id>` 提交。**注意旗標順序：`--surface` 要放在鍵名之後，`send-key --surface <id> enter` 會把 `--surface` 誤判成不合法的鍵名而報錯。**
 6. 需要等待對方回覆時，重新 `read-screen` 輪詢；讀到 `{"text": "", "lines": 0}` 不要立刻當作對方畫面真的空白——先重讀一次，原因未明的間歇性空讀確實會發生。
 
 ## 建立／清除 pane 或分頁
 
-- `split`／`new-surface` 目前實測固定建立在 tree 裡第一個 leaf pane 上，**沒有已知方法可以指定建在哪裡**。呼叫前先記錄 `tree`／`list-panes` 當基準，呼叫後立刻再查一次，確認新東西長在你預期或至少可接受的地方；如果蓋到別人正在看的 pane，立刻用 `close-surface <新 surface id>` 清掉。
-- 關閉：pane 用 `pane close <paneId>`（verb form，可靠）；分頁用 `close-surface <surfaceId>`（可靠）。**不要用 `close-pane --surface <id>`**，實測無效。
+- `split`／`new-surface` 目前實測固定建立在 tree 裡第一個 leaf pane 上，**沒有已知方法可以指定建在哪裡**。呼叫前先記錄 `tree`／`list-panes` 當基準，呼叫後立刻再查一次，確認新東西實際長在哪裡。**如果蓋到非預期的 pane，不要自行判斷「應該沒差」就逕自關閉**——見上面「執行前的授權邊界」對破壞性操作的要求：先查清楚落點與內容，回報給使用者，取得授權後才清理。
+- 關閉：pane 用 `pane close <paneId>`（verb form，可靠）；分頁用 `close-surface <surfaceId>`（可靠）。**不要用 `close-pane --surface <id>`**，實測無效。這兩個指令都屬於破壞性操作，執行前一律套用上面的授權邊界。
 - `zoom-pane` 不建議用於自動化流程——純視覺 toggle，無法驗證效果。
 - `set-color-scheme`／`list-themes` 純粹是人類使用者的終端機外觀偏好，跟 agent 工作流程無關，不需要使用。
 
@@ -58,7 +74,7 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 `agent` 這組指令是用來啟動一個全新的、wmux 自己追蹤管理的 process（`spawn` 一定要帶 `--cmd`），**不能**用來「附加」或「登記」一個已經在互動運行的 pane——對一個既有的手動開啟的 pane 呼叫 `agent status <paneId>` 會回報 `Agent not found`。
 
 - 如果目標是「跟一個已經在跑的互動式 agent session 交接訊息」（例如上面的 pane-to-pane 交接情境），**不要用 `agent` 這組指令**，用 `send`/`read-screen`。
-- `agent spawn` 適合的情境是「啟動一個全新的背景任務」，不是溝通機制。預設落點問題跟 `split`/`new-surface` 一樣（見上），用完務必 `close-surface` 清理。
+- `agent spawn` 適合的情境是「啟動一個全新的背景任務」，不是溝通機制。預設落點問題跟 `split`/`new-surface` 一樣（見上）——落錯地方不代表可以自行清理，一樣要先查清楚、取得授權。
 - `agent kill <agentId>` 實測可靠，會讓 `status` 變成 `exited` 並確實終止底層 process。
 - `agent list` 是歷史紀錄，已結束的 agent 不會因為 process 死掉或 surface 被關閉就消失——判斷是否還活著要看每筆記錄的 `status` 欄位，不是看它出不出現在清單裡。
 
@@ -66,7 +82,7 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 
 `notify "<文字>"` 是「提醒人類去注意某個 pane」的機制，跟上面的 pane-to-pane `send` 交接是兩件事，可以搭配使用（先 `notify` 提醒、有需要再 `send` 實際內容）：
 
-- `notify` 會自動掛在**呼叫者自己**的 surface 上（不像 `split`/`agent spawn` 那樣落到不確定的預設 pane），可以放心呼叫不用擔心定位問題。
+- `notify` 會自動掛在**呼叫者自己**的 surface 上（不像 `split`/`agent spawn` 那樣落到不確定的預設 pane），定位本身沒有問題；但它會產生使用者看得到的通知，屬於上面「可逆寫入」類的可見狀態變更，呼叫前一樣要確認是使用者要的動作，不是毫無代價的查詢。
 - 有些通知是 wmux 系統自動產生的（例如背景指令執行完畢），不是只有手動 `notify` 才會有。
 - `clear-notifications` 記得用位置參數帶通知 id（`clear-notifications <notificationId>`），`--surface` 對這個指令無效。
 - `set-status`／`set-progress`／`log` 這組「Sidebar」指令的實際效果無法驗證——呼叫後 `read-screen` 看不到任何變化，推測是寫入畫面上另一塊 UI 區域，但沒有截圖能力可以確認。**不要把任何流程設計成依賴這三個指令的效果**，需要讓人類看到狀態時優先用 `notify`。
@@ -91,6 +107,7 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 
 ## 邊界
 
+- 呼叫前依「執行前的授權邊界」判斷屬於唯讀/可逆寫入/建立資源/破壞性哪一類，破壞性操作一律需要精確 ID 核對與使用者授權。
 - 建立/移除 pane、分頁、agent process 前後，一律用 `tree`/`list-panes`/`agent list` 核對實際狀態，不要只信呼叫的回傳值。
 - 不透過 `agent spawn` 或任何其他機制去附加、控制一個已經在互動運行的既有 pane——那不是這組指令的設計用途。
 - 不呼叫 `token`、不執行 `hook --event`、不呼叫 `ssh`/`bridge`——這些不在本技能範圍內。
