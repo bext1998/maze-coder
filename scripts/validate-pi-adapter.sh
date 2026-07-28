@@ -12,7 +12,6 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PI_SKILLS_DIR="${ROOT_DIR}/adapters/pi/.pi/skills"
 PI_INTERNAL_DIR="${ROOT_DIR}/adapters/pi/.pi/maze-coder/internal-skills"
 PI_MAZE_DIR="${ROOT_DIR}/adapters/pi/.pi/maze-coder"
-PI_ROOT="${ROOT_DIR}/adapters/pi/.pi"
 PI_AGENTS="${ROOT_DIR}/adapters/pi/AGENTS.md"
 FIXTURE_DIR="${SCRIPT_DIR}/fixtures/pi-adapter-selftest"
 ERRORS=0
@@ -94,14 +93,19 @@ apply_known_pi_rewrites() {
 
 # 對單一 SKILL.md 檢查同目錄下 references/templates/checklists/scripts 引用是否存在。
 # scripts/<repo 根層腳本檔名> 視為對 repo 根目錄 scripts/ 的文字提及（不是同目錄資源），
-# 用已知檔名白名單排除，其餘 scripts/ 引用一律當同目錄資源檢查是否存在。
+# 但不能只比 basename 就放行：先判斷技能同目錄是否真有該資源，否則實際檢查
+# <repo_root>/scripts/<name> 存在；兩邊都不存在必須回報 BAD_PATH。
+# $2 可指定 repo 根目錄（自我測試用 fixture 根目錄），預設為真實 ROOT_DIR。
 check_resource_paths() {
-  local file="$1" dir resource base
+  local file="$1" repo_root="${2:-${ROOT_DIR}}" dir resource base
   dir="$(dirname "${file}")"
   while IFS= read -r resource; do
     [ -n "${resource}" ] || continue
     base="$(basename "${resource}")"
     if [[ "${resource}" == scripts/* ]] && is_repo_root_script "${base}"; then
+      if [ ! -e "${dir}/${resource}" ] && [ ! -e "${repo_root}/scripts/${base}" ]; then
+        echo "BAD_PATH:${file}:${resource}"
+      fi
       continue
     fi
     [ -e "${dir}/${resource}" ] || echo "BAD_PATH:${file}:${resource}"
@@ -111,9 +115,12 @@ check_resource_paths() {
 # 遞迴掃描一個技能探索根目錄，比照 Pi 官方文件的規則：
 #   - 任何深度、含 SKILL.md 的目錄都算一個技能（不限固定 maxdepth）
 #   - 根層直接放置的 .md 檔案也會被 Pi 當成個別技能載入（本 adapter 不預期出現任何一個）
-# 輸出格式化的 finding 行到 stdout，呼叫端自行決定要 err/warn 或拿去跟預期比對。
+# 呼叫端必須傳入 Pi 真實的探索根（例如 .pi/skills，不是其上的 .pi），stray .md 檢查
+# 才會對到 Pi 實際會載入的那一層。$2 為 repo 根目錄（供 scripts/ 白名單存在性檢查），
+# 預設為真實 ROOT_DIR。輸出格式化的 finding 行到 stdout，呼叫端自行決定要 err/warn
+# 或拿去跟預期比對。
 scan_skill_findings() {
-  local root="$1"
+  local root="$1" repo_root="${2:-${ROOT_DIR}}"
   local f name desc
   declare -A name_paths=()
 
@@ -126,7 +133,7 @@ scan_skill_findings() {
       name_paths["${name}"]+="${f};"
     fi
     [ -n "${desc}" ] || echo "EMPTY_DESC:${name:-（無法解析 name）}:${f}"
-    check_resource_paths "${f}"
+    check_resource_paths "${f}" "${repo_root}"
   done < <(find "${root}" -name SKILL.md -type f 2>/dev/null | sort)
 
   for name in "${!name_paths[@]}"; do
@@ -149,7 +156,9 @@ echo "--- 驗證器自我測試（scripts/fixtures/pi-adapter-selftest/） ---"
 if [ ! -d "${FIXTURE_DIR}" ]; then
   err "缺少驗證器自我測試 fixture：${FIXTURE_DIR}"
 else
-  FIXTURE_FINDINGS="$(scan_skill_findings "${FIXTURE_DIR}")"
+  # fixture 比照真實 adapter 的 .pi/skills 層級佈局，並以 fixture 根目錄作為 repo root，
+  # 讓自我測試走跟 production 完全相同的呼叫形態（含 stray .md 層級與白名單存在性檢查）。
+  FIXTURE_FINDINGS="$(scan_skill_findings "${FIXTURE_DIR}/.pi/skills" "${FIXTURE_DIR}")"
 
   assert_finding() {
     local pattern="$1" label="$2"
@@ -174,6 +183,7 @@ else
   assert_finding 'STRAY_ROOT_MD:.*orphan\.md$' "根層 stray .md 檔案"
   assert_absent 'BAD_PATH:.*good-with-scripts.*scripts/real\.sh$' "同目錄 scripts/real.sh 被誤判為無效路徑"
   assert_absent 'BAD_PATH:.*good-with-scripts.*scripts/sync-adapters\.sh$' "repo 根層 scripts/sync-adapters.sh 提及被誤判為無效路徑"
+  assert_finding 'BAD_PATH:.*missing-root-script.*scripts/validate-skillpack\.sh$' "白名單內的 repo 根層腳本實際不存在（不能只比 basename 就放行）"
 fi
 
 [ -d "${PI_SKILLS_DIR}" ] || { err "缺少 ${PI_SKILLS_DIR}"; echo "=== ${ERRORS} failures ===" >&2; exit 1; }
@@ -255,8 +265,16 @@ for skill in "${SKILLS[@]}"; do
   ok "${skill}"
 done
 
-echo "--- 名稱碰撞、資源路徑、根層 stray .md（整個 .pi/ 樹，遞迴） ---"
-ADAPTER_FINDINGS="$(scan_skill_findings "${PI_ROOT}")"
+echo "--- 名稱碰撞、資源路徑、根層 stray .md（.pi/skills 真實探索掃描 + internal 內容／資源檢查） ---"
+# 對 Pi 真實的探索根 .pi/skills 做 discovery 掃描（stray .md 檢查才對得到 Pi 實際載入的
+# 那一層）；internal-skills 不在 Pi 探索路徑內，另做同等的資源路徑檢查（內容／name／desc
+# 與 canonical 一致性已在上方逐技能迴圈檢查）。
+ADAPTER_FINDINGS="$( {
+  scan_skill_findings "${PI_SKILLS_DIR}"
+  find "${PI_INTERNAL_DIR}" -name SKILL.md -type f 2>/dev/null | sort | while IFS= read -r f; do
+    check_resource_paths "${f}"
+  done
+} )"
 if [ -n "${ADAPTER_FINDINGS}" ]; then
   while IFS= read -r line; do
     [ -n "${line}" ] || continue
