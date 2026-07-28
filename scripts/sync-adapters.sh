@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 從 skills/ 與 core/ 產生四種 Adapter 及根 templates/。
+# 從 skills/ 與 core/ 產生五種 Adapter 及根 templates/。
 
 set -euo pipefail
 
@@ -143,6 +143,27 @@ sync_claude_skills() {
   rm -rf "${tmp_root}"
 }
 
+sync_pi_skills() {
+  local tmp_root skill file invocation transformed
+  tmp_root="$(mktemp -d)"
+  cp -R "${ROOT_DIR}/skills" "${tmp_root}/skills"
+  for skill in "${SKILLS[@]}"; do
+    file="${tmp_root}/skills/${skill}/SKILL.md"
+    invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
+    transformed="${file}.tmp"
+    awk -v mode="${invocation}" '
+      /^invocation:/ {
+        if (mode == "user" || mode == "internal") print "disable-model-invocation: true"
+        next
+      }
+      { print }
+    ' "${file}" > "${transformed}"
+    mv "${transformed}" "${file}"
+  done
+  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "完整技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
+  rm -rf "${tmp_root}"
+}
+
 echo "=== maze-coder sync-adapters ==="
 
 echo "--- Claude Code ---"
@@ -195,6 +216,20 @@ for legacy in maze-coder-core.mdc maze-coder-qa.mdc maze-coder-git.mdc maze-code
     CHANGES=$((CHANGES + 1))
   fi
 done
+
+echo "--- Pi ---"
+sync_pi_skills
+copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/HARNESS_ENGINEERING.md" "共用規則"
+sync_dir "${ROOT_DIR}/core" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/core" "核心契約"
+sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/profiles" "Guidance Profiles"
+sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/model-overlays" "Model Overlays"
+{
+  echo "# maze-coder — Pi Router"
+  echo
+  echo "> 由 sync-adapters.sh 產生，請勿手動編輯。"
+  echo
+  router_body ".pi/maze-coder/skills" ".pi/maze-coder/HARNESS_ENGINEERING.md"
+} | write_if_changed "${ROOT_DIR}/adapters/pi/AGENTS.md" "精簡 Router"
 
 echo "--- Root templates ---"
 TEMPLATE_MAP=(
