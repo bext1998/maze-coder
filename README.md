@@ -47,12 +47,15 @@
 | `consult-claude` | Codex 端：呼叫本機 `claude` CLI 取得第二意見 | `~/.codex/skills/consult-claude/` |
 | `consult-codex` | Claude Code 端：呼叫本機 `codex` CLI 取得第二意見 | `~/.claude/skills/consult-codex/` |
 | `wmux` | 通用：在 wmux 多視窗終端機環境下操作其他 pane、跟另一個互動 agent 交接 | `~/.claude/skills/wmux/`、`~/.codex/skills/wmux/`（或其他支援 SKILL.md 格式的工具對應目錄） |
+| `wmux-orchestrator` | 通用：在 wmux 環境下作為 orchestrator，跨模型、跨 harness 對其他 pane 派工、追蹤與回收結果；依賴 `wmux` 技能的授權邊界與 primitive | `~/.claude/skills/wmux-orchestrator/`、`~/.codex/skills/wmux-orchestrator/`（或其他支援 SKILL.md 格式的工具對應目錄，需與 `wmux` 技能安裝在同一層） |
 
 ```bash
 cp -r extensions/consult-claude ~/.codex/skills/
 cp -r extensions/consult-codex ~/.claude/skills/
 cp -r extensions/wmux ~/.claude/skills/
 cp -r extensions/wmux ~/.codex/skills/
+cp -r extensions/wmux-orchestrator ~/.claude/skills/
+cp -r extensions/wmux-orchestrator ~/.codex/skills/
 ```
 
 ## Adaptive Model
@@ -80,6 +83,10 @@ cp -r adapters/cursor/.cursor /your-project/
 # opencode
 cp adapters/opencode/AGENTS.md /your-project/
 cp -r adapters/opencode/.maze-coder /your-project/
+
+# Pi
+cp adapters/pi/AGENTS.md /your-project/
+cp -r adapters/pi/.pi /your-project/
 ```
 
 ## Sync and Validate
@@ -88,6 +95,7 @@ cp -r adapters/opencode/.maze-coder /your-project/
 bash scripts/sync-adapters.sh
 bash scripts/validate-skillpack.sh
 bash scripts/validate-skills-functional.sh
+bash scripts/validate-pi-adapter.sh
 ```
 
 同步腳本只更新受管理的 Adapter／根模板；連續執行兩次時，第二次應輸出 `no changes`。
@@ -100,7 +108,7 @@ core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
 skills/     27 個來源技能及按需資源
-adapters/   四種工具的 Router 與資源包
+adapters/   五種工具的 Router 與資源包
 extensions/ 選用、不可攜、不經同步管線的單一工具專屬技能
 templates/  由技能模板同步的使用者文件
 scripts/    同步與驗證

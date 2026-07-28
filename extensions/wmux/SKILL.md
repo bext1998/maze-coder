@@ -9,6 +9,16 @@ description: 在 wmux（多視窗終端機）環境下操作其他 pane、跟另
 
 在 wmux 多視窗終端機環境下，安全、正確地操作其他 pane：讀取其他 pane 的畫面內容、把文字送進另一個正在互動運行的 agent pane（例如向另一個 coding CLI 交接審查或任務）、或視需要建立/清除 pane 與分頁——同時避開已經實際驗證過的幾個陷阱。
 
+## 靜默環境偵測（進入任何 wmux 操作前）
+
+在呼叫本技能的任何指令之前，先靜默判斷自己是否真的身處 wmux 環境——不要假設呼叫者已經口頭告知。整個偵測過程只判斷「存在與否」，不解讀、不輸出任何憑證內容。
+
+1. **先查 env 變數，只判斷存在，不讀值**：檢查 `$WMUX`、`$WMUX_SURFACE_ID` 是否存在（PowerShell：`$env:WMUX`、`$env:WMUX_SURFACE_ID`；POSIX shell：`$WMUX`、`$WMUX_SURFACE_ID`）。兩者都存在 → 判定身處 wmux，`$WMUX_SURFACE_ID` 即為自己的 surface id，可省略後續定位查詢。**絕對不要讀取、印出、記錄或以任何形式外洩 `$WMUX_PIPE_TOKEN` 的值**——這組變數等同技能中已禁用的 `token` 指令輸出，偵測時只允許檢查它是否存在（例如用來判斷「這個 shell 有沒有繼承完整 wmux env」），不得用在別的地方。
+2. **env 不足時的唯讀 fallback**：`$WMUX`／`$WMUX_SURFACE_ID` 缺一或全無時，改呼叫唯讀指令 `wmux identify`（或 `wmux ping`）。成功回應 → 判定身處 wmux（例如巢狀 shell 未繼承 env 的情況），但沒有 `WMUX_SURFACE_ID` 可用時，需另外用 `tree`／`list-panes` 找出自己的 surface id 才能繼續。失敗（非零 exit code 或錯誤）→ 判定不在 wmux 環境下。
+3. **env 可能過期時二次確認**：`$WMUX=1` 只代表這個 process 曾經繼承到該變數，不保證底層 pipe 目前仍存活。在依賴 env 判斷結果去執行任何非唯讀指令（可逆寫入／建立資源／破壞性操作）之前，先用 `identify` 或 `ping` 二次確認 pipe 仍然可用；只做唯讀查詢（如 `read-screen`）時可以省略這一步。
+4. **非 wmux 環境安靜退出**：判定不在 wmux 底下時，直接安靜跳過本技能其餘所有內容，不觸發、不嘗試任何其他 wmux 指令，也不需要向使用者報告「偵測失敗」這件事本身——除非使用者本來就是在問「這是不是 wmux 環境」。
+5. **版本漂移仍需重新驗證**：`identify`/`ping` 確認完「身處 wmux」只代表偵測本身成功，不代表下面「驗證環境與適用範圍」列出的具體行為結論（`--surface` 有效性、`close-pane` 是否真的關閉等）依然成立——版本不符時一律視同未驗證，套用下一節的重新確認方法。實測記錄：本文件行為基準建於 wmux 0.28.0；本次偵測（2026-07-29，win32）以 `wmux identify` 現場確認目前版本為 0.36.0，與基準不同，故下方表格中依版本觀察到的具體結論在重新逐項核對前應視為未驗證，只有偵測步驟本身（env 存在性判斷、`identify`/`ping` 唯讀 fallback）在兩個版本下都已確認可用。
+
 ## 驗證環境與適用範圍
 
 以下所有具體行為結論（哪個旗標有效、預設會落在哪個 pane 等）都只在這個環境下實測驗證過：`wmux identify` 回報 `version 0.28.0`、`platform win32`；`wmux capabilities` 回報 `protocols: ["v1","v2"]`、`features: ["workspaces","splits","notifications"]`。**這些是特定版本下實測觀察到的行為，不是保證不變的 API 契約。** 在不同版本、不同平台（例如 macOS/Linux）或回報不同 protocol/feature 的 wmux instance 上，行為可能不同——換到新環境前，先用 `identify`／`capabilities` 核對版本與能力，若版本不同就視同未驗證，用本文件的判斷方法（呼叫前後用唯讀指令核對）重新確認一次，不要直接套用下面列出的具體結論。
