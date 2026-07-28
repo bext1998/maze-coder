@@ -13,7 +13,7 @@ disable-model-invocation: true
 ## 前置條件
 
 - 接受 PR URL／number，或只在目前 repo／branch 能唯一辨識時推定目標。
-- 透過 `maze-github-cli` Read 契約取得證據；讀取相關實作與測試，依 `checklists/pr-review-checklist.md` 審查。
+- 透過 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）Read 契約取得證據；讀取相關實作與測試，依 `checklists/pr-review-checklist.md` 審查。
 - `gh` 不可用、未登入或權限不足時，僅在 base 可確認且工作樹不污染結果時降級為本地 diff，列出缺少證據。
 
 ## 執行流程

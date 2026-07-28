@@ -83,6 +83,27 @@ write_if_changed() {
   fi
 }
 
+# 對單一檔案做精確字串（非正則）替換：用 awk index()/substr() 逐行找第一個相符位置替換，
+# 避免 sed 正則特殊字元（如路徑裡的 .）造成誤判。替換前後都斷言字串真的存在／已替換，
+# 找不到就直接失敗，不靜默略過——canonical 內容變了，這裡的改寫表也要跟著更新。
+literal_replace() {
+  local target="$1" old="$2" new="$3" tmp
+  grep -qF -- "${old}" "${target}" \
+    || { echo "ERROR: 預期在 ${target} 找到「${old}」以改寫參照，但找不到（canonical 內容可能已變更，需同步更新 sync-adapters.sh 的改寫表）" >&2; exit 1; }
+  tmp="${target}.tmp"
+  awk -v old="${old}" -v new="${new}" '
+    {
+      line = $0
+      idx = index(line, old)
+      if (idx > 0) { line = substr(line, 1, idx - 1) new substr(line, idx + length(old)) }
+      print line
+    }
+  ' "${target}" > "${tmp}"
+  mv "${tmp}" "${target}"
+  grep -qF -- "${new}" "${target}" \
+    || { echo "ERROR: 改寫 ${target} 的參照後未生效" >&2; exit 1; }
+}
+
 router_body() {
   local skill_root="$1" harness="$2"
   cat <<EOF
@@ -143,8 +164,10 @@ sync_claude_skills() {
   rm -rf "${tmp_root}"
 }
 
+PI_INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
+
 sync_pi_skills() {
-  local tmp_root skill file invocation transformed
+  local tmp_root skill file invocation transformed internal_skill
   tmp_root="$(mktemp -d)"
   cp -R "${ROOT_DIR}/skills" "${tmp_root}/skills"
   for skill in "${SKILLS[@]}"; do
@@ -160,7 +183,37 @@ sync_pi_skills() {
     ' "${file}" > "${transformed}"
     mv "${transformed}" "${file}"
   done
-  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "完整技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
+
+  # Pi 會遞迴掃描 .pi/skills/ 底下任何含 SKILL.md 的目錄並各自註冊一個 /skill:<name> 使用者
+  # 指令；disable-model-invocation 只能隱藏「模型主動選用」那一半，Pi 沒有逐技能停用使用者
+  # 指令的欄位，無法只靠 frontmatter 讓 internal skill 不出現在公開入口。唯一作法是讓這 3 個
+  # internal skill 完全不落在 Pi 會掃描的路徑下：搬到 .pi/maze-coder/internal-skills/——這裡
+  # 不在 Pi 文件列出的任何技能探索位置（.pi/skills、.agents/skills、套件 skills/、settings
+  # skills 陣列、CLI --skill）之內，Pi 不會發現它，也就不會註冊指令或列進模型可見清單。
+  #
+  # 公開技能原本用相對路徑或純文字提及這 3 個 internal skill 來組合內容，搬家後必須同步改寫，
+  # 否則模型照原文字讀不到。以下只對「已知會引用這 3 個 internal skill」的固定檔案做精確字串
+  # 替換（見 literal_replace），不是全域正則猜測，避免誤改到無關文字。
+  literal_replace "${tmp_root}/skills/maze-grill/SKILL.md" \
+    '../maze-grilling/SKILL.md' '../../maze-coder/internal-skills/maze-grilling/SKILL.md'
+  literal_replace "${tmp_root}/skills/maze-grill-with-docs/SKILL.md" \
+    '../maze-grilling/SKILL.md' '../../maze-coder/internal-skills/maze-grilling/SKILL.md'
+  literal_replace "${tmp_root}/skills/maze-grill-with-docs/SKILL.md" \
+    '../maze-domain-modeling/SKILL.md' '../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md'
+  literal_replace "${tmp_root}/skills/maze-github-safe-ops/SKILL.md" \
+    '委派 internal `maze-github-cli`' \
+    '委派 internal `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）'
+  literal_replace "${tmp_root}/skills/maze-pr-review/SKILL.md" \
+    '透過 `maze-github-cli` Read 契約取得證據' \
+    '透過 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）Read 契約取得證據'
+
+  mkdir -p "${tmp_root}/internal-skills"
+  for internal_skill in "${PI_INTERNAL_SKILLS[@]}"; do
+    mv "${tmp_root}/skills/${internal_skill}" "${tmp_root}/internal-skills/${internal_skill}"
+  done
+
+  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "24 個公開／模型可觸發技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
+  sync_dir "${tmp_root}/internal-skills" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/internal-skills" "3 個 internal skill 內容，移出 Pi 技能探索路徑以避免 /skill:<name> 曝光"
   rm -rf "${tmp_root}"
 }
 

@@ -13,7 +13,7 @@ disable-model-invocation: true
 ## 必要輸入
 待檢驗內容及現有專案文件位置。
 ## 核心行為
-依序載入 `../maze-grilling/SKILL.md` 與 `../maze-domain-modeling/SKILL.md`；只同步本輪形成的實質內容。
+依序載入 `../../maze-coder/internal-skills/maze-grilling/SKILL.md` 與 `../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md`；只同步本輪形成的實質內容。
 ## 確認點
 逐題取得決策；覆寫既有文件或建立 ADR 前展示變更。
 ## 輸出契約

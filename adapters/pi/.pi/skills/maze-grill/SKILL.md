@@ -13,7 +13,7 @@ disable-model-invocation: true
 ## 必要輸入
 待檢內容與本輪決策目標。
 ## 核心行為
-載入 `../maze-grilling/SKILL.md` 並遵守其契約。
+載入 `../../maze-coder/internal-skills/maze-grilling/SKILL.md` 並遵守其契約。
 ## 確認點
 取得必要決策。
 ## 輸出契約
