@@ -1,7 +1,7 @@
 # maze-coder
 
 <p align="center">
-  <img src="./assets/maze-coder-logo.svg" alt="maze-coder animated workflow logo" width="720">
+  <img src="./assets/maze-coder-logo.png" alt="maze-coder pixel wordmark logo" width="480">
 </p>
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
