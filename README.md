@@ -52,8 +52,6 @@ cp -r extensions/consult-claude ~/.codex/skills/
 cp -r extensions/consult-codex ~/.claude/skills/
 ```
 
-wmux 相關技能（原 `wmux`、`wmux-orchestrator`）已遷移至獨立 repository [wmux-agent-skill-suite](https://github.com/bext1998/wmux-agent-skill-suite)，更名為 `wmux-best-practice`、`wmux-coordinator`，不再由 maze-coder 提供或同步。
-
 ## Adaptive Model
 
 ```text
