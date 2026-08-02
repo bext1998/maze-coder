@@ -15,11 +15,13 @@
 
 地圖本體 = 一個 GitHub Issue，標籤 `wayfinder:map`。每個待釐清問題 = 地圖 issue 下的子 issue，標籤為上表對應類型。
 
+Local Markdown 載體：地圖本體是單一 `WAYFINDER_MAP.md` 檔案；每個待釐清問題是 `## Questions` 下的一個獨立 section（`### Q-ID`），固定含 Q-ID、type、status、blocked-by、question、answer 六個欄位，`type` 填入上表類型（不含 `wayfinder:` 前綴），不需要 GitHub labels 或 issues。
+
 ## Blocking／Frontier 判斷
 
-使用 GitHub 原生的 blocking／dependency 表達前置關係（比照 `../maze-spec-to-issues/references/issue-model.md` 的既有慣例：每個 issue 記錄阻塞與被阻塞關係，只有所有阻塞均解除的 issue 屬於可執行前線）。Frontier = open + unblocked + unassigned 的子 issues。
+使用 GitHub 原生的 blocking／dependency 表達前置關係（比照 `../../maze-spec-to-issues/references/issue-model.md` 的既有慣例：每個 issue 記錄阻塞與被阻塞關係，只有所有阻塞均解除的 issue 屬於可執行前線）。Frontier = open + unblocked + unassigned 的子 issues。
 
-Local Markdown 載體用 `blocked-by: [Q-ID]` 標記前置關係，語義相同。
+Local Markdown 載體：每個 Questions section 的 `blocked-by` 欄位填入阻塞此題的 Q-ID（逗號分隔多個，無阻塞留空），語義相同；Frontier（可執行前線）不是獨立區塊，是由 Questions sections 計算出的集合＝ `status` 為 `open` 且 `blocked-by` 內所有 Q-ID 皆已 `resolved` 的 section。
 
 ## 迷霧 vs 待釐清的判斷標準
 

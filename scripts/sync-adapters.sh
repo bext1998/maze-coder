@@ -208,6 +208,12 @@ sync_pi_skills() {
   literal_replace "${tmp_root}/skills/maze-pr-review/SKILL.md" \
     '透過 `maze-github-cli` Read 契約取得證據' \
     '透過 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）Read 契約取得證據'
+  literal_replace "${tmp_root}/skills/maze-wayfinder/SKILL.md" \
+    '委派 `maze-github-cli`' \
+    '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）'
+  literal_replace "${tmp_root}/skills/maze-wayfinder/references/execution-flow.md" \
+    '委派 `maze-domain-modeling`' \
+    '委派 `maze-domain-modeling`（Pi 路徑：`../../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md`）'
 
   mkdir -p "${tmp_root}/internal-skills"
   for internal_skill in "${PI_INTERNAL_SKILLS[@]}"; do

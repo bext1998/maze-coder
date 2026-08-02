@@ -220,6 +220,7 @@ awk -F '|' '
   && ok "DECISIONS 僅索引 ADR／Issue／PR" || err "DECISIONS 含非 ADR／Issue／PR 的權威來源"
 
 TEMPLATE_MAP=(
+  "maze-wayfinder/templates/WAYFINDER_MAP.template.md:WAYFINDER_MAP.md"
   "maze-idea-to-spec/templates/spec.template.md:spec.md"
   "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
   "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"

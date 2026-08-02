@@ -88,6 +88,9 @@ apply_known_pi_rewrites() {
     maze-pr-review)
       literal_replace_file "${file}" '透過 `maze-github-cli` Read 契約取得證據' '透過 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）Read 契約取得證據'
       ;;
+    maze-wayfinder)
+      literal_replace_file "${file}" '委派 `maze-github-cli`' '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）'
+      ;;
   esac
 }
 
@@ -264,6 +267,38 @@ for skill in "${SKILLS[@]}"; do
 
   ok "${skill}"
 done
+
+echo "--- Wayfinder：hidden internal skill 相對路徑改寫（SKILL.md 與 nested references/execution-flow.md） ---"
+check_wayfinder_pi_rewrite() {
+  local canonical="$1" pi_file="$2" old="$3" new="$4" label="$5" expected_tmp
+  if [ ! -f "${pi_file}" ]; then
+    err "Wayfinder ${label}：找不到 Pi 版本 ${pi_file}"
+    return
+  fi
+  grep -qF -- "${old}" "${canonical}" \
+    || { err "Wayfinder ${label}：canonical 內容已變更，找不到「${old}」，改寫表需同步更新 sync-adapters.sh／validate-pi-adapter.sh"; return; }
+  expected_tmp="$(mktemp)"
+  grep -vE '^(invocation|disable-model-invocation):' "${canonical}" > "${expected_tmp}" || true
+  literal_replace_file "${expected_tmp}" "${old}" "${new}"
+  if diff -q "${expected_tmp}" <(grep -vE '^(invocation|disable-model-invocation):' "${pi_file}") >/dev/null 2>&1; then
+    ok "Wayfinder ${label}：Pi 版本已正確改寫為隱藏 internal skill 的相對路徑"
+  else
+    err "Wayfinder ${label}：Pi 版本內容與預期改寫不一致（路徑：${pi_file}）"
+  fi
+  rm -f "${expected_tmp}"
+}
+check_wayfinder_pi_rewrite \
+  "${ROOT_DIR}/skills/maze-wayfinder/SKILL.md" \
+  "${PI_SKILLS_DIR}/maze-wayfinder/SKILL.md" \
+  '委派 `maze-github-cli`' \
+  '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）' \
+  "SKILL.md → maze-github-cli"
+check_wayfinder_pi_rewrite \
+  "${ROOT_DIR}/skills/maze-wayfinder/references/execution-flow.md" \
+  "${PI_SKILLS_DIR}/maze-wayfinder/references/execution-flow.md" \
+  '委派 `maze-domain-modeling`' \
+  '委派 `maze-domain-modeling`（Pi 路徑：`../../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md`）' \
+  "references/execution-flow.md → maze-domain-modeling"
 
 echo "--- 名稱碰撞、資源路徑、根層 stray .md（.pi/skills 真實探索掃描 + internal 內容／資源檢查） ---"
 # 對 Pi 真實的探索根 .pi/skills 做 discovery 掃描（stray .md 檢查才對得到 Pi 實際載入的

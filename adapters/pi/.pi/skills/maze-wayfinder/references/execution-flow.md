@@ -26,7 +26,7 @@
 根據 Step 1-2 的對話內容：
 1. 撰寫 Destination（一到兩句話）
 2. 撰寫 Notes（領域背景、偏好）
-3. 把能精確描述的問題開成 issues（Frontier），依 `issue-types.md` 標記類型
+3. 把能精確描述的問題開成 issues（Frontier），依 `issue-types.md` 標記類型（GitHub 載體：開 sub-issue 並設定 `wayfinder:<type>` 標籤；Local Markdown 載體：在 `## Questions` 下新增一個 `### Q-ID` section，填入 type、`status: open`、blocked-by、question）
 4. 把無法精確描述的方向寫入 `Not Yet Specified`（Fog）
 5. 如有明確排除的方向，寫入 `Out of Scope`
 
@@ -51,14 +51,14 @@
 
 根據 issue 類型委派對應的技能（見 `issue-types.md`）：
 - Grilling → 委派 `maze-grill` 或 `maze-grill-with-docs`，向使用者提問，一次一個問題，收斂到答案
-- Research → Agent 獨立調研，產出摘要（如涉及領域建模，委派 `maze-domain-modeling`）
+- Research → Agent 獨立調研，產出摘要（如涉及領域建模，委派 `maze-domain-modeling`（Pi 路徑：`../../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md`））
 - Prototype → 委派 `maze-gui-prototyping`（如適用），或產出粗糙原型供使用者反應
 - Task → 列出使用者需要完成的步驟，或 agent 獨立完成
 
 **Step 4 — 記錄與更新**
 
-1. 在 issue 上記錄答案
-2. 關閉 issue
+1. 在 issue 上記錄答案（Local Markdown 載體：寫回該 Questions section 的 `answer` 欄位）
+2. 關閉 issue（Local Markdown 載體：該 section 的 `status` 改為 `resolved` 或 `out-of-scope`）
 3. 更新地圖的 `Decisions` 區塊（加一行摘要 + 連結）
 4. 檢查：這個答案是否讓某些迷霧變得可以精確描述了？
    - 是 → 從 `Not Yet Specified` 畢業，開成新 issue
@@ -87,4 +87,4 @@
 
 **並發安全（GitHub Issues 載體）：** 開始處理 issue 前先 assign 給自己（claim）；open + unassigned = 可認領；open + assigned = 已被其他 session 認領，跳過。
 
-**並發安全（Local Markdown 載體）：** 單 session 操作，不考慮並發；若偵測到檔案在 session 期間被外部修改，警告使用者並暫停。
+**並發安全（Local Markdown 載體）：** 單 session 操作，不考慮並發；載入地圖時記錄檔案內容的 hash，每次寫回前重新計算並比對——不一致代表檔案在 session 期間被外部修改，警告使用者並暫停，不覆寫。
