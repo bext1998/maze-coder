@@ -145,6 +145,12 @@ require_text "${CLI}" "\\-\\-admin.*force.*保護規則" "GitHub CLI 禁止繞�
 require_text "${CLI}" "失敗後重新查詢.*重試未完成" "GitHub CLI 冪等失敗處理"
 require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*預覽.*確認.*委派.*internal" "safe-ops internal CLI 委派"
 
+echo "--- wayfinder contract ---"
+require_text "skills/maze-wayfinder/SKILL.md" "Mode 1 建圖.*不解決 issue.*Mode 2 推進.*每次只解決一個 issue" "Wayfinder Mode 1／Mode 2 分離"
+require_text "skills/maze-wayfinder/references/issue-types.md" "HITL 規則.*agent 不得替使用者回答問題" "Wayfinder HITL 邊界"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "地圖是索引，不是倉庫" "Wayfinder 地圖索引原則"
+require_text "skills/maze-wayfinder/SKILL.md" "不寫規格書.*不實作.*不寫程式碼.*不產 PR.*不替使用者決策" "Wayfinder 唯讀邊界"
+
 echo "--- adversarial, threat-modeling, and diagnosis contracts ---"
 ADVERSARIAL_REVIEW="skills/maze-adversarial-review/SKILL.md"
 require_text "${ADVERSARIAL_REVIEW}" "核心主張.*隱藏假設.*可推翻條件" "Adversarial review 定義證偽目標"

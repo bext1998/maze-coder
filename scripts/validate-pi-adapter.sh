@@ -18,7 +18,7 @@ ERRORS=0
 WARNINGS=0
 
 SKILLS=(
-  maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
+  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
   maze-root-cause-diagnosis maze-github-cli
   maze-session-closeout maze-github-safe-ops maze-design-review
@@ -28,7 +28,7 @@ SKILLS=(
   maze-domain-modeling
 )
 PUBLIC_SKILLS=(
-  maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
+  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
   maze-root-cause-diagnosis
   maze-session-closeout maze-github-safe-ops maze-design-review
@@ -192,10 +192,10 @@ fi
 echo "--- 技能數量與探索（遞迴掃描，非固定深度） ---"
 ACTUAL_PUBLIC="$(find "${PI_SKILLS_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
 ACTUAL_INTERNAL="$(find "${PI_INTERNAL_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
-[ "${ACTUAL_PUBLIC}" -eq 24 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 24，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
+[ "${ACTUAL_PUBLIC}" -eq 25 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 25，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
 [ "${ACTUAL_INTERNAL}" -eq 3 ] || err ".pi/maze-coder/internal-skills/ 下遞迴可發現的 SKILL.md 應為 3，實際為 ${ACTUAL_INTERNAL}"
-[ "${#SKILLS[@]}" -eq 27 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 24 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
-  && ok "validator 內建 27／24／3 技能拓撲" || err "validator 內建技能拓撲不是 27／24／3"
+[ "${#SKILLS[@]}" -eq 28 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 25 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
+  && ok "validator 內建 28／25／3 技能拓撲" || err "validator 內建技能拓撲不是 28／25／3"
 
 echo "--- internal skill 未落在 Pi 探索路徑內（核心回歸檢查） ---"
 for skill in "${INTERNAL_SKILLS[@]}"; do
@@ -299,7 +299,7 @@ if [ -f "${PI_AGENTS}" ]; then
   for skill in "${INTERNAL_SKILLS[@]}"; do
     ! grep -q "${skill}" "${PI_AGENTS}" || err "adapters/pi/AGENTS.md 路由表公開了 internal skill ${skill}（路徑：${PI_AGENTS}）"
   done
-  ok "adapters/pi/AGENTS.md 路由表 24 公開／不含 3 internal"
+  ok "adapters/pi/AGENTS.md 路由表 25 公開／不含 3 internal"
 fi
 
 echo "--- 核心契約與 Guidance 同步 ---"

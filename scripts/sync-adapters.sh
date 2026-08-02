@@ -8,6 +8,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHANGES=0
 
 SKILLS=(
+  maze-wayfinder
   maze-idea-to-spec
   maze-spec-hardening
   maze-project-init
@@ -111,6 +112,7 @@ router_body() {
 
 | 意圖 | 技能 |
 |---|---|
+| 需求太模糊、連想要什麼都不確定 | maze-wayfinder |
 | 想法轉規格 | maze-idea-to-spec |
 | 補強規格 | maze-spec-hardening |
 | 初始化專案文件 | maze-project-init |
@@ -212,7 +214,7 @@ sync_pi_skills() {
     mv "${tmp_root}/skills/${internal_skill}" "${tmp_root}/internal-skills/${internal_skill}"
   done
 
-  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "24 個公開／模型可觸發技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
+  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "25 個公開／模型可觸發技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
   sync_dir "${tmp_root}/internal-skills" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/internal-skills" "3 個 internal skill 內容，移出 Pi 技能探索路徑以避免 /skill:<name> 曝光"
   rm -rf "${tmp_root}"
 }
@@ -286,6 +288,7 @@ sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/mo
 
 echo "--- Root templates ---"
 TEMPLATE_MAP=(
+  "maze-wayfinder/templates/WAYFINDER_MAP.template.md:WAYFINDER_MAP.md"
   "maze-idea-to-spec/templates/spec.template.md:spec.md"
   "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
   "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"

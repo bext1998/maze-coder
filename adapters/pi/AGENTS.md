@@ -6,6 +6,7 @@
 
 | 意圖 | 技能 |
 |---|---|
+| 需求太模糊、連想要什麼都不確定 | maze-wayfinder |
 | 想法轉規格 | maze-idea-to-spec |
 | 補強規格 | maze-spec-hardening |
 | 初始化專案文件 | maze-project-init |
