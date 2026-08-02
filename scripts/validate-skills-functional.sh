@@ -50,8 +50,8 @@ require_text "${RISK_TDD}" "基線失敗必須分列" "TDD 區分既有基線失
 require_text "${RISK_TDD}" "純文件、格式、生成物同步.*機械重構不適用" "TDD 排除零行為變更"
 require_text "${RISK_TDD}" "不得因測試困難跳過驗證、忽略退出碼、弱化斷言或修改測試迎合錯誤結果" "TDD 禁止弱化驗證"
 require_text "${RISK_TDD}" "無法達成時不得假裝已完成，須誠實回報卡在哪一步與原因" "TDD 卡關須誠實回報"
-require_text "${RISK_TDD}" "不得未告知使用者就降低驗收標準或縮小範圍" "TDD 禁止默默降低驗收標準"
-require_text "${RISK_TDD}" "察覺自己抄捷徑或省略步驟時，須主動揭露，不等使用者發現才承認" "TDD 要求主動揭露抄捷徑"
+require_text "${RISK_TDD}" "未取得使用者明確同意前，不得降低驗收標準或縮小範圍" "TDD 禁止未經同意降低驗收標準"
+require_text "${RISK_TDD}" "察覺抄捷徑或省略已承諾／驗收所需步驟時，須立即停止、主動揭露並補回；無法補回則先取得使用者明確同意才可調整" "TDD 要求停止、揭露、補回或取得同意"
 
 echo "--- token-efficiency-review contracts ---"
 TOKEN_REVIEW="skills/maze-token-efficiency-review/SKILL.md"
