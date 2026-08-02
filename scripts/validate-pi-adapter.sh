@@ -18,7 +18,7 @@ ERRORS=0
 WARNINGS=0
 
 SKILLS=(
-  maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
+  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
   maze-root-cause-diagnosis maze-github-cli
   maze-session-closeout maze-github-safe-ops maze-design-review
@@ -28,7 +28,7 @@ SKILLS=(
   maze-domain-modeling
 )
 PUBLIC_SKILLS=(
-  maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
+  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
   maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
   maze-root-cause-diagnosis
   maze-session-closeout maze-github-safe-ops maze-design-review
@@ -87,6 +87,9 @@ apply_known_pi_rewrites() {
       ;;
     maze-pr-review)
       literal_replace_file "${file}" '透過 `maze-github-cli` Read 契約取得證據' '透過 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）Read 契約取得證據'
+      ;;
+    maze-wayfinder)
+      literal_replace_file "${file}" '委派 `maze-github-cli`' '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）'
       ;;
   esac
 }
@@ -192,10 +195,10 @@ fi
 echo "--- 技能數量與探索（遞迴掃描，非固定深度） ---"
 ACTUAL_PUBLIC="$(find "${PI_SKILLS_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
 ACTUAL_INTERNAL="$(find "${PI_INTERNAL_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
-[ "${ACTUAL_PUBLIC}" -eq 24 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 24，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
+[ "${ACTUAL_PUBLIC}" -eq 25 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 25，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
 [ "${ACTUAL_INTERNAL}" -eq 3 ] || err ".pi/maze-coder/internal-skills/ 下遞迴可發現的 SKILL.md 應為 3，實際為 ${ACTUAL_INTERNAL}"
-[ "${#SKILLS[@]}" -eq 27 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 24 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
-  && ok "validator 內建 27／24／3 技能拓撲" || err "validator 內建技能拓撲不是 27／24／3"
+[ "${#SKILLS[@]}" -eq 28 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 25 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
+  && ok "validator 內建 28／25／3 技能拓撲" || err "validator 內建技能拓撲不是 28／25／3"
 
 echo "--- internal skill 未落在 Pi 探索路徑內（核心回歸檢查） ---"
 for skill in "${INTERNAL_SKILLS[@]}"; do
@@ -265,6 +268,38 @@ for skill in "${SKILLS[@]}"; do
   ok "${skill}"
 done
 
+echo "--- Wayfinder：hidden internal skill 相對路徑改寫（SKILL.md 與 nested references/execution-flow.md） ---"
+check_wayfinder_pi_rewrite() {
+  local canonical="$1" pi_file="$2" old="$3" new="$4" label="$5" expected_tmp
+  if [ ! -f "${pi_file}" ]; then
+    err "Wayfinder ${label}：找不到 Pi 版本 ${pi_file}"
+    return
+  fi
+  grep -qF -- "${old}" "${canonical}" \
+    || { err "Wayfinder ${label}：canonical 內容已變更，找不到「${old}」，改寫表需同步更新 sync-adapters.sh／validate-pi-adapter.sh"; return; }
+  expected_tmp="$(mktemp)"
+  grep -vE '^(invocation|disable-model-invocation):' "${canonical}" > "${expected_tmp}" || true
+  literal_replace_file "${expected_tmp}" "${old}" "${new}"
+  if diff -q "${expected_tmp}" <(grep -vE '^(invocation|disable-model-invocation):' "${pi_file}") >/dev/null 2>&1; then
+    ok "Wayfinder ${label}：Pi 版本已正確改寫為隱藏 internal skill 的相對路徑"
+  else
+    err "Wayfinder ${label}：Pi 版本內容與預期改寫不一致（路徑：${pi_file}）"
+  fi
+  rm -f "${expected_tmp}"
+}
+check_wayfinder_pi_rewrite \
+  "${ROOT_DIR}/skills/maze-wayfinder/SKILL.md" \
+  "${PI_SKILLS_DIR}/maze-wayfinder/SKILL.md" \
+  '委派 `maze-github-cli`' \
+  '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）' \
+  "SKILL.md → maze-github-cli"
+check_wayfinder_pi_rewrite \
+  "${ROOT_DIR}/skills/maze-wayfinder/references/execution-flow.md" \
+  "${PI_SKILLS_DIR}/maze-wayfinder/references/execution-flow.md" \
+  '委派 `maze-domain-modeling`' \
+  '委派 `maze-domain-modeling`（Pi 路徑：`../../../maze-coder/internal-skills/maze-domain-modeling/SKILL.md`）' \
+  "references/execution-flow.md → maze-domain-modeling"
+
 echo "--- 名稱碰撞、資源路徑、根層 stray .md（.pi/skills 真實探索掃描 + internal 內容／資源檢查） ---"
 # 對 Pi 真實的探索根 .pi/skills 做 discovery 掃描（stray .md 檢查才對得到 Pi 實際載入的
 # 那一層）；internal-skills 不在 Pi 探索路徑內，另做同等的資源路徑檢查（內容／name／desc
@@ -299,7 +334,7 @@ if [ -f "${PI_AGENTS}" ]; then
   for skill in "${INTERNAL_SKILLS[@]}"; do
     ! grep -q "${skill}" "${PI_AGENTS}" || err "adapters/pi/AGENTS.md 路由表公開了 internal skill ${skill}（路徑：${PI_AGENTS}）"
   done
-  ok "adapters/pi/AGENTS.md 路由表 24 公開／不含 3 internal"
+  ok "adapters/pi/AGENTS.md 路由表 25 公開／不含 3 internal"
 fi
 
 echo "--- 核心契約與 Guidance 同步 ---"

@@ -6,10 +6,11 @@
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 27 Canonical Skills
+## 28 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
+| `maze-wayfinder` | 需求太模糊、連想要什麼都不確定時的探路與建圖 |
 | `maze-idea-to-spec` | 模糊想法 → spec |
 | `maze-spec-hardening` | 補強工程契約與驗收條件 |
 | `maze-project-init` | 初始化專案文件與 GitHub 設定 |
@@ -101,7 +102,7 @@ assets/     品牌與視覺資產
 core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
-skills/     27 個來源技能及按需資源
+skills/     28 個來源技能及按需資源
 adapters/   五種工具的 Router 與資源包
 extensions/ 選用、不可攜、不經同步管線的單一工具專屬技能
 templates/  由技能模板同步的使用者文件

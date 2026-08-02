@@ -145,6 +145,30 @@ require_text "${CLI}" "\\-\\-admin.*force.*保護規則" "GitHub CLI 禁止繞�
 require_text "${CLI}" "失敗後重新查詢.*重試未完成" "GitHub CLI 冪等失敗處理"
 require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*預覽.*確認.*委派.*internal" "safe-ops internal CLI 委派"
 
+echo "--- wayfinder contract ---"
+require_text "skills/maze-wayfinder/SKILL.md" "Mode 1 建圖.*不解決 issue.*Mode 2 推進.*每次只解決一個 issue" "Wayfinder Mode 1／Mode 2 分離"
+require_text "skills/maze-wayfinder/references/issue-types.md" "HITL 規則.*agent 不得替使用者回答問題" "Wayfinder HITL 邊界"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "地圖是索引，不是倉庫" "Wayfinder 地圖索引原則"
+require_text "skills/maze-wayfinder/SKILL.md" "不寫規格書.*不實作.*不寫程式碼.*不產 PR.*不替使用者決策" "Wayfinder 唯讀邊界"
+require_text "skills/maze-wayfinder/SKILL.md" "剩餘問題已確認不影響 Destination（可提前收斂）" "Wayfinder 提前收斂條件"
+require_text "skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md" "^## Questions$" "Wayfinder Local Markdown Questions section"
+for field in "type: grilling" "status: open" "blocked-by:" "question:" "answer:"; do
+  require_text "skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md" "${field}" "Wayfinder Questions 欄位: ${field}"
+done
+require_text "skills/maze-wayfinder/references/issue-types.md" "Local Markdown 載體.*Questions.*section.*Q-ID、type、status、blocked-by、question、answer" "Wayfinder Local Markdown 六欄位契約"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "載入地圖時記錄檔案內容的 hash.*重新計算並比對" "Wayfinder Local Markdown hash 偵測外部修改"
+require_text "skills/maze-wayfinder/checklists/wayfinder-checklist.md" "Local Markdown 載體.*寫入前已比對 hash" "Wayfinder checklist hash 自查"
+require_text "skills/maze-wayfinder/references/issue-types.md" '\.\./\.\./maze-spec-to-issues/references/issue-model\.md' "Wayfinder issue-types 巢狀路徑正確"
+if awk '
+  /<!--/ { in_comment=1 }
+  !in_comment { print }
+  /-->/ { in_comment=0 }
+' "${ROOT_DIR}/skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md" | grep -Eq '<[^>]*>'; then
+  err "Wayfinder WAYFINDER_MAP.template.md 仍含非 HTML comment 的 angle-bracket placeholder"
+else
+  ok "Wayfinder WAYFINDER_MAP.template.md 無殘留 angle-bracket placeholder（已改為方括號）"
+fi
+
 echo "--- adversarial, threat-modeling, and diagnosis contracts ---"
 ADVERSARIAL_REVIEW="skills/maze-adversarial-review/SKILL.md"
 require_text "${ADVERSARIAL_REVIEW}" "核心主張.*隱藏假設.*可推翻條件" "Adversarial review 定義證偽目標"
