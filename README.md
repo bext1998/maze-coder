@@ -85,6 +85,14 @@ cp adapters/pi/AGENTS.md /your-project/
 cp -r adapters/pi/.pi /your-project/
 ```
 
+以上是逐專案安裝，複製後的技能版本會釘死、跟著該專案一起進版控。若想在所有專案共用同一份、隨 repo 更新自動同步，Claude Code 另有全域安裝：
+
+```bash
+bash scripts/link-user-skills.sh
+```
+
+把 `adapters/claude-code/.claude/skills/*` 逐一 symlink 到全域 `~/.claude/skills/`，取代舊的複製方式（複製在 Windows 上對已存在目的地會產生巢狀損毀，見 git 歷史 PR #39／#41）。之後只要 `git pull` 這個 repo，全域技能就會自動反映最新內容，不需要重新安裝；加 `--force` 可覆蓋既有非空、非本腳本管理的同名目錄。
+
 ## Sync and Validate
 
 ```bash
