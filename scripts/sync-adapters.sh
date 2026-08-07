@@ -222,7 +222,7 @@ sync_pi_skills() {
     mv "${tmp_root}/skills/${internal_skill}" "${tmp_root}/internal-skills/${internal_skill}"
   done
 
-  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "25 個公開／模型可觸發技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
+  sync_dir "${tmp_root}/skills" "${ROOT_DIR}/adapters/pi/.pi/skills" "26 個公開／模型可觸發技能資源與 invocation metadata（Pi 原生對應，僅 disable-model-invocation 有對等欄位）"
   sync_dir "${tmp_root}/internal-skills" "${ROOT_DIR}/adapters/pi/.pi/maze-coder/internal-skills" "3 個 internal skill 內容，移出 Pi 技能探索路徑以避免 /skill:<name> 曝光"
   rm -rf "${tmp_root}"
 }

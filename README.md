@@ -103,7 +103,7 @@ assets/     品牌與視覺資產
 core/       不變量與自適應工作模型
 profiles/   三級 Guidance Profile
 model-overlays/ 輕量模型偏差修正
-skills/     28 個來源技能及按需資源
+skills/     29 個來源技能及按需資源
 adapters/   五種工具的 Router 與資源包
 extensions/ 選用、不可攜、不經同步管線的單一工具專屬技能
 templates/  由技能模板同步的使用者文件
