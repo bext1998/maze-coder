@@ -91,13 +91,13 @@ for src in "${src_dirs[@]}"; do
   elif [ -e "${target}" ]; then
     # 既有實體資料夾／檔案，且不是這支腳本建立的連結。「裡面有沒有 SKILL.md」不能
     # 證明它是舊版複製殘留而非使用者自己的東西，所以只有真的是空資料夾才自動清除；
-    # 其他一律要求 --force 明確確認，不用猜的。ls -A 讀不到（權限問題等）時視為
-    # 不安全，一樣要求 --force。
-    is_empty=0
-    if [ -r "${target}" ] && [ -z "$(command ls -A -- "${target}" 2>/dev/null)" ]; then
-      is_empty=1
-    fi
-    if [ "${is_empty}" = "1" ] || [ "${FORCE}" = "1" ]; then
+    # 其他一律要求 --force 明確確認，不用猜的。判斷「是否為空」不解析 ls 輸出（權限
+    # 錯誤被吞掉、或檔名剛好是換行字元時都可能誤判成空字串）；改成直接嘗試 rmdir，
+    # 這是核准層級的保證——成功就代表當下確實是空目錄，失敗（非空、非目錄、權限
+    # 問題等）一律不動它，除非有 --force。
+    if rmdir "${target}" 2>/dev/null; then
+      : # 空目錄已移除，往下建立 symlink
+    elif [ "${FORCE}" = "1" ]; then
       rm -rf "${target}"
     else
       echo "ERROR: ${target} 已存在且非空，無法確認是否為舊版複製殘留。" >&2
