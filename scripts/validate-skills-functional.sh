@@ -64,6 +64,8 @@ echo "--- explain-for-dumbass contract ---"
 EXPLAIN_DUMBASS="skills/maze-explain-for-dumbass/SKILL.md"
 require_text "${EXPLAIN_DUMBASS}" "檔案路徑、指令、版本號、錯誤碼、API／函式名、環境變數" "explain-for-dumbass 不可簡化清單完整"
 require_text "${EXPLAIN_DUMBASS}" "第一句話是具體結論，不是過程敘述" "explain-for-dumbass 輸出結構：結論優先"
+require_text "${EXPLAIN_DUMBASS}" "「你現在要做的」區塊" "explain-for-dumbass 輸出結構：行動區塊"
+require_text "${EXPLAIN_DUMBASS}" "摺疊保留" "explain-for-dumbass 輸出結構：技術細節摺疊保留"
 require_text "${EXPLAIN_DUMBASS}" "不重做任務、不改變技術結論" "explain-for-dumbass 不重做任務邊界"
 require_text "${EXPLAIN_DUMBASS}" "v1 不做：常駐觸發、懂度分級、術語表、理解力驗證" "explain-for-dumbass v1 範圍排除明示"
 
