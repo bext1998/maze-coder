@@ -6,7 +6,7 @@
 
 **Adaptive Harness Engineering Skills Pack** — 共用安全與完成契約，同時保留前沿模型的原生代理能力。
 
-## 28 Canonical Skills
+## 29 Canonical Skills
 
 | Skill | 用途 |
 |---|---|
@@ -31,6 +31,7 @@
 | `maze-bug-reproduction` | Bug 最小重現文件 |
 | `maze-handoff-summary` | 跨工具／人員交接 |
 | `maze-token-efficiency-review` | 執行 trace 與 token 效率稽核 |
+| `maze-explain-for-dumbass` | 把技術性回覆重講成白話版本，保留檔名／指令／錯誤碼等具體資訊 |
 | `maze-risk-driven-tdd` | 低上下文、風險導向的行為驗證與實作 |
 | `maze-skill-authoring` | 評估是否新增或擴充技能 |
 | `maze-grill` | 逐題壓力測試，不產生文件 |
