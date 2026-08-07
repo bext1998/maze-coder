@@ -20,8 +20,24 @@
 #
 # 執行前需先跑過 scripts/sync-adapters.sh，確保 adapters/claude-code/.claude/skills/
 # 是最新內容。
+#
+# --force：目的地已存在非空、非本腳本建立的資料夾時，預設一律停下來讓人手動處理
+# ——「裡面有 SKILL.md」不能證明那是舊版複製殘留，使用者也可能自己維護一份同名的
+# 全域技能，貿然刪除會撞上真實資料。--force 是明確的一次性覆蓋開關，只在你確定
+# 要把舊版複製安裝（或其他佔用同名路徑的東西）整個換成 symlink 時才加。
 
 set -euo pipefail
+
+FORCE=0
+for arg in "$@"; do
+  case "${arg}" in
+    --force) FORCE=1 ;;
+    *)
+      echo "ERROR: 未知參數 ${arg}（支援：--force）" >&2
+      exit 1
+      ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -40,8 +56,8 @@ export MSYS=winsymlinks:nativestrict
 mkdir -p "${DEST_ROOT}"
 
 # canon 用 `cd -P && pwd` 取代 `readlink -f`：後者不是所有平台都支援 -f（例如較舊版
-# macOS 內建 readlink），且原本用 `|| true` 吞掉的錯誤會讓「已是正確連結」永遠判斷不出
-# 來，每次都重建。`cd -P` 是 POSIX 內建行為，任何 bash 都有，失敗時讓呼叫端明確處理。
+# macOS 內建 readlink）。回傳非零代表無法解析（目錄不存在、broken symlink 等），呼叫端
+# 一律用 `if canon ...; then` 接住，不能讓失敗直接觸發 set -e 中止腳本。
 canon() {
   (cd -P "$1" 2>/dev/null && pwd)
 }
@@ -60,7 +76,12 @@ for src in "${src_dirs[@]}"; do
   expected="$(canon "${src}")"
 
   if [ -L "${target}" ]; then
-    current="$(canon "${target}")"
+    current=""
+    if resolved="$(canon "${target}")"; then
+      current="${resolved}"
+    fi
+    # current 為空代表 target 是懸空 symlink（canon 失敗）；視同「需要重建」，
+    # 不能讓失敗在 set -e 下直接中止腳本。
     if [ -n "${current}" ] && [ "${current}" = "${expected}" ]; then
       echo "  [SAME] ${name}"
       continue
@@ -68,14 +89,19 @@ for src in "${src_dirs[@]}"; do
     # 連結存在但指向錯誤位置（或已失效/懸空）：換成正確連結，安全直接覆蓋。
     rm -f "${target}"
   elif [ -e "${target}" ]; then
-    # 既有實體資料夾／檔案，且不是這支腳本建立的連結。只在看得出是舊版技能安裝
-    # （含 SKILL.md）或是空資料夾時才視為可安全清除的殘留；否則裡面可能是使用者
-    # 自己放的、無關的東西，直接停下來讓人手動處理，不要幫忙猜測後代為刪除。
-    if [ -f "${target}/SKILL.md" ] || [ -z "$(ls -A "${target}" 2>/dev/null)" ]; then
+    # 既有實體資料夾／檔案，且不是這支腳本建立的連結。「裡面有沒有 SKILL.md」不能
+    # 證明它是舊版複製殘留而非使用者自己的東西，所以只有真的是空資料夾才自動清除；
+    # 其他一律要求 --force 明確確認，不用猜的。ls -A 讀不到（權限問題等）時視為
+    # 不安全，一樣要求 --force。
+    is_empty=0
+    if [ -r "${target}" ] && [ -z "$(command ls -A -- "${target}" 2>/dev/null)" ]; then
+      is_empty=1
+    fi
+    if [ "${is_empty}" = "1" ] || [ "${FORCE}" = "1" ]; then
       rm -rf "${target}"
     else
-      echo "ERROR: ${target} 已存在，且看起來不是本腳本管理的技能安裝（沒有 SKILL.md 且非空）。" >&2
-      echo "       請確認內容後手動處理（搬移或刪除），再重新執行本腳本。" >&2
+      echo "ERROR: ${target} 已存在且非空，無法確認是否為舊版複製殘留。" >&2
+      echo "       確認內容後手動刪除／搬移，或用 --force 明確覆蓋再重新執行。" >&2
       exit 1
     fi
   fi
