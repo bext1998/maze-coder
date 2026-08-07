@@ -1,6 +1,6 @@
 # Pi Adapter
 
-`AGENTS.md` 是精簡 Router（Pi 原生支援 `AGENTS.md`／`CLAUDE.md` 自動載入，可用 `--no-context-files` 關閉）；`.pi/` 提供 28 個 canonical skills、Profiles、Overlays 與核心契約。25 個公開或可由模型觸發的技能放在 Pi 原生會掃描的 `.pi/skills/`；3 個 internal skills（`maze-grilling`、`maze-domain-modeling`、`maze-github-cli`）刻意放在 `.pi/maze-coder/internal-skills/`——這個路徑不在 Pi 的任何技能探索位置內，因此完全不會被發現、不會注入模型系統提示、也不會註冊 `/skill:<name>` 指令（原因與驗證見下方「internal skill 的實體隔離」）。兩者必須一起安裝：
+`AGENTS.md` 是精簡 Router（Pi 原生支援 `AGENTS.md`／`CLAUDE.md` 自動載入，可用 `--no-context-files` 關閉）；`.pi/` 提供 29 個 canonical skills、Profiles、Overlays 與核心契約。26 個公開或可由模型觸發的技能放在 Pi 原生會掃描的 `.pi/skills/`；3 個 internal skills（`maze-grilling`、`maze-domain-modeling`、`maze-github-cli`）刻意放在 `.pi/maze-coder/internal-skills/`——這個路徑不在 Pi 的任何技能探索位置內，因此完全不會被發現、不會注入模型系統提示、也不會註冊 `/skill:<name>` 指令（原因與驗證見下方「internal skill 的實體隔離」）。兩者必須一起安裝：
 
 ```bash
 cp AGENTS.md /your-project/
@@ -46,7 +46,7 @@ Pi 會**遞迴掃描**任何技能探索路徑（`.pi/skills/`、`.agents/skills
 | `internal` | 移出 `.pi/skills/`，放到 `.pi/maze-coder/internal-skills/` | Pi 完全不會發現：不進系統提示、不會有 `/skill:<name>` 指令（見上方「實體隔離」） |
 | `model` | `.pi/skills/` 內，不轉譯（保持預設，等同 `both`） | 模型可主動選用；`/skill:<name>` 指令**仍會註冊** |
 
-**唯一剩餘的已知限制（`model` 這一類）**：Pi 沒有等同 Claude Code `user-invocable: false` 的欄位，無法只隱藏使用者指令、保留模型可見度——`model` 類技能在 Pi 下會被當成 `both` 對待（`/skill:<name>` 一樣可呼叫）。目前 28 個 canonical skills 沒有任何一個實際使用 `invocation: model`，所以現況沒有實際落差；這裡記錄下來是給未來新增 `model` 類技能時的既知限制，不是現在就存在的問題。`scripts/validate-pi-adapter.sh` 會在真的出現 `model` 類技能時對此輸出 `[WARN]`。
+**唯一剩餘的已知限制（`model` 這一類）**：Pi 沒有等同 Claude Code `user-invocable: false` 的欄位，無法只隱藏使用者指令、保留模型可見度——`model` 類技能在 Pi 下會被當成 `both` 對待（`/skill:<name>` 一樣可呼叫）。目前 29 個 canonical skills 沒有任何一個實際使用 `invocation: model`，所以現況沒有實際落差；這裡記錄下來是給未來新增 `model` 類技能時的既知限制，不是現在就存在的問題。`scripts/validate-pi-adapter.sh` 會在真的出現 `model` 類技能時對此輸出 `[WARN]`。
 
 ## 名稱碰撞行為（實測）
 

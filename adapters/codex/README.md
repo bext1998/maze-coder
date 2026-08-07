@@ -1,6 +1,6 @@
 # Codex Adapter
 
-`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 28 個 canonical skills（25 個公開入口、3 個 internal）、Profiles、Overlays 與核心契約，兩者必須一起安裝。
+`AGENTS.md` 是精簡 Router；`.maze-coder/` 提供 29 個 canonical skills（26 個公開入口、3 個 internal）、Profiles、Overlays 與核心契約，兩者必須一起安裝。
 
 ```bash
 cp AGENTS.md /your-project/

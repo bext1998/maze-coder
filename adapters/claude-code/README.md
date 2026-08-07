@@ -6,4 +6,4 @@
 cp -r .claude /your-project/
 ```
 
-共 28 個 canonical skills（25 個公開入口、3 個 internal）。內容由 `scripts/sync-adapters.sh` 產生，請修改根 source of truth，不要直接編輯此目錄。
+共 29 個 canonical skills（26 個公開入口、3 個 internal）。內容由 `scripts/sync-adapters.sh` 產生，請修改根 source of truth，不要直接編輯此目錄。

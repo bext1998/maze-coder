@@ -23,7 +23,7 @@ SKILLS=(
   maze-root-cause-diagnosis maze-github-cli
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs maze-grilling
   maze-domain-modeling
 )
@@ -33,7 +33,7 @@ PUBLIC_SKILLS=(
   maze-root-cause-diagnosis
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
 )
 INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
@@ -195,10 +195,10 @@ fi
 echo "--- 技能數量與探索（遞迴掃描，非固定深度） ---"
 ACTUAL_PUBLIC="$(find "${PI_SKILLS_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
 ACTUAL_INTERNAL="$(find "${PI_INTERNAL_DIR}" -name SKILL.md -type f | wc -l | tr -d ' ')"
-[ "${ACTUAL_PUBLIC}" -eq 25 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 25，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
+[ "${ACTUAL_PUBLIC}" -eq 26 ] || err ".pi/skills/ 下遞迴可發現的 SKILL.md 應為 26，實際為 ${ACTUAL_PUBLIC}（技能數量漂移或有巢狀／額外 SKILL.md）"
 [ "${ACTUAL_INTERNAL}" -eq 3 ] || err ".pi/maze-coder/internal-skills/ 下遞迴可發現的 SKILL.md 應為 3，實際為 ${ACTUAL_INTERNAL}"
-[ "${#SKILLS[@]}" -eq 28 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 25 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
-  && ok "validator 內建 28／25／3 技能拓撲" || err "validator 內建技能拓撲不是 28／25／3"
+[ "${#SKILLS[@]}" -eq 29 ] && [ "${#PUBLIC_SKILLS[@]}" -eq 26 ] && [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] \
+  && ok "validator 內建 29／26／3 技能拓撲" || err "validator 內建技能拓撲不是 29／26／3"
 
 echo "--- internal skill 未落在 Pi 探索路徑內（核心回歸檢查） ---"
 for skill in "${INTERNAL_SKILLS[@]}"; do
@@ -334,7 +334,7 @@ if [ -f "${PI_AGENTS}" ]; then
   for skill in "${INTERNAL_SKILLS[@]}"; do
     ! grep -q "${skill}" "${PI_AGENTS}" || err "adapters/pi/AGENTS.md 路由表公開了 internal skill ${skill}（路徑：${PI_AGENTS}）"
   done
-  ok "adapters/pi/AGENTS.md 路由表 25 公開／不含 3 internal"
+  ok "adapters/pi/AGENTS.md 路由表 26 公開／不含 3 internal"
 fi
 
 echo "--- 核心契約與 Guidance 同步 ---"

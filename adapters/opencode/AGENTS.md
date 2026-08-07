@@ -27,6 +27,7 @@
 | Bug 重現文件 | maze-bug-reproduction |
 | 跨工具／人員交接 | maze-handoff-summary |
 | Token 效率稽核 | maze-token-efficiency-review |
+| 對方聽不懂、要求講人話 | maze-explain-for-dumbass |
 | 新增功能、修 Bug、可觀察行為變更／TDD | maze-risk-driven-tdd |
 | 評估是否新增或擴充技能 | maze-skill-authoring |
 | 逐題壓力測試 | maze-grill |

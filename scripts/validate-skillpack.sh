@@ -18,7 +18,7 @@ SKILLS=(
   maze-root-cause-diagnosis maze-github-cli
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs maze-grilling
   maze-domain-modeling
 )
@@ -28,7 +28,7 @@ PUBLIC_SKILLS=(
   maze-root-cause-diagnosis
   maze-session-closeout maze-github-safe-ops maze-design-review
   maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review
+  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
 )
 INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
@@ -85,14 +85,14 @@ validate_skill() {
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
 ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 28 ] || err "skills/ 必須恰有 28 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
-[ "${#SKILLS[@]}" -eq 28 ] || err "validator canonical skill array 不是 28"
-[ "${#PUBLIC_SKILLS[@]}" -eq 25 ] || err "validator public skill array 不是 25"
+[ "${ACTUAL_SKILLS}" -eq 29 ] || err "skills/ 必須恰有 29 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
+[ "${#SKILLS[@]}" -eq 29 ] || err "validator canonical skill array 不是 29"
+[ "${#PUBLIC_SKILLS[@]}" -eq 26 ] || err "validator public skill array 不是 26"
 [ "${#INTERNAL_SKILLS[@]}" -eq 3 ] || err "validator internal skill array 不是 3"
 for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
 
 [ "${TOTAL_CHARS}" -lt "${MAX_CHARS}" ] \
-  && ok "28 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於上限 ${MAX_CHARS}" \
+  && ok "29 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於上限 ${MAX_CHARS}" \
   || err "SKILL.md 總字元 ${TOTAL_CHARS} 超過上限 ${MAX_CHARS}"
 
 RISK_TDD_CHARS="$(wc -m < "${ROOT_DIR}/skills/maze-risk-driven-tdd/SKILL.md" | tr -d ' ')"
@@ -171,15 +171,15 @@ for pair in \
     && ok "${pair}" || err "${pair} 未同步"
 done
 
-grep -q '所有 28 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
-  && ok "核心 Harness 標示 28 個技能" || err "核心 Harness 未標示 28 個技能"
+grep -q '所有 29 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
+  && ok "核心 Harness 標示 29 個技能" || err "核心 Harness 未標示 29 個技能"
 for readme in \
   "adapters/claude-code/README.md" \
   "adapters/codex/README.md" \
   "adapters/cursor/README.md" \
   "adapters/opencode/README.md"; do
-  grep -q '28 個' "${ROOT_DIR}/${readme}" \
-    && ok "${readme} 標示 28 個技能" || err "${readme} 未標示 28 個技能"
+  grep -q '29 個' "${ROOT_DIR}/${readme}" \
+    && ok "${readme} 標示 29 個技能" || err "${readme} 未標示 29 個技能"
 done
 
 for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
@@ -199,13 +199,13 @@ done
 
 echo "--- Templates and docs ---"
 SPEC_FILE="${ROOT_DIR}/docs/spec.md"
-grep -q '28 個 canonical skills：25 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
-  && ok "spec 標示 28／25／3 技能拓撲" || err "spec 未標示 28／25／3 技能拓撲"
+grep -q '29 個 canonical skills：26 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
+  && ok "spec 標示 29／26／3 技能拓撲" || err "spec 未標示 29／26／3 技能拓撲"
 grep -q '26 個 adaptive scenarios' "${SPEC_FILE}" \
   && ok "spec 標示 26 個 adaptive scenarios" || err "spec 未標示 26 個 adaptive scenarios"
 grep -q '總字元上限固定為 22,000' "${SPEC_FILE}" \
   && ok "spec 標示 22,000 字元上限" || err "spec 未標示 22,000 字元上限"
-if grep -Eq '27 個 canonical skills|27 個 SKILL\.md|固定驗證 27 個 SKILL\.md|完成後技能數固定為 27／24／3' "${SPEC_FILE}"; then
+if grep -Eq '28 個 canonical skills|28 個 SKILL\.md|固定驗證 28 個 SKILL\.md|完成後技能數固定為 28／25／3' "${SPEC_FILE}"; then
   err "spec 仍含過期技能、情境或字元上限"
 else
   ok "spec 無過期技能、情境或字元上限"
@@ -241,7 +241,7 @@ for mapping in "${TEMPLATE_MAP[@]}"; do
     && ok "templates/${dst}" || err "templates/${dst} 未同步"
 done
 
-grep -q '## 28 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 28 Canonical Skills"
+grep -q '## 29 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 29 Canonical Skills"
 
 echo "--- Adaptive architecture ---"
 for file in core/invariants.md core/workflow-model.md profiles/minimal.md profiles/standard.md profiles/scaffolded.md model-overlays/gpt-5.6.md model-overlays/claude.md model-overlays/gemini.md model-overlays/local-small-model.md; do

@@ -60,6 +60,16 @@ require_text "${TOKEN_REVIEW}" "可驗證且維持正確性、覆蓋率與能力
 require_text "${TOKEN_REVIEW}" "證據不足" "證據不足僅建議"
 require_text "${TOKEN_REVIEW}" "發現.*已採變更.*驗證結果.*剩餘風險" "token 稽核輸出完整"
 
+echo "--- explain-for-dumbass contract ---"
+EXPLAIN_DUMBASS="skills/maze-explain-for-dumbass/SKILL.md"
+require_text "${EXPLAIN_DUMBASS}" "檔案路徑、指令、版本號、錯誤碼、API／函式名、環境變數" "explain-for-dumbass 不可簡化清單完整"
+require_text "${EXPLAIN_DUMBASS}" "第一句話是具體結論，不是過程敘述" "explain-for-dumbass 輸出結構：結論優先"
+require_text "${EXPLAIN_DUMBASS}" "接著 2-4 句白話說明" "explain-for-dumbass 輸出結構：2-4 句白話說明"
+require_text "${EXPLAIN_DUMBASS}" "「你現在要做的」區塊" "explain-for-dumbass 輸出結構：行動區塊"
+require_text "${EXPLAIN_DUMBASS}" "摺疊保留" "explain-for-dumbass 輸出結構：技術細節摺疊保留"
+require_text "${EXPLAIN_DUMBASS}" "不重做任務、不改變技術結論" "explain-for-dumbass 不重做任務邊界"
+require_text "${EXPLAIN_DUMBASS}" "v1 不做：常駐觸發、懂度分級、術語表、理解力驗證" "explain-for-dumbass v1 範圍排除明示"
+
 echo "--- design-system and GUI prototype contracts ---"
 DESIGN_SYSTEM="skills/maze-design-system/SKILL.md"
 GUI_PROTOTYPE="skills/maze-gui-prototyping/SKILL.md"
