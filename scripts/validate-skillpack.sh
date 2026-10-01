@@ -61,6 +61,8 @@ validate_skill() {
   fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description" && $0 != "invocation") print}' "${file}")"
   [ -z "${fields}" ] || err "${skill}: frontmatter 含未知欄位 ${fields}"
   awk 'NR>1 && /^---$/{exit} /^description:[[:space:]]*[^[:space:]]/{found=1} END{exit !found}' "${file}" || err "${skill}: description 不得為空"
+  desc_len="$(awk 'NR>1 && /^---$/{exit} /^description:/{sub(/^description:[[:space:]]*/, ""); print length($0)}' "${file}")"
+  [ "${desc_len}" -le 200 ] || err "${skill}: description ${desc_len} 字元超過 200 上限（Codex Skills Catalog 觸發詞應前置，細節留在 SKILL.md）"
   invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
   case "${invocation}" in user|model|both|internal) ;; *) err "${skill}: invocation 必須為 user、model、both 或 internal" ;; esac
 
