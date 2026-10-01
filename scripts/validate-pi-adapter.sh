@@ -9,6 +9,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${SCRIPT_DIR}/lib/skills.sh"
 PI_SKILLS_DIR="${ROOT_DIR}/adapters/pi/.pi/skills"
 PI_INTERNAL_DIR="${ROOT_DIR}/adapters/pi/.pi/maze-coder/internal-skills"
 PI_MAZE_DIR="${ROOT_DIR}/adapters/pi/.pi/maze-coder"
@@ -17,26 +18,6 @@ FIXTURE_DIR="${SCRIPT_DIR}/fixtures/pi-adapter-selftest"
 ERRORS=0
 WARNINGS=0
 
-SKILLS=(
-  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
-  maze-root-cause-diagnosis maze-github-cli
-  maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
-  maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs maze-grilling
-  maze-domain-modeling
-)
-PUBLIC_SKILLS=(
-  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
-  maze-root-cause-diagnosis
-  maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
-  maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
-)
-INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
 REPO_ROOT_SCRIPTS=(sync-adapters.sh validate-skillpack.sh validate-skills-functional.sh validate-adaptive-scenarios.sh validate-pi-adapter.sh)
 
 ok() { echo "  [OK]   $1"; }
