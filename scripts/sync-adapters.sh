@@ -143,15 +143,22 @@ EOF
 }
 
 sync_claude_skills() {
-  local tmp_root skill file invocation transformed
+  local tmp_root skill file invocation transformed allowed allow
+  # Issue #40：maze-skill-authoring 例外允許 Claude Code 模型觸發，其餘 invocation: user 技能照舊停用。
+  local claude_model_invocable=(maze-skill-authoring)
   tmp_root="$(mktemp -d)"
   cp -R "${ROOT_DIR}/skills" "${tmp_root}/skills"
   for skill in "${SKILLS[@]}"; do
     file="${tmp_root}/skills/${skill}/SKILL.md"
     invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
+    allow="false"
+    for allowed in "${claude_model_invocable[@]}"; do
+      [ "${allowed}" = "${skill}" ] && allow="true"
+    done
     transformed="${file}.tmp"
-    awk -v mode="${invocation}" '
+    awk -v mode="${invocation}" -v allow="${allow}" '
       /^invocation:/ {
+        if (allow == "true") { next }
         if (mode == "user") print "disable-model-invocation: true"
         else if (mode == "model") print "user-invocable: false"
         else if (mode == "internal") {
