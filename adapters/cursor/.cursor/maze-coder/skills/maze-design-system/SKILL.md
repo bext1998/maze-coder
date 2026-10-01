@@ -1,6 +1,6 @@
 ---
 name: maze-design-system
-description: 建立或演進前端設計語言、Design Tokens 與明確指定的元件範圍。當使用者要求建立設計系統、整理視覺語言、定義 tokens 或擴充既有元件規則時使用。
+description: 建立或演進前端設計語言、Design Tokens 與明確指定的元件範圍。當使用者要求建立設計系統、整理視覺語言、定義 tokens 或擴充元件規則時使用。
 invocation: user
 ---
 
