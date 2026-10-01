@@ -100,13 +100,18 @@ require_text "skills/maze-spec-to-issues/references/sync-and-errors.md" "重試�
 for heading in 背景 目標 工作範圍 不在範圍內 驗收條件 相依關係 規格來源 完成條件; do
   require_text "skills/maze-spec-to-issues/templates/issue.template.md" "^## ${heading}$" "Issue template: ${heading}"
 done
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "必要且適用的專案檢查通過" "Issue 完成條件收敛為通用專案檢查"
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "已確認存在對應 gate" "Issue 完成條件僅在確認 gate 後具體化"
+grep -q '驗收條件與 QA 通過' "${ROOT_DIR}/skills/maze-spec-to-issues/templates/issue.template.md" && err "Issue template 仍無條件輸出 QA 完成條件" || ok "Issue template 無 QA 預設假設"
+grep -q '適用的 CI 通過' "${ROOT_DIR}/skills/maze-spec-to-issues/templates/issue.template.md" && err "Issue template 仍無條件輸出 CI 完成條件" || ok "Issue template 無 CI 預設假設"
+require_text "skills/maze-spec-to-issues/SKILL.md" "未確認存在的 QA／CI 或其他 gate 不得出現" "完成條件事實來源規則"
 require_text "skills/maze-spec-to-issues/templates/issue.template.md" "<!-- maze-coder" "Issue marker"
 
 echo "--- closeout contracts ---"
 for state in in-progress blocked awaiting-review awaiting-merge merged-awaiting-close completed research-only untracked; do
   require_text "skills/maze-session-closeout/references/state-model.md" "${state}" "Closeout state: ${state}"
 done
-require_text "skills/maze-session-closeout/references/state-model.md" "AC、QA、適用 CI、文件、PR 合併與 Issue 關閉全部成立" "completed 完整門檻"
+require_text "skills/maze-session-closeout/references/state-model.md" "AC、必要且適用的專案檢查、文件、PR 合併與 Issue 關閉全部成立" "completed 完整門檻"
 require_text "skills/maze-session-closeout/SKILL.md" "不建立 Session Closeout Report" "禁止 Closeout Report"
 require_text "skills/maze-session-closeout/SKILL.md" "明確要求 closeout.*整體重建" "closeout 需明確授權且整體重建"
 require_text "skills/maze-session-closeout/SKILL.md" "不得追加.*STATUS" "closeout 不追加且不寫 STATUS"
