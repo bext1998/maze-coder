@@ -17,15 +17,20 @@ invocation: both
 
 ## 執行流程
 
-1. 依序補強 Contract、Invariants、Edge Cases、Acceptance Criteria、Test Plan、FROZEN、Drift Risk、Open Questions。
-2. 對每項主要需求補上穩定 Task ID、目標、範圍、非範圍、依賴、風險、優先級判斷資訊及正式／候選狀態。
-3. 使用 `checklists/` 的產品、工程與測試清單檢查缺漏；未確認項目不得自行定案。
-4. 顯示修改摘要與仍待確認事項，取得確認後才更新原文件。
+1. 依風險分級補強。核心區塊（Acceptance Criteria、Edge Cases、Open Questions）一律補強；選用區塊（Contract、Invariants、Test Plan、FROZEN、Drift Risk）只在符合條件時啟用，並記錄一行的判斷依據：
+   - Contract／Invariants：有介面或多人依賴。
+   - Test Plan：驗收需要自動化測試或專案已有測試基礎。
+   - FROZEN：含不可逆決策或已凍結範圍。
+   - Drift Risk：長期維護或多人協作。
+   低風險專案（個人腳本、原型、短生命週期）預設只補核心區塊。
+2. 每項主要需求補 Task ID、目標、範圍／非範圍、優先級與正式／候選狀態；依賴與風險欄位僅在高風險或需拆 Issue 的需求上補。
+3. 使用 `checklists/` 的產品、工程與測試清單檢查已啟用區塊對應項目，各項依標註的適用前提取用；未確認項目不得自行定案。
+4. 顯示修改摘要、區塊啟用判斷與仍待確認事項，取得確認後才更新原文件。
 
 ## 輸出契約
 
-- 更新指定規格，保留原需求語意並包含上述 8 個補強區塊，缺一不可。
-- 所有驗收條件必須可觀察或可測量。
+- 更新指定規格，保留原需求語意；核心區塊必備，選用區塊依記錄的判斷啟用。
+- 驗收條件可觀察或可測量；僅在實際會量測時才寫量化門檻。
 
 ## 邊界
 
