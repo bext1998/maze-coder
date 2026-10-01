@@ -108,13 +108,18 @@ require_text "skills/maze-spec-to-issues/references/sync-and-errors.md" "重試�
 for heading in 背景 目標 工作範圍 不在範圍內 驗收條件 相依關係 規格來源 完成條件; do
   require_text "skills/maze-spec-to-issues/templates/issue.template.md" "^## ${heading}$" "Issue template: ${heading}"
 done
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "必要且適用的專案檢查通過" "Issue 完成條件收敛為通用專案檢查"
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "已確認存在對應 gate" "Issue 完成條件僅在確認 gate 後具體化"
+grep -q '驗收條件與 QA 通過' "${ROOT_DIR}/skills/maze-spec-to-issues/templates/issue.template.md" && err "Issue template 仍無條件輸出 QA 完成條件" || ok "Issue template 無 QA 預設假設"
+grep -q '適用的 CI 通過' "${ROOT_DIR}/skills/maze-spec-to-issues/templates/issue.template.md" && err "Issue template 仍無條件輸出 CI 完成條件" || ok "Issue template 無 CI 預設假設"
+require_text "skills/maze-spec-to-issues/SKILL.md" "未確認存在的 QA／CI 或其他 gate 不得出現" "完成條件事實來源規則"
 require_text "skills/maze-spec-to-issues/templates/issue.template.md" "<!-- maze-coder" "Issue marker"
 
 echo "--- closeout contracts ---"
 for state in in-progress blocked awaiting-review awaiting-merge merged-awaiting-close completed research-only untracked; do
   require_text "skills/maze-session-closeout/references/state-model.md" "${state}" "Closeout state: ${state}"
 done
-require_text "skills/maze-session-closeout/references/state-model.md" "AC、QA、適用 CI、文件、PR 合併與 Issue 關閉全部成立" "completed 完整門檻"
+require_text "skills/maze-session-closeout/references/state-model.md" "AC、必要且適用的專案檢查、文件、PR 合併與 Issue 關閉全部成立" "completed 完整門檻"
 require_text "skills/maze-session-closeout/SKILL.md" "不建立 Session Closeout Report" "禁止 Closeout Report"
 require_text "skills/maze-session-closeout/SKILL.md" "明確要求 closeout.*整體重建" "closeout 需明確授權且整體重建"
 require_text "skills/maze-session-closeout/SKILL.md" "不得追加.*STATUS" "closeout 不追加且不寫 STATUS"
@@ -177,8 +182,10 @@ for field in "type: grilling" "status: open" "blocked-by:" "question:" "answer:"
   require_text "skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md" "${field}" "Wayfinder Questions 欄位: ${field}"
 done
 require_text "skills/maze-wayfinder/references/issue-types.md" "Local Markdown 載體.*Questions.*section.*Q-ID、type、status、blocked-by、question、answer" "Wayfinder Local Markdown 六欄位契約"
-require_text "skills/maze-wayfinder/references/execution-flow.md" "載入地圖時記錄檔案內容的 hash.*重新計算並比對" "Wayfinder Local Markdown hash 偵測外部修改"
-require_text "skills/maze-wayfinder/checklists/wayfinder-checklist.md" "Local Markdown 載體.*寫入前已比對 hash" "Wayfinder checklist hash 自查"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "單一寫入者模式.*多人協作改用 GitHub Issues" "Wayfinder Local Markdown 單一寫入者邊界"
+grep -rq 'hash' "${ROOT_DIR}/skills/maze-wayfinder" && err "Wayfinder 仍要求計算或比對檔案 hash" || ok "Wayfinder 無 hash 規則"
+grep -rq 'spec-revision\|Spec Revision\|SHA-256' "${ROOT_DIR}/skills/maze-spec-to-issues" && err "spec-to-issues 仍要求或輸出 spec-revision／SHA-256" || ok "spec-to-issues 無 spec-revision／SHA-256"
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "task-id:" "Issue marker 保留 task-id"
 require_text "skills/maze-wayfinder/references/issue-types.md" '\.\./\.\./maze-spec-to-issues/references/issue-model\.md' "Wayfinder issue-types 巢狀路徑正確"
 if awk '
   /<!--/ { in_comment=1 }

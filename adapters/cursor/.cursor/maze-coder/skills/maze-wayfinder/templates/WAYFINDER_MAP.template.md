@@ -1,7 +1,5 @@
 # Wayfinder Map: [地圖名稱]
 
-<!-- Local Markdown 載體：每次寫入前，重新計算此檔目前內容的 hash，與 session 開始載入時記錄的 hash 比對；不一致代表檔案在外部被修改過，需警告使用者並暫停，不得覆寫。 -->
-
 ## Destination
 
 [這次探路要抵達的終點——搞清楚什麼？一到兩句話。每次 session 開始前先讀這段定位方向。]

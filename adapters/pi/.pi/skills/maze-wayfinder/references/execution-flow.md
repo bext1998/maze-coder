@@ -87,4 +87,4 @@
 
 **並發安全（GitHub Issues 載體）：** 開始處理 issue 前先 assign 給自己（claim）；open + unassigned = 可認領；open + assigned = 已被其他 session 認領，跳過。
 
-**並發安全（Local Markdown 載體）：** 單 session 操作，不考慮並發；載入地圖時記錄檔案內容的 hash，每次寫回前重新計算並比對——不一致代表檔案在 session 期間被外部修改，警告使用者並暫停，不覆寫。
+**並發安全（Local Markdown 載體）：** 單一寫入者模式——地圖檔在同一時間只由一個 session 寫入，不做並發控制；多人協作改用 GitHub Issues 載體與 claim 流程。

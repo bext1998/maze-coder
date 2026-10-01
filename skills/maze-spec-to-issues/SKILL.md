@@ -1,6 +1,6 @@
 ---
 name: maze-spec-to-issues
-description: 將規格中的未完成工作轉成可追蹤、可驗收的 GitHub Issues，並同步規格變更。當使用者要求把 spec 拆成 Issues、建立開發待辦或同步 spec 與 GitHub 時使用。
+description: 把規格中的未完成工作轉成可追蹤、可驗收的 GitHub Issues，並同步規格變更。當使用者要求把 spec 拆成 Issues、建立開發待辦或同步 spec 與 GitHub 時使用。
 invocation: user
 ---
 
@@ -27,7 +27,8 @@ invocation: user
 
 ## 輸出契約
 
-- Issue 使用 `templates/issue.template.md`，包含可驗證 AC、規格 revision、穩定 task-id 與 `maze-coder` marker。
+- Issue 使用 `templates/issue.template.md`，包含可驗證 AC、穩定 task-id 與 `maze-coder` marker。
+- 完成條件以規格驗收條件與 repository 已存在且適用的檢查為事實來源；未確認存在的 QA／CI 或其他 gate 不得出現，已確認存在時才替換為具體條目。
 - 10 項以下完整顯示；11–30 項分批；超過 30 項只提出分組方案。
 - 寫入結果逐項標示成功、失敗、略過、重複、已存在、權限、Assignee 與標籤狀態。
 
