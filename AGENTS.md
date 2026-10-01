@@ -30,4 +30,4 @@ maze-coder 是跨模型的技能包：29 個 canonical skills（26 公開、3 in
 ## 狀態
 
 - 工作狀態權威是 GitHub Issues／PR 與 Git；`docs/NEXT_ACTION.md` 只保留當前前線，closeout 時重建。
-- Open issues：#40、#42、#43、#44、#45。
+- 目前無 open issues；工作狀態以 GitHub Issues 為準。
