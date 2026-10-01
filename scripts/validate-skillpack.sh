@@ -61,6 +61,8 @@ validate_skill() {
   fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description" && $0 != "invocation") print}' "${file}")"
   [ -z "${fields}" ] || err "${skill}: frontmatter 含未知欄位 ${fields}"
   awk 'NR>1 && /^---$/{exit} /^description:[[:space:]]*[^[:space:]]/{found=1} END{exit !found}' "${file}" || err "${skill}: description 不得為空"
+  desc_len="$(awk 'NR>1 && /^---$/{exit} /^description:/{sub(/^description:[[:space:]]*/, ""); print length($0)}' "${file}")"
+  [ "${desc_len}" -le 200 ] || err "${skill}: description ${desc_len} 字元超過 200 上限（Codex Skills Catalog 觸發詞應前置，細節留在 SKILL.md）"
   invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
   case "${invocation}" in user|model|both|internal) ;; *) err "${skill}: invocation 必須為 user、model、both 或 internal" ;; esac
 
@@ -149,7 +151,14 @@ for skill in "${SKILLS[@]}"; do
     || err "Claude ${skill} 行為內容與 canonical 不一致"
   invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${canonical}")"
   case "${invocation}" in
-    user) grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發" ;;
+    user)
+      if [ "${skill}" = "maze-skill-authoring" ]; then
+        # Issue #40：此技能例外允許模型觸發，不得被 sync 重新轉回停用。
+        grep -q '^disable-model-invocation: true$' "${claude}" && err "Claude ${skill} 應允許模型觸發，卻含 disable-model-invocation: true"
+      else
+        grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發"
+      fi
+      ;;
     model) grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} 未停用使用者入口" ;;
     internal)
       grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} internal 仍可由使用者觸發"

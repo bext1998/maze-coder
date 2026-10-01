@@ -1,6 +1,6 @@
 ---
 name: maze-explain-for-dumbass
-description: 把 agent 剛講完的技術性回覆重寫成白話版本，保留檔案路徑、指令、版本號、錯誤碼、API／函式名、環境變數。使用者說「講人話」「所以呢」「蛤」「聽不懂」時使用。
+description: 把 agent 剛講完的技術回覆重寫成白話，保留檔案路徑、指令、版本號、錯誤碼、API／函式名、環境變數。使用者說「講人話」「所以呢」「蛤」「聽不懂」時使用。
 ---
 
 # explain-for-dumbass
