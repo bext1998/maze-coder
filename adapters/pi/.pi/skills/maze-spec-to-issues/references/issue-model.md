@@ -8,17 +8,15 @@
 - 每個 Issue 記錄阻塞與被阻塞關係；只有所有阻塞均解除的 Issue 屬於可執行前線。
 - 過大工作建立 Parent 與 Child Issues；Child 連回 Parent，Parent 僅在所有子項完成後關閉。
 
-## 識別碼與 revision
+## 識別碼
 
 - 優先使用 spec 明示 Task ID；否則以「spec 相對路徑＋章節錨點＋章節內序號」產生 deterministic ID，不使用 Issue 標題。
-- `spec-revision` 優先使用包含該 spec 的 Git commit；檔案未提交時使用 SHA-256。
 - 每個 Issue 加入：
 
 ```html
 <!-- maze-coder
 source: docs/spec.md
 section: 4.2
-spec-revision: abc1234
 task-id: authentication-login
 -->
 ```

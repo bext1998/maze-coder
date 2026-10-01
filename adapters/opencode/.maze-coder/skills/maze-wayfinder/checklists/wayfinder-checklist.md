@@ -15,4 +15,3 @@
 - [ ] 檢查過是否有迷霧可以畢業
 - [ ] 檢查過是否有問題因此變得不相關
 - [ ] 每個 session 只解決了一個問題（GitHub 載體：一個 sub-issue；Local Markdown 載體：一個 Questions section）
-- [ ]（Local Markdown 載體）寫入前已比對 hash 確認檔案未被外部修改；如有落差已停止並警告使用者，未覆寫

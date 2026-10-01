@@ -174,8 +174,10 @@ for field in "type: grilling" "status: open" "blocked-by:" "question:" "answer:"
   require_text "skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md" "${field}" "Wayfinder Questions 欄位: ${field}"
 done
 require_text "skills/maze-wayfinder/references/issue-types.md" "Local Markdown 載體.*Questions.*section.*Q-ID、type、status、blocked-by、question、answer" "Wayfinder Local Markdown 六欄位契約"
-require_text "skills/maze-wayfinder/references/execution-flow.md" "載入地圖時記錄檔案內容的 hash.*重新計算並比對" "Wayfinder Local Markdown hash 偵測外部修改"
-require_text "skills/maze-wayfinder/checklists/wayfinder-checklist.md" "Local Markdown 載體.*寫入前已比對 hash" "Wayfinder checklist hash 自查"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "單一寫入者模式.*多人協作改用 GitHub Issues" "Wayfinder Local Markdown 單一寫入者邊界"
+grep -rq 'hash' "${ROOT_DIR}/skills/maze-wayfinder" && err "Wayfinder 仍要求計算或比對檔案 hash" || ok "Wayfinder 無 hash 規則"
+grep -rq 'spec-revision\|Spec Revision\|SHA-256' "${ROOT_DIR}/skills/maze-spec-to-issues" && err "spec-to-issues 仍要求或輸出 spec-revision／SHA-256" || ok "spec-to-issues 無 spec-revision／SHA-256"
+require_text "skills/maze-spec-to-issues/templates/issue.template.md" "task-id:" "Issue marker 保留 task-id"
 require_text "skills/maze-wayfinder/references/issue-types.md" '\.\./\.\./maze-spec-to-issues/references/issue-model\.md' "Wayfinder issue-types 巢狀路徑正確"
 if awk '
   /<!--/ { in_comment=1 }

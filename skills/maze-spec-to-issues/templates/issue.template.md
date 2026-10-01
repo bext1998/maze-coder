@@ -32,7 +32,6 @@
 
 - Spec 路徑：
 - 對應章節：
-- Spec Revision：
 - Task ID：
 
 ## 完成條件
@@ -50,6 +49,5 @@
 <!-- maze-coder
 source:
 section:
-spec-revision:
 task-id:
 -->
