@@ -17,7 +17,7 @@ invocation: user
 ## 執行流程
 
 1. 對照 Acceptance Criteria，標記不可測項目與原因。
-2. 依 `checklists/test-plan-checklist.md` 與 `code-quality-checklist.md` 執行正常、空值、邊界、格式錯誤與中斷案例；GUI 原型另讀 `checklists/prototype-qa-checklist.md`。
+2. 依 `checklists/test-plan-checklist.md` 與 `code-quality-checklist.md` 執行案例，範圍依 AC 的資料面與風險選用——正常路徑必測，空值、邊界、格式錯誤與中斷僅在 AC 涉及該資料面或風險時執行；GUI 原型另讀 `checklists/prototype-qa-checklist.md`。
 3. 依 `checklists/regression-checklist.md` 確認相關既有行為未退化。
 4. 記錄實際命令、結果、失敗重現步驟及風險，填寫 `templates/QA_REPORT.template.md`。
 
