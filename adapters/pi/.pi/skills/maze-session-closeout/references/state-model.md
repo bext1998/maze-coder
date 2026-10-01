@@ -8,8 +8,8 @@
 | `blocked` | 依賴、權限、環境或外部條件阻止下一步 |
 | `awaiting-review` | PR 已建立但尚未取得必要 review，或有 changes requested |
 | `awaiting-merge` | 必要 review 與適用 CI 已通過，PR 尚未合併 |
-| `merged-awaiting-close` | PR 已合併，但 Issue、AC、QA、CI 或文件仍未完成 |
-| `completed` | AC、QA、適用 CI、文件、PR 合併與 Issue 關閉全部成立 |
+| `merged-awaiting-close` | PR 已合併，但 Issue、AC、必要且適用的專案檢查或文件仍未完成 |
+| `completed` | AC、必要且適用的專案檢查、文件、PR 合併與 Issue 關閉全部成立 |
 | `research-only` | 僅調查／實驗，沒有正式程式碼交付 |
 | `untracked` | 有實際程式碼變更但沒有 Issue，且不是研究工作 |
 

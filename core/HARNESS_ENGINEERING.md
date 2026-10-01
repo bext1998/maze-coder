@@ -19,7 +19,7 @@
 - Commit、push、merge、rebase 等操作遵守 `maze-github-safe-ops`；只有使用者明確要求時才執行 commit 或外部發布。
 - Force push 到 main／master 必須停止；高風險操作需先確認並提供可回復方案。
 - PR 完整完成 Issue 才能用 `Closes #N`；部分完成使用 `Related to #N`。
-- Issue 僅在實作、AC、QA、適用 CI、文件、PR 合併與 Issue 關閉全部成立時為完成。
+- Issue 僅在實作、AC、必要且適用的專案檢查、文件、PR 合併與 Issue 關閉全部成立時為完成；檢查以規格與 repository 已存在的 gate 為事實來源，未確認存在的 QA／CI 不得作為完成條件。
 
 ## 文件與技能
 
