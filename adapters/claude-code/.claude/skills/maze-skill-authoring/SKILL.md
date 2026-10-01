@@ -1,7 +1,6 @@
 ---
 name: maze-skill-authoring
 description: 評估是否該新增一個 maze-* 技能，或改為擴充既有技能的 checklist／reference／template；決定要新增時，給出符合既有架構的撰寫與同步流程。當使用者要求新增技能、評估是否該拆出新技能、或要把某個能力加入技能包時使用。
-disable-model-invocation: true
 ---
 
 # skill-authoring

@@ -149,7 +149,14 @@ for skill in "${SKILLS[@]}"; do
     || err "Claude ${skill} 行為內容與 canonical 不一致"
   invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${canonical}")"
   case "${invocation}" in
-    user) grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發" ;;
+    user)
+      if [ "${skill}" = "maze-skill-authoring" ]; then
+        # Issue #40：此技能例外允許模型觸發，不得被 sync 重新轉回停用。
+        grep -q '^disable-model-invocation: true$' "${claude}" && err "Claude ${skill} 應允許模型觸發，卻含 disable-model-invocation: true"
+      else
+        grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發"
+      fi
+      ;;
     model) grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} 未停用使用者入口" ;;
     internal)
       grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} internal 仍可由使用者觸發"
