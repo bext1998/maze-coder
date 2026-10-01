@@ -218,7 +218,6 @@ require_text "${ROOT_CAUSE}" "不得因.*修正後測試通過.*根因" "Root ca
 echo "--- portability ---"
 bash -n "${ROOT_DIR}/scripts/sync-adapters.sh" && ok "sync-adapters.sh syntax" || err "sync-adapters.sh syntax"
 bash -n "${ROOT_DIR}/scripts/validate-skillpack.sh" && ok "validate-skillpack.sh syntax" || err "validate-skillpack.sh syntax"
-bash -n "${ROOT_DIR}/scripts/validate-adaptive-scenarios.sh" && ok "validate-adaptive-scenarios.sh syntax" || err "validate-adaptive-scenarios.sh syntax"
 if [[ "$(uname -s)" == Linux ]]; then
   ok "Linux runtime"
 else

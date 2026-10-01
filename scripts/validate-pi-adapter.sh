@@ -37,7 +37,7 @@ PUBLIC_SKILLS=(
   maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
 )
 INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
-REPO_ROOT_SCRIPTS=(sync-adapters.sh validate-skillpack.sh validate-skills-functional.sh validate-adaptive-scenarios.sh validate-pi-adapter.sh)
+REPO_ROOT_SCRIPTS=(sync-adapters.sh validate-skillpack.sh validate-skills-functional.sh validate-pi-adapter.sh)
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }

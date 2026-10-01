@@ -210,8 +210,6 @@ echo "--- Templates and docs ---"
 SPEC_FILE="${ROOT_DIR}/docs/spec.md"
 grep -q '29 個 canonical skills：26 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
   && ok "spec 標示 29／26／3 技能拓撲" || err "spec 未標示 29／26／3 技能拓撲"
-grep -q '26 個 adaptive scenarios' "${SPEC_FILE}" \
-  && ok "spec 標示 26 個 adaptive scenarios" || err "spec 未標示 26 個 adaptive scenarios"
 grep -q '總字元上限固定為 22,000' "${SPEC_FILE}" \
   && ok "spec 標示 22,000 字元上限" || err "spec 未標示 22,000 字元上限"
 if grep -Eq '28 個 canonical skills|28 個 SKILL\.md|固定驗證 28 個 SKILL\.md|完成後技能數固定為 28／25／3' "${SPEC_FILE}"; then
