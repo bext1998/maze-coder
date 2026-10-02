@@ -128,9 +128,8 @@ AI agent（不分模型）在 RL 訓練後有「說人話」能力退化的傾�
 
 - 禁止以 `|| true`、忽略退出碼、弱化 assertion、刪除失敗案例或修改測試迎合錯誤輸出的方式取得通過。
 
-### Adaptive scenarios and token budget
+### Token budget
 
-- `tests/adaptive-scenarios.tsv` 是固定 26 列的代表性情境樣本，本來就不是每個技能對應一列；本版不新增列，維持 26 個。
 - SKILL.md 總字元上限固定為 22,000；詳細內容使用按需資源，不記錄瞬時總字元數。
 
 ### Acceptance Criteria
@@ -170,7 +169,7 @@ AI agent（不分模型）在 RL 訓練後有「說人話」能力退化的傾�
 
 ### Existing baseline
 
-- v3.3 基準：28／25／3，之前為 27／24／3；26 個 adaptive scenarios 維持不變；細節見 git 歷史中的 v3.3 版本 `docs/spec.md`。
+- v3.3 基準：28／25／3，之前為 27／24／3；細節見 git 歷史中的 v3.3 版本 `docs/spec.md`。
 - v3.4 不改變「階段可調整，契約不可省略」原則，也不因新技能限制模型的探索、工具、平行與 Subagent 能力。
 
 ### Open Questions

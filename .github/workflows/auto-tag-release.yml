@@ -27,7 +27,6 @@ jobs:
         run: |
           bash scripts/validate-skillpack.sh
           bash scripts/validate-skills-functional.sh
-          bash scripts/validate-adaptive-scenarios.sh
 
       - name: Determine bump type
         id: bump

@@ -6,11 +6,9 @@
 - 14 個 SKILL.md：9,174 Unicode 字元，粗估約 9,174 個中英混合 token 上限。
 - 結構與功能驗證：通過；Ubuntu 原生執行：未驗證。
 
-## 靜態代表性情境
+## 靜態代表性情境（已移除）
 
-`tests/adaptive-scenarios.tsv` 固定 11 組輸入的 Profile、入口技能、允許資源、不可遺失契約、驗收條件，以及載入數、提問、工具與文件的前後估計。`scripts/validate-adaptive-scenarios.sh` 驗證情境完整、資源存在且新架構估計不退化。
-
-靜態估計合計：技能／資源載入 38 → 24、使用者提問 29 → 16、工具呼叫 76 → 63、產生文件 9 → 6。這些是路由契約估計，不宣稱為真實模型 trace。
+原 `tests/adaptive-scenarios.tsv` 與 `scripts/validate-adaptive-scenarios.sh` 只比較人工填寫的估計值，不是真實模型 trace，行為退化時不會失敗，已於 #51 移除。需要評估自適應效果時，改以真實任務的 trace 為證據。
 
 ## 精簡比較
 

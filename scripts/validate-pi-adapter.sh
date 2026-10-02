@@ -18,7 +18,7 @@ FIXTURE_DIR="${SCRIPT_DIR}/fixtures/pi-adapter-selftest"
 ERRORS=0
 WARNINGS=0
 
-REPO_ROOT_SCRIPTS=(sync-adapters.sh validate-skillpack.sh validate-skills-functional.sh validate-adaptive-scenarios.sh validate-pi-adapter.sh)
+REPO_ROOT_SCRIPTS=(sync-adapters.sh validate-skillpack.sh validate-skills-functional.sh validate-pi-adapter.sh)
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }
