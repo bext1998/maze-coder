@@ -20,6 +20,12 @@ maze-coder 是跨模型的技能包：29 個 canonical skills（26 公開、3 in
 3. 只跑與變更相稱的 `scripts/validate-*.sh`，不追加新的驗證步驟。
 4. Commit message 依 Conventional Commits，引用對應 Issue（`Closes #N` 僅用於完整完成）。
 
+## Release Label 與 PR 粒度
+
+- Issue／PR 的 `release:major`（破壞性變更）、`release:minor`（新增功能，向下相容）、`release:patch`（修補、文件、內部調整）標籤，合併時會自動打對應版本 tag。
+- 凡使用這些標籤，數個相關功能／修正應合併進同一個 PR，一個 PR 對應一次版本發佈，避免版本碎片化而難以管理。
+- 不要為每個小 issue 各開一個帶 release 標籤的 PR；先累積成一個發佈單位再開 PR。
+
 ## 風格
 
 - 不過度工程化：沒有具體消費端的欄位、流程、metadata 一律不加。
