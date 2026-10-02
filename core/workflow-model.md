@@ -2,7 +2,7 @@
 
 ## Profile 選擇
 
-依代理自主性、工具與 Subagent 能力、平行支援、Context、指令穩定性、長任務能力及 Host 工具選擇 Profile。模型名稱只用於選擇輕量 Overlay。
+依代理自主性、工具與 Subagent 能力、平行支援、Context、指令穩定性、長任務能力及 Host 工具選擇 Profile（三級全文位於 `profiles/<name>.md`）。模型名稱只用於選擇輕量 Overlay（`model-overlays/`）。
 
 - `minimal`：能自行探索、規劃、執行與驗證的代理模型。
 - `standard`：需要主要階段與少量檢查點的模型。
