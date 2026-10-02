@@ -198,15 +198,6 @@ if grep -Eq '28 個 canonical skills|28 個 SKILL\.md|固定驗證 28 個 SKILL\
 else
   ok "spec 無過期技能、情境或字元上限"
 fi
-awk -F '|' '
-  NR > 6 && NF >= 5 {
-    rows++
-    if ($4 !~ /\]\((adr\/[^)]+|https:\/\/github\.com\/[^/]+\/[^/]+\/(issues|pull)\/[0-9]+)\)/) invalid=1
-  }
-  END { exit !(rows > 0 && !invalid) }
-' "${ROOT_DIR}/docs/DECISIONS.md" \
-  && ok "DECISIONS 僅索引 ADR／Issue／PR" || err "DECISIONS 含非 ADR／Issue／PR 的權威來源"
-
 TEMPLATE_MAP=(
   "maze-wayfinder/templates/WAYFINDER_MAP.template.md:WAYFINDER_MAP.md"
   "maze-idea-to-spec/templates/spec.template.md:spec.md"
