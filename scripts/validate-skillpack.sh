@@ -4,6 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${SCRIPT_DIR}/lib/skills.sh"
 ERRORS=0
 WARNINGS=0
 TOTAL_CHARS=0
@@ -12,26 +13,6 @@ MAX_CHARS=22000
 UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
 [ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
 
-SKILLS=(
-  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
-  maze-root-cause-diagnosis maze-github-cli
-  maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
-  maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs maze-grilling
-  maze-domain-modeling
-)
-PUBLIC_SKILLS=(
-  maze-wayfinder maze-idea-to-spec maze-spec-hardening maze-project-init maze-spec-to-issues
-  maze-spec-review maze-pr-review maze-adversarial-review maze-threat-modeling
-  maze-root-cause-diagnosis
-  maze-session-closeout maze-github-safe-ops maze-design-review
-  maze-qa-verification maze-design-system maze-gui-prototyping maze-repo-map maze-context-audit
-  maze-bug-reproduction maze-handoff-summary maze-token-efficiency-review maze-explain-for-dumbass
-  maze-risk-driven-tdd maze-skill-authoring maze-grill maze-grill-with-docs
-)
-INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }
