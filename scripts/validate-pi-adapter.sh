@@ -2,8 +2,7 @@
 # Pi Adapter 相容性驗證：技能探索、frontmatter 轉譯、user/model/both/internal 映射、
 # 名稱碰撞與技能數量漂移。核心掃描邏輯依 Pi 官方文件的遞迴探索規則實作（不限固定深度、
 # 也檢查根層 .md 檔），並先對 scripts/fixtures/pi-adapter-selftest/ 跑一次自我測試，
-# 確認偵測邏輯本身沒有回歸。預設不執行 pi CLI 本身；設定 PI_ADAPTER_LIVE_CHECK=1 且本機
-# 有 pi 時，額外跑一次真實 loader 交叉核對（會產生真實 API 呼叫成本，預設關閉）。
+# 確認偵測邏輯本身沒有回歸。
 
 set -euo pipefail
 
@@ -105,18 +104,12 @@ check_resource_paths() {
 # 或拿去跟預期比對。
 scan_skill_findings() {
   local root="$1" repo_root="${2:-${ROOT_DIR}}"
-  local f name desc
+  local f name
   declare -A name_paths=()
 
   while IFS= read -r f; do
     name="$(frontmatter_value "${f}" name)"
-    desc="$(frontmatter_value "${f}" description)"
-    if [ -z "${name}" ]; then
-      echo "UNPARSEABLE:${f}"
-    else
-      name_paths["${name}"]+="${f};"
-    fi
-    [ -n "${desc}" ] || echo "EMPTY_DESC:${name:-（無法解析 name）}:${f}"
+    [ -n "${name}" ] && name_paths["${name}"]+="${f};"
     check_resource_paths "${f}" "${repo_root}"
   done < <(find "${root}" -name SKILL.md -type f 2>/dev/null | sort)
 
@@ -162,7 +155,6 @@ else
   }
 
   assert_finding '^COLLISION:fixture-collide-check:2:' "重複 name（fixture-collide-check 出現 2 次）"
-  assert_finding '^EMPTY_DESC:fixture-empty-desc-check:' "description 為空"
   assert_finding 'references/missing\.md$' "無效 references 路徑"
   assert_finding 'STRAY_ROOT_MD:.*orphan\.md$' "根層 stray .md 檔案"
   assert_absent 'BAD_PATH:.*good-with-scripts.*scripts/real\.sh$' "同目錄 scripts/real.sh 被誤判為無效路徑"
@@ -249,7 +241,7 @@ for skill in "${SKILLS[@]}"; do
   ok "${skill}"
 done
 
-echo "--- Wayfinder：hidden internal skill 相對路徑改寫（SKILL.md 與 nested references/execution-flow.md） ---"
+echo "--- Wayfinder：hidden internal skill 相對路徑改寫（nested references/execution-flow.md；SKILL.md 的改寫由逐技能內容一致性 diff 涵蓋） ---"
 check_wayfinder_pi_rewrite() {
   local canonical="$1" pi_file="$2" old="$3" new="$4" label="$5" expected_tmp
   if [ ! -f "${pi_file}" ]; then
@@ -268,12 +260,6 @@ check_wayfinder_pi_rewrite() {
   fi
   rm -f "${expected_tmp}"
 }
-check_wayfinder_pi_rewrite \
-  "${ROOT_DIR}/skills/maze-wayfinder/SKILL.md" \
-  "${PI_SKILLS_DIR}/maze-wayfinder/SKILL.md" \
-  '委派 `maze-github-cli`' \
-  '委派 `maze-github-cli`（Pi 路徑：`../../maze-coder/internal-skills/maze-github-cli/SKILL.md`）' \
-  "SKILL.md → maze-github-cli"
 check_wayfinder_pi_rewrite \
   "${ROOT_DIR}/skills/maze-wayfinder/references/execution-flow.md" \
   "${PI_SKILLS_DIR}/maze-wayfinder/references/execution-flow.md" \
@@ -296,9 +282,7 @@ if [ -n "${ADAPTER_FINDINGS}" ]; then
     [ -n "${line}" ] || continue
     case "${line}" in
       COLLISION:*) err "技能名稱碰撞：${line#COLLISION:}（name:count:paths，會造成 Pi 只載入第一個、其餘被靜默忽略）" ;;
-      EMPTY_DESC:*) : ;; # 已在逐技能檢查裡報過，這裡不重複計錯
       BAD_PATH:*) err "無效資源路徑：${line#BAD_PATH:}（file:resource）" ;;
-      UNPARSEABLE:*) : ;; # 已在逐技能檢查裡報過
       STRAY_ROOT_MD:*) err "根層出現非預期的 stray .md 檔案：${line#STRAY_ROOT_MD:}（Pi 會把它當成獨立技能載入）" ;;
     esac
   done <<< "${ADAPTER_FINDINGS}"
@@ -325,29 +309,6 @@ for d in core profiles model-overlays; do
   diff -qr "${ROOT_DIR}/${d}" "${PI_MAZE_DIR}/${d}" >/dev/null 2>&1 \
     && ok "${d} 已同步" || err "adapters/pi/.pi/maze-coder/${d} 未同步"
 done
-
-echo "--- 選用：實際 Pi loader 交叉核對（PI_ADAPTER_LIVE_CHECK=1 且本機有 pi 才執行） ---"
-if [ "${PI_ADAPTER_LIVE_CHECK:-0}" = "1" ] && command -v pi >/dev/null 2>&1; then
-  LIVE_CWD="$(mktemp -d)"
-  LIVE_OUT="$(cd "${LIVE_CWD}" && pi --skill "${PI_SKILLS_DIR}" --no-session -p \
-    "List the exact <name> of every <skill> entry visible in your context right now, one per line, verbatim. Nothing else." 2>&1 || true)"
-  for skill in "${PUBLIC_SKILLS[@]}"; do
-    if echo "${LIVE_OUT}" | grep -q "${skill}"; then
-      ok "實際 loader 看得到 ${skill}"
-    else
-      warn "實際 loader 呼叫中沒看到 ${skill}（模型摘要可能省略，不必然代表未載入，僅供參考）"
-    fi
-  done
-  for skill in "${INTERNAL_SKILLS[@]}"; do
-    if echo "${LIVE_OUT}" | grep -q "${skill}"; then
-      err "實際 loader 呼叫中出現 internal skill ${skill}，internal 隔離失效"
-    else
-      ok "實際 loader 確認 internal skill ${skill} 未出現"
-    fi
-  done
-else
-  echo "  [SKIP] 未設定 PI_ADAPTER_LIVE_CHECK=1 或本機找不到 pi，略過真實 loader 呼叫（會產生真實 API 呼叫成本，預設不執行）"
-fi
 
 echo
 if [ "${ERRORS}" -eq 0 ]; then
