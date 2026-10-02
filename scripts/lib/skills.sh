@@ -10,11 +10,11 @@ INTERNAL_SKILLS=()
 while IFS= read -r _skill_file; do
   _name="$(basename "$(dirname "${_skill_file}")")"
   _invocation="$(awk '/^---[[:space:]]*$/{n++; next} n==1 && /^invocation:/{sub(/^invocation:[[:space:]]*/, ""); sub(/[[:space:]\r]+$/, ""); print; exit} n>=2{exit}' "${_skill_file}")"
+  case "${_invocation}" in
+    internal) INTERNAL_SKILLS+=("${_name}") ;;
+    user|both) PUBLIC_SKILLS+=("${_name}") ;;
+    *) echo "[FAIL] skills/${_name}/SKILL.md invocation 缺失或非法：'${_invocation}'（允許 user／both／internal）" >&2; exit 1 ;;
+  esac
   SKILLS+=("${_name}")
-  if [ "${_invocation}" = "internal" ]; then
-    INTERNAL_SKILLS+=("${_name}")
-  else
-    PUBLIC_SKILLS+=("${_name}")
-  fi
 done < <(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | LC_ALL=C sort)
 unset _skill_file _name _invocation
