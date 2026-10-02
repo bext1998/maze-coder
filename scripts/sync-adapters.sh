@@ -212,6 +212,13 @@ copy_file "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/adapters/claude
 sync_dir "${ROOT_DIR}/core" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/core" "核心契約"
 sync_dir "${ROOT_DIR}/profiles" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/profiles" "Guidance Profiles"
 sync_dir "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/adapters/claude-code/.claude/maze-coder/model-overlays" "Model Overlays"
+{
+  echo "# maze-coder — Claude Code Router"
+  echo
+  echo "> 由 sync-adapters.sh 產生，請勿手動編輯。"
+  echo
+  router_body ".claude/maze-coder/skills" ".claude/maze-coder/HARNESS_ENGINEERING.md"
+} | write_if_changed "${ROOT_DIR}/adapters/claude-code/.claude/CLAUDE.md" "精簡 Router"
 
 for adapter in codex opencode; do
   echo "--- ${adapter} ---"

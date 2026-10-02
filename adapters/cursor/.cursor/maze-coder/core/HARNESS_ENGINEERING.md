@@ -2,6 +2,10 @@
 
 > 供 AI agent 與 Adapter 使用。先讀 `core/invariants.md` 與 `core/workflow-model.md`；階段可調整，契約不可省略。
 
+## Guidance 載入
+
+依 `core/workflow-model.md` 的準則選最輕可用 Profile 並載入全文：`profiles/minimal.md`、`profiles/standard.md`、`profiles/scaffolded.md`；只有觀察到具體失敗才加強。需要修正特定模型偏差時，另載入至多一份 `model-overlays/` 對應檔。
+
 ## 範圍與證據
 
 - 必須先讀取任務相關實作、文件、呼叫者與測試；不得猜測可查證行為。
