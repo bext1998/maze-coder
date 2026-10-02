@@ -41,8 +41,8 @@ docs/
   spec.md          ← maze-coder 自身的規格書（本文）
   PROJECT_BRIEF.md ← maze-coder 的專案說明
   NEXT_ACTION.md   ← maze-coder 的下一步行動
-  DECISIONS.md     ← maze-coder 的有效重大決策索引
   HANDOFF.md       ← maze-coder 的最新交接文件
+  adr/             ← maze-coder 自身的 ADR（決策紀錄直接以此為準）
 ```
 
 ---
