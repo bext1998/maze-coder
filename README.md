@@ -66,7 +66,7 @@ core invariants + Guidance Profile + optional Model Overlay
 ## Install
 
 ```bash
-# Claude Code
+# Claude Code（專案已有 .claude/CLAUDE.md 或 ./CLAUDE.md 時，先複製資源再手動把 .claude/CLAUDE.md 的 Router 區塊併入既有檔，不要直接覆蓋）
 cp -r adapters/claude-code/.claude /your-project/
 
 # Codex
