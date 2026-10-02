@@ -5,39 +5,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${SCRIPT_DIR}/lib/skills.sh"
 CHANGES=0
 
-SKILLS=(
-  maze-wayfinder
-  maze-idea-to-spec
-  maze-spec-hardening
-  maze-project-init
-  maze-spec-to-issues
-  maze-spec-review
-  maze-pr-review
-  maze-adversarial-review
-  maze-threat-modeling
-  maze-root-cause-diagnosis
-  maze-github-cli
-  maze-session-closeout
-  maze-github-safe-ops
-  maze-design-review
-  maze-qa-verification
-  maze-design-system
-  maze-gui-prototyping
-  maze-repo-map
-  maze-context-audit
-  maze-bug-reproduction
-  maze-handoff-summary
-  maze-token-efficiency-review
-  maze-explain-for-dumbass
-  maze-risk-driven-tdd
-  maze-skill-authoring
-  maze-grill
-  maze-grill-with-docs
-  maze-grilling
-  maze-domain-modeling
-)
 
 [ -d "${ROOT_DIR}/skills" ] || { echo "ERROR: 找不到 skills/" >&2; exit 1; }
 
@@ -175,7 +145,7 @@ sync_claude_skills() {
   rm -rf "${tmp_root}"
 }
 
-PI_INTERNAL_SKILLS=(maze-grilling maze-domain-modeling maze-github-cli)
+PI_INTERNAL_SKILLS=("${INTERNAL_SKILLS[@]}")
 
 sync_pi_skills() {
   local tmp_root skill file invocation transformed internal_skill
