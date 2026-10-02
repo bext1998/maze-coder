@@ -1,6 +1,6 @@
-# 相容入口：自適應工作模型
+# 技能組合與 Issue／PR 狀態
 
-> Canonical 規則位於 `workflow-model.md`。以下只保留技能關聯與 GitHub 狀態語意，不代表強制階段。
+> 自適應工作模型（Profile 選擇與加強規則）見 `workflow-model.md`。以下只保留技能關聯與 GitHub 狀態語意，不代表強制階段。
 
 ## 可組合能力
 
