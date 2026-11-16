@@ -1,12 +1,12 @@
 # maze-coder — Agent 規範
 
-maze-coder 是跨模型的技能包：29 個 canonical skills（26 公開、3 internal）、核心契約與五個 Host Adapter。
+maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能，直接安裝到各 host 原生的技能目錄使用。
 
 ## Source of Truth
 
-- `skills/`、`core/`、`scripts/`、`docs/spec.md` 是唯一來源，直接修改這裡。
-- `adapters/` 與根 `templates/` 由 `scripts/sync-adapters.sh` 產生，禁止手動編輯。
-- 技能數量變更時，同步 `docs/spec.md`、README、`scripts/sync-adapters.sh` 的 skill arrays 與 validators 的 29／26／3 計數。
+- `skills/` 是唯一來源；沒有生成物、沒有同步腳本，新增或修改技能只改這裡。
+- 每個技能的 `references/`、`templates/`、`checklists/` 跟技能一起安裝，不複製到 repo 根目錄。
+- 沒有 Profiles、Model Overlays、`HARNESS_ENGINEERING.md` 與 Adapter 產物；不要再把它們加回來。
 
 ## 工作樹
 
@@ -15,10 +15,32 @@ maze-coder 是跨模型的技能包：29 個 canonical skills（26 公開、3 in
 
 ## 工作流程
 
-1. 動手前讀 `docs/spec.md`（現行 v3.4）與 `core/invariants.md`；技能相關變更先讀目標技能的 `SKILL.md` 與其資源目錄。
-2. 修改 source of truth 後執行 `bash scripts/sync-adapters.sh` 同步產物。
-3. 只跑與變更相稱的 `scripts/validate-*.sh`，不追加新的驗證步驟。
-4. Commit message 依 Conventional Commits，引用對應 Issue（`Closes #N` 僅用於完整完成）。
+1. 動手前讀目標技能的 `SKILL.md` 與其資源目錄。
+2. 技能 frontmatter 只允許 `name`、`description` 與選用的 `disable-model-invocation: true`；使用者明示觸發的技能才加該欄位，模型可主動載入的技能不加。
+3. 跨技能引用一律寫成安裝佈局下可解析的相對路徑，並在引用端寫明需要同時安裝哪個技能。
+4. 修改後執行 `bash scripts/validate-skillpack.sh` 與 `bash scripts/validate-skills-functional.sh`。
+5. Commit message 依 Conventional Commits，引用對應 Issue（`Closes #N` 僅用於完整完成）。
+
+## 工作原則
+
+- 先讀任務相關實作、文件、呼叫者與測試；不得猜測可查證行為。
+- 只處理明確範圍，優先修正根因；不順手重構、清理或擴張產品決策。
+- 證據（Git／GitHub／CI／QA／repo）優先於口述；無法查證時才詢問並標記限制。
+- 不執行未授權的破壞性、不可逆或外部寫入；需要時先展示目標與變更並取得明確確認。
+- 不偽造測試、工具結果、外部狀態或完成證據；未執行的檢查不得宣稱通過；未滿足驗收條件不得宣告完成。
+- 不超出使用者明確工作範圍；新需求與旁支問題另行揭露。
+- 不因模型能力放寬安全限制，也不因模型能力加碼無關流程。
+- 不硬編或輸出 token、API key、密碼與私密憑證。
+- 執行與風險相稱的測試、lint、型別或 build；完成前確認需求、驗證與剩餘風險都已處理。
+- 技能缺少必要輸入時停止並列出缺漏；同名輸出已存在時不得靜默覆蓋。
+- 回應以結果或下一步開始；不得為縮短內容刪掉安全規則。
+
+## Git 與 GitHub
+
+- Git／GitHub 操作遵守 `skills/maze-github-safe-ops/SKILL.md`；只有使用者明確要求時才 commit、push 或對外發布。
+- Force push 到 main／master 必須停止；高風險操作需先確認並提供可回復方案。
+- PR 完整完成 Issue 才能用 `Closes #N`；部分完成使用 `Related to #N`。
+- Issue 僅在實作、AC、必要且適用的專案檢查、文件、PR 合併與 Issue 關閉全部成立時為完成；未確認存在的 QA／CI 不得作為完成條件。
 
 ## Release Label 與 PR 粒度
 
@@ -30,10 +52,10 @@ maze-coder 是跨模型的技能包：29 個 canonical skills（26 公開、3 in
 
 - 不過度工程化：沒有具體消費端的欄位、流程、metadata 一律不加。
 - 不做無謂的驗證，不寫防禦性的提示詞或程式碼。
-- SKILL.md 保持精簡：細節放 references／templates／checklists，不塞進主檔。
+- SKILL.md 保持精簡：觸發、必要流程、確認點、輸出與邊界；長規則、模板與低頻例外放一層深的資源。
 - 階段可調整，契約不可省略；安全、範圍與真實驗證優先於精簡。
 
 ## 狀態
 
 - 工作狀態權威是 GitHub Issues／PR 與 Git；`docs/NEXT_ACTION.md` 只保留當前前線，closeout 時重建。
-- 目前無 open issues；工作狀態以 GitHub Issues 為準。
+- 工作狀態以 GitHub Issues 為準。
