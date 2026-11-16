@@ -6,12 +6,14 @@
 # 不會同步。MSYS=winsymlinks:nativestrict 強制 ln -s 建立真 NTFS symlink；建完
 # 再用 test -L 驗證，失敗就直接報錯，不留一份看起來正常、實際上是死的複製品。
 #
-# 三個安全前提：
-#   1. 位置參數只接受 skills/ 直接子目錄的精確名稱；含 / 或 . / .. 一律拒絕，
-#      目標路徑永遠不會跑出安裝目錄。
-#   2. 所有衝突（既有非空目錄且未加 --force）在任何寫入前一次預檢完畢。
-#   3. 先在目標目錄建立暫存連結並驗證，成功後才動既有安裝；建立失敗時原本的
-#      安裝保持不動。
+# 安全前提：
+#   1. 位置參數只接受 skills/ 直接子目錄的精確名稱，且目標永遠是安裝目錄的直接
+#      子項；含 / 或 . / .. 一律在寫入前拒絕。
+#   2. 安裝目錄與來源目錄（實體路徑）不得相同、也不得互相包含；目標若解析後落在
+#      來源目錄內一律拒絕，避免把 repo 的技能目錄當成安裝產物刪掉。
+#   3. 所有衝突在任何寫入前一次預檢；無法讀取的目標視為衝突。
+#   4. 暫存連結建在本次專屬的 mktemp 目錄；換手失敗會把舊安裝搬回原位，成功後才
+#      刪除舊內容。
 
 set -euo pipefail
 
@@ -120,6 +122,18 @@ canon() {
   (cd -P "$1" 2>/dev/null && pwd)
 }
 
+# 解析「可能還不存在」的路徑：從最深的既有祖先往上找，再把不存在的尾段接回去。
+canon_path() {
+  local p="$1" suffix="" base
+  while [ ! -d "${p}" ]; do
+    suffix="/$(basename "${p}")${suffix}"
+    p="$(dirname "${p}")"
+    case "${p}" in ""|"/"|".") break ;; esac
+  done
+  base="$(canon "${p}")" || return 1
+  printf '%s%s' "${base}" "${suffix}"
+}
+
 shopt -s nullglob
 all_dirs=("${SKILLS_DIR}"/*/)
 shopt -u nullglob
@@ -172,21 +186,72 @@ for name in "${selected[@]}"; do
   esac
 done
 
+# --- 安裝目錄與來源目錄不得重疊（用實體路徑判斷，symlink 會先被解析） ---
+SKILLS_REAL="$(canon "${SKILLS_DIR}")" || die "無法解析來源目錄 ${SKILLS_DIR}"
+DEST_REAL="$(canon_path "${DEST_ROOT}")" || die "無法解析安裝目錄 ${DEST_ROOT}"
+
+if [ "${DEST_REAL}" = "${SKILLS_REAL}" ]; then
+  die "安裝目錄就是技能來源：${DEST_REAL}" \
+      "這會讓安裝產物覆蓋 repo 的 skills/，本腳本拒絕執行。"
+fi
+case "${DEST_REAL}" in
+  "${SKILLS_REAL}"/*)
+    die "安裝目錄位於技能來源之內：${DEST_REAL}" "本腳本拒絕在 skills/ 底下建立安裝產物。"
+    ;;
+esac
+case "${SKILLS_REAL}" in
+  "${DEST_REAL}"/*)
+    die "安裝目錄包含技能來源：${DEST_REAL}" "來源與安裝產物不得互相包含，請改用其他安裝目錄。"
+    ;;
+esac
+
+# --- 每個目標若解析後落在來源目錄內，一律拒絕（避免刪到 repo 內容） ---
+for name in "${selected[@]}"; do
+  target="${DEST_ROOT}/${name}"
+  if [ -e "${target}" ] && [ ! -L "${target}" ]; then
+    target_real="$(canon "${target}")" || target_real=""
+    case "${target_real}" in
+      "${SKILLS_REAL}"|"${SKILLS_REAL}"/*)
+        die "目標 ${target} 解析後位於技能來源 ${SKILLS_REAL} 之內" \
+            "安裝目錄與來源重疊，本腳本拒絕執行。"
+        ;;
+    esac
+  fi
+done
+
 # --- 衝突預檢：有任何未經 --force 的既有非空項目，就在建立第一個連結前停下 ---
 conflicts=()
+unreadable=()
 for name in "${selected[@]}"; do
   target="${DEST_ROOT}/${name}"
   if [ -L "${target}" ]; then
     continue
   fi
   if [ -e "${target}" ]; then
-    # 空目錄可以直接接管；用 find 判斷而不是 ls，避免權限錯誤被吞成「空」。
-    if [ -d "${target}" ] && [ -z "$(find "${target}" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-      continue
+    if [ -d "${target}" ]; then
+      # 空目錄可以直接接管；find 失敗（權限等）一律視為衝突，不能當成空目錄。
+      if ! listing="$(find "${target}" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)"; then
+        unreadable+=("${target}")
+        continue
+      fi
+      if [ -z "${listing}" ]; then
+        continue
+      fi
     fi
-    [ "${FORCE}" = "1" ] || conflicts+=("${target}")
+    if [ "${FORCE}" != "1" ]; then
+      conflicts+=("${target}")
+    fi
   fi
 done
+
+if [ "${#unreadable[@]}" -gt 0 ]; then
+  {
+    echo "ERROR: 下列目標無法讀取內容，無法判斷是否為舊版殘留："
+    printf '       %s\n' "${unreadable[@]}"
+    echo "       請先確認權限或手動處理；本次沒有安裝或刪除任何東西。"
+  } >&2
+  exit 1
+fi
 
 if [ "${#conflicts[@]}" -gt 0 ]; then
   {
@@ -200,12 +265,16 @@ fi
 
 mkdir -p "${DEST_ROOT}"
 
-STAGING=""
+STAGING_DIR=""
+KEEP_STAGING=0
 cleanup_staging() {
-  if [ -n "${STAGING}" ]; then
-    rm -rf "${STAGING}" 2>/dev/null || true
+  if [ "${KEEP_STAGING}" = "1" ]; then
+    return 0
   fi
-  STAGING=""
+  if [ -n "${STAGING_DIR}" ]; then
+    rm -rf "${STAGING_DIR}" 2>/dev/null || true
+  fi
+  STAGING_DIR=""
 }
 trap cleanup_staging EXIT
 
@@ -219,36 +288,49 @@ for name in "${selected[@]}"; do
     continue
   fi
 
-  # 先在目標目錄建暫存連結並驗證；失敗時既有安裝完全不動。
-  STAGING="${DEST_ROOT}/.install-staging-$$"
-  rm -f "${STAGING}"
-  if ! ln -s "${expected}" "${STAGING}" 2>/dev/null; then
+  # 本次專屬的暫存目錄：連結與舊安裝都先放這裡，絕不與既有檔案同名。
+  STAGING_DIR="$(mktemp -d "${DEST_ROOT}/.install-staging.XXXXXX")" \
+    || die "無法在 ${DEST_ROOT} 建立暫存目錄"
+  staging_link="${STAGING_DIR}/link"
+
+  if ! ln -s "${expected}" "${staging_link}" 2>/dev/null; then
     cleanup_staging
     die "無法在 ${DEST_ROOT} 建立 symlink（${name}）" \
         "Windows 請開啟開發人員模式（設定 → 系統 → 開發人員選項），或以具備建立 symlink 權限的身分執行。" \
         "本腳本不提供複製模式；原本的安裝沒有任何變動。"
   fi
-  if [ ! -L "${STAGING}" ] || [ ! -e "${STAGING}/SKILL.md" ]; then
+  if [ ! -L "${staging_link}" ] || [ ! -e "${staging_link}/SKILL.md" ]; then
     cleanup_staging
     die "暫存 symlink 驗證失敗（${name}）：ln -s 可能退化成複製" \
         "Windows 請開啟開發人員模式（設定 → 系統 → 開發人員選項），或以具備建立 symlink 權限的身分執行。" \
         "本腳本不提供複製模式；原本的安裝沒有任何變動。"
   fi
 
-  # 驗證通過才動既有安裝，然後把暫存連結換上去。
-  if [ -L "${target}" ]; then
-    rm -f "${target}"
-  elif [ -d "${target}" ]; then
-    rm -rf "${target}"
-  elif [ -e "${target}" ]; then
-    rm -f "${target}"
+  # 先把既有安裝搬到暫存目錄（同檔案系統的 rename），再換上新的連結。
+  backup=""
+  if [ -L "${target}" ] || [ -e "${target}" ]; then
+    backup="${STAGING_DIR}/previous"
+    if ! mv "${target}" "${backup}"; then
+      cleanup_staging
+      die "無法把既有 ${target} 移到暫存位置" "既有安裝沒有任何變動。"
+    fi
   fi
 
-  if ! mv "${STAGING}" "${target}"; then
-    cleanup_staging
-    die "無法把暫存連結換到 ${target}" "原本的安裝可能已移除，請確認後重新執行。"
+  if ! mv "${staging_link}" "${target}"; then
+    if [ -z "${backup}" ]; then
+      cleanup_staging
+      die "無法把暫存連結換到 ${target}" "原本沒有既有安裝，沒有東西需要還原。"
+    fi
+    if mv "${backup}" "${target}"; then
+      cleanup_staging
+      die "無法把暫存連結換到 ${target}" "已把先前的安裝還原回原位。"
+    fi
+    KEEP_STAGING=1
+    die "無法把暫存連結換到 ${target}" \
+        "還原也失敗：先前的安裝仍在 ${backup}，請手動移回 ${target}。"
   fi
-  STAGING=""
+
+  cleanup_staging
   echo "  [LINK] ${name} -> ${expected}"
 done
 

@@ -76,8 +76,9 @@ check_reference_paths() {
         ;;
     esac
     case "${token}" in
-      ../*)
-        # 目錄 token（以 / 結尾）要解析完整目錄；檔案 token 解析它所在的目錄。
+      *..*)
+        # 任何含 .. 的 token 都要用實體路徑確認沒跑出 skills/；目錄 token（以 / 結尾）
+        # 解析完整目錄，檔案 token 解析它所在的目錄。
         case "${token}" in
           */) probe_dir="${base}/${token%/}" ;;
           *) probe_dir="${base}/$(dirname "${token}")" ;;
