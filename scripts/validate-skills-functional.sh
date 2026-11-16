@@ -30,6 +30,7 @@ require_text "skills/maze-qa-verification/checklists/test-plan-checklist.md" "�
 require_text "skills/maze-qa-verification/checklists/code-quality-checklist.md" "依 AC 的資料面與風險取用" "QA 品質清單與分級契約一致"
 require_text "skills/maze-github-safe-ops/SKILL.md" "Force push 到 main / master 可能覆蓋其他人的工作" "保留 force-push 明確警告"
 require_text "skills/maze-github-safe-ops/SKILL.md" "git revert" "保留安全替代方案"
+require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*完整預覽.*確認.*github-cli-contract\.md" "safe-ops 保留 GitHub 遠端寫入的確認門檻"
 
 echo "--- grill contracts ---"
 GRILL_PROTOCOL="skills/maze-grill/references/grilling-protocol.md"

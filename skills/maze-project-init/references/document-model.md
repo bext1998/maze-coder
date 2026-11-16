@@ -39,20 +39,22 @@
 各技能隨附自己的 `templates/`，安裝技能時一起取得，不另外複製到專案根目錄：
 
 ```text
-templates/spec.md          ← maze-idea-to-spec
-templates/AGENTS.md        ← maze-project-init
-templates/PROJECT_BRIEF.md ← maze-project-init
-templates/NEXT_ACTION.md   ← maze-project-init
-templates/DECISIONS.md     ← maze-project-init
-templates/MAZE_PROJECT.md  ← maze-project-init
-templates/QA_REPORT.md     ← maze-qa-verification
-templates/DESIGN_REVIEW.md ← maze-design-review
-templates/DESIGN_SYSTEM.md ← maze-design-system
-templates/PROTOTYPE_BRIEF.md ← maze-gui-prototyping
-templates/REPO_MAP.md      ← maze-repo-map
-templates/HANDOFF.md       ← maze-handoff-summary
-templates/SPEC_REVIEW.md   ← maze-spec-review
-templates/WAYFINDER_MAP.md ← maze-wayfinder
+skills/maze-bug-reproduction/templates/BUG_REPRODUCTION.template.md
+skills/maze-design-review/templates/DESIGN_REVIEW.template.md
+skills/maze-design-system/templates/DESIGN_SYSTEM.template.md
+skills/maze-gui-prototyping/templates/PROTOTYPE_BRIEF.template.md
+skills/maze-handoff-summary/templates/HANDOFF.template.md
+skills/maze-idea-to-spec/templates/spec.template.md
+skills/maze-project-init/templates/AGENTS.template.md
+skills/maze-project-init/templates/DECISIONS.template.md
+skills/maze-project-init/templates/MAZE_PROJECT.template.md
+skills/maze-project-init/templates/NEXT_ACTION.template.md
+skills/maze-project-init/templates/PROJECT_BRIEF.template.md
+skills/maze-qa-verification/templates/QA_REPORT.template.md
+skills/maze-repo-map/templates/REPO_MAP.template.md
+skills/maze-spec-review/templates/SPEC_REVIEW.template.md
+skills/maze-spec-to-issues/templates/issue.template.md
+skills/maze-wayfinder/templates/WAYFINDER_MAP.template.md
 ```
 
 ---

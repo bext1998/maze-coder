@@ -7,6 +7,9 @@
 
 ## 前置條件
 
+> 本檔是 `maze-github-safe-ops` 的 GitHub CLI 契約，會被 `maze-pr-review` 與 `maze-wayfinder` 跨技能載入。
+> 下文所有相對路徑一律以 `maze-github-safe-ops/` 技能根目錄為基準，不是以載入者或本檔所在目錄為基準。
+
 - 用 `gh auth status` 確認 `gh` 可用且已登入，唯一確認 repository、remote、branch、資源與外層授權。
 - 依 `references/command-contract.md` 與 `checklists/write-preview-checklist.md` 工作。
 

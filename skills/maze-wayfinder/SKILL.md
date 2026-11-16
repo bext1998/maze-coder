@@ -8,7 +8,7 @@ description: 使用者不確定自己要做什麼時，以結構化提問產出�
 ## 目標
 幫「不知道自己要什麼」的使用者透過結構化探索找到方向，產出決策地圖而非規格書。
 ## 前置條件
-連核心問題都無法明確陳述；能陳述只是要整理時改用 `maze-idea-to-spec`，不建圖。選定載體：GitHub Issues（預設）或 `templates/WAYFINDER_MAP.template.md`。
+連核心問題都無法明確陳述；能陳述只是要整理時改用 `maze-idea-to-spec`，不建圖。選定載體：GitHub Issues（預設）或 `templates/WAYFINDER_MAP.template.md`。需要同時安裝 `maze-github-safe-ops`、`maze-grill`、`maze-grill-with-docs`、`maze-gui-prototyping`、`maze-idea-to-spec` 與 `maze-spec-to-issues`：本技能的 references 與委派規則直接引用它們。
 ## 核心行為
 Mode 1 建圖（新想法，一個 session 只做這件事，不解決 issue）／Mode 2 推進（既有地圖，每次只解決一個 issue），完整流程、委派規則與 HITL 邊界見 `references/execution-flow.md`。issue 類型與標籤見 `references/issue-types.md`。每個 Mode 結束前過 `checklists/wayfinder-checklist.md` 自查。完成：Frontier 清空且無殘留迷霧、使用者宣告已想清楚，或剩餘問題已確認不影響 Destination（可提前收斂）；列 Decisions 全覽，建議下一步但不替使用者決定。
 ## 輸出契約

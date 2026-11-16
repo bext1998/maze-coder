@@ -52,28 +52,49 @@ is_model_invocable() {
 
 # 取出反引號內的候選相對路徑，解析後回報不存在的檔案。
 # 以技能根目錄為基準解 references/、templates/、checklists/；以檔案所在目錄為基準解 ../。
+# 取出反引號內的候選相對路徑，解析後回報不存在的檔案或目錄。
+# 以技能根目錄為基準解 references/、templates/、checklists/、examples/；以檔案所在目錄為基準解 ../。
 check_reference_paths() {
-  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base
+  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel
+  rel="${file#"${skill_dir}"/}"
   while IFS= read -r token; do
     [ -n "${token}" ] || continue
     case "${token}" in
-      */) continue ;;
       http://*|https://*|*'://'*) continue ;;
-      ../*) base="${skill_dir}/$(dirname "${file#"${skill_dir}/"}")" ;;
-      references/*|templates/*|checklists/*) base="${skill_dir}" ;;
+      ../*) base="${skill_dir}/$(dirname "${rel}")" ;;
+      references/*|templates/*|checklists/*|examples/*) base="${skill_dir}" ;;
       *) continue ;;
     esac
-    if [ ! -e "${base}/${token}" ]; then
-      err "${skill}: 找不到 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
-    fi
+    case "${token}" in
+      */)
+        [ -d "${base}/${token}" ] \
+          || err "${skill}: 找不到目錄 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
+        ;;
+      *)
+        [ -e "${base}/${token}" ] \
+          || err "${skill}: 找不到 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
+        ;;
+    esac
   done < <(awk '{
       line=$0
       while (match(line, /`[^`]+`/)) {
         print substr(line, RSTART+1, RLENGTH-2)
         line=substr(line, RSTART+RLENGTH)
       }
-    }' "${file}" | grep -E '(^\.\./)|^references/|^templates/|^checklists/' || true)
+    }' "${file}" | grep -E '(^\.\./)|^references/|^templates/|^checklists/|^examples/' || true)
   return 0
+}
+
+# 技能目錄任一檔案若以相對路徑引用其他技能（`../maze-X/`），SKILL.md 必須寫明
+# 需要同時安裝 maze-X；只安裝單一技能時，那條引用會斷。
+check_cross_skill_install() {
+  local skill="$1" dep
+  while IFS= read -r dep; do
+    [ -n "${dep}" ] || continue
+    grep -Eq "同時安裝.*${dep}|${dep}.*同時安裝" "${SKILLS_DIR}/${skill}/SKILL.md" \
+      || err "${skill}: 引用 ${dep} 的檔案，但 SKILL.md 未寫明需要同時安裝 ${dep}"
+  done < <(grep -rhoE '\.\./(\.\./)*maze-[a-z0-9-]+/' "${SKILLS_DIR}/${skill}" \
+             | sed -E 's|^(\.\./)+||; s|/$||' | sort -u)
 }
 
 validate_skill() {
@@ -102,13 +123,15 @@ validate_skill() {
   invocation_key="$(awk 'NR>1 && /^---$/{exit} /^invocation:/{print}' "${file}")"
   [ -z "${invocation_key}" ] || err "${skill}: 不得再使用自訂 invocation 欄位，請改用 disable-model-invocation"
 
-  if grep -q '^disable-model-invocation:[[:space:]]*true[[:space:]]*$' "${file}"; then
-    is_model_invocable "${skill}" && err "${skill}: 列在 MODEL_INVOCABLE_SKILLS，卻含 disable-model-invocation: true"
-  else
-    if grep -q '^disable-model-invocation:' "${file}"; then
-      err "${skill}: disable-model-invocation 只接受 true"
+  dmi="$(awk 'NR>1 && /^---$/{exit} /^disable-model-invocation:/{sub(/^disable-model-invocation:[[:space:]]*/, ""); gsub(/[[:space:]]+$/, ""); print}' "${file}")"
+  if [ -n "${dmi}" ]; then
+    if [ "${dmi}" = "true" ]; then
+      is_model_invocable "${skill}" && err "${skill}: 列在 MODEL_INVOCABLE_SKILLS，frontmatter 卻含 disable-model-invocation: true"
+    else
+      err "${skill}: frontmatter 的 disable-model-invocation 只接受 true"
     fi
-    is_model_invocable "${skill}" || err "${skill}: 使用者明示觸發的技能必須含 disable-model-invocation: true（或把它加入 MODEL_INVOCABLE_SKILLS）"
+  else
+    is_model_invocable "${skill}" || err "${skill}: 使用者明示觸發的技能必須在 frontmatter 含 disable-model-invocation: true（或把它加入 MODEL_INVOCABLE_SKILLS）"
   fi
 
   section_nonempty "${file}" "目標" || err "${skill}: 缺少或留空「目標」"
@@ -121,6 +144,8 @@ validate_skill() {
   while IFS= read -r resource_file; do
     check_reference_paths "${skill}" "${resource_file}"
   done < <(find "${skill_dir}" -type f -name '*.md' | LC_ALL=C sort)
+
+  check_cross_skill_install "${skill}"
 
   chars="$(wc -m < "${file}" | tr -d ' ')"
   [ "${chars}" -le "${MAX_SKILL_CHARS}" ] || warn "${skill}: ${chars} 字元，超過建議值 ${MAX_SKILL_CHARS}"

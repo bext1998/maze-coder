@@ -5,7 +5,7 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能�
 ## Source of Truth
 
 - `skills/` 是唯一來源；沒有生成物、沒有同步腳本，新增或修改技能只改這裡。
-- 每個技能的 `references/`、`templates/`、`checklists/` 跟技能一起安裝，不複製到 repo 根目錄。
+- 每個技能的 `references/`、`templates/`、`checklists/`、`examples/` 跟技能一起安裝，不複製到 repo 根目錄。
 - 沒有 Profiles、Model Overlays、`HARNESS_ENGINEERING.md` 與 Adapter 產物；不要再把它們加回來。
 
 ## 工作樹
@@ -17,7 +17,7 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能�
 
 1. 動手前讀目標技能的 `SKILL.md` 與其資源目錄。
 2. 技能 frontmatter 只允許 `name`、`description` 與選用的 `disable-model-invocation: true`；使用者明示觸發的技能才加該欄位，模型可主動載入的技能不加。
-3. 跨技能引用一律寫成安裝佈局下可解析的相對路徑，並在引用端寫明需要同時安裝哪個技能。
+3. 跨技能引用一律寫成安裝佈局下可解析的相對路徑，並在引用端寫明需要同時安裝哪個技能。會被其他技能跨技能載入的 reference（例如 `references/github-cli-contract.md`），內部的相對路徑一律以**所屬技能根目錄**為基準，並在檔案內寫明這個基準。
 4. 修改後執行 `bash scripts/validate-skillpack.sh` 與 `bash scripts/validate-skills-functional.sh`。
 5. Commit message 依 Conventional Commits，引用對應 Issue（`Closes #N` 僅用於完整完成）。
 
