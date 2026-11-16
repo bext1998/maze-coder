@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# 技能功能契約檢查：確認各技能仍保留必要的觸發、輸出契約、邊界與領域規則。
+# 只驗證 skills/ 的內容；不檢查生成物、不寫死技能總數。
 
 set -euo pipefail
 
@@ -29,31 +31,22 @@ require_text "skills/maze-qa-verification/checklists/code-quality-checklist.md" 
 require_text "skills/maze-github-safe-ops/SKILL.md" "Force push 到 main / master 可能覆蓋其他人的工作" "保留 force-push 明確警告"
 require_text "skills/maze-github-safe-ops/SKILL.md" "git revert" "保留安全替代方案"
 
-echo "--- adaptive and grill contracts ---"
-require_text "core/invariants.md" "階段.*可調整.*契約.*不可省略" "核心自適應原則"
-require_text "core/HARNESS_ENGINEERING.md" "profiles/minimal\.md.*profiles/standard\.md.*profiles/scaffolded\.md" "入口指向三級 Profile 檔案"
-require_text "core/HARNESS_ENGINEERING.md" "model-overlays/" "入口指向 Model Overlay 目錄"
-require_text "core/workflow-model.md" "profiles/" "workflow-model 指向 Profile 檔案路徑"
-require_text "adapters/claude-code/.claude/CLAUDE.md" "HARNESS_ENGINEERING" "Claude Code router 存在並指向入口"
-require_text "adapters/claude-code/.claude/CLAUDE.md" "選擇最輕可用 Profile" "Claude Code router 含 Guidance 載入指示"
-require_text "adapters/pi/AGENTS.md" "HARNESS_ENGINEERING" "Pi router 指向入口"
-require_text "adapters/codex/AGENTS.md" "HARNESS_ENGINEERING" "Codex router 指向入口"
-require_text "adapters/cursor/.cursor/rules/maze-coder-router.mdc" "HARNESS_ENGINEERING" "Cursor router 指向入口"
-require_text "adapters/opencode/AGENTS.md" "HARNESS_ENGINEERING" "opencode router 指向入口"
-require_text "core/workflow-model.md" "只有出現具體失敗才依序加強" "Profile 只因具體失敗加強"
-require_text "core/workflow-model.md" "scaffolded" "Profile 加強包含 scaffolded"
-require_text "profiles/minimal.md" "不得要求固定 Phase、Todo、進度報告" "Minimal 不強制重型流程"
-require_text "model-overlays/gpt-5.6.md" "原生代理" "GPT-5.6 保留原生代理"
-require_text "model-overlays/gpt-5.6.md" "Subagent 或平行工具" "GPT-5.6 保留平行與委派"
-require_text "skills/maze-grilling/SKILL.md" "每次只問一個.*推薦答案.*理由" "Grill 逐題契約"
-require_text "skills/maze-grilling/SKILL.md" "查證.*事實" "Grill 自行查證"
-require_text "skills/maze-grilling/SKILL.md" "本輪目標" "Grill 先界定單輪目標"
-require_text "skills/maze-grilling/SKILL.md" "直接改變.*方案選擇.*工作範圍.*非目標.*不可逆.*高成本.*驗收條件" "Grill 問題准入門檻"
-require_text "skills/maze-grilling/SKILL.md" "非阻塞.*待辦分支" "Grill 收納非阻塞問題"
-require_text "skills/maze-grilling/SKILL.md" "第 5 題.*最多 7 題" "Grill 題數與收斂上限"
-require_text "skills/maze-grilling/SKILL.md" "已決定.*未決分支.*推薦預設值.*另一輪 Grill" "Grill 到限輸出收斂摘要"
-require_text "skills/maze-domain-modeling/SKILL.md" "難以逆轉.*缺背景.*替代方案" "ADR 三項門檻"
+echo "--- grill contracts ---"
+GRILL_PROTOCOL="skills/maze-grill/references/grilling-protocol.md"
+DOMAIN_MODELING="skills/maze-grill-with-docs/references/domain-modeling.md"
+require_text "${GRILL_PROTOCOL}" "每次只問一個.*推薦答案.*理由" "Grill 逐題契約"
+require_text "${GRILL_PROTOCOL}" "查證.*事實" "Grill 自行查證"
+require_text "${GRILL_PROTOCOL}" "本輪目標" "Grill 先界定單輪目標"
+require_text "${GRILL_PROTOCOL}" "直接改變.*方案選擇.*工作範圍.*非目標.*不可逆.*高成本.*驗收條件" "Grill 問題准入門檻"
+require_text "${GRILL_PROTOCOL}" "非阻塞.*待辦分支" "Grill 收納非阻塞問題"
+require_text "${GRILL_PROTOCOL}" "第 5 題.*最多 7 題" "Grill 題數與收斂上限"
+require_text "${GRILL_PROTOCOL}" "已決定.*未決分支.*推薦預設值.*另一輪 Grill" "Grill 到限輸出收斂摘要"
+require_text "${DOMAIN_MODELING}" "難以逆轉.*缺背景.*替代方案" "ADR 三項門檻"
 require_text "skills/maze-grill/SKILL.md" "不建立文件" "Grill 無文件輸出"
+require_text "skills/maze-grill/SKILL.md" "references/grilling-protocol\.md" "Grill 載入共用逐題契約"
+require_text "skills/maze-grill-with-docs/SKILL.md" "\.\./maze-grill/references/grilling-protocol\.md" "Grill with docs 載入共用逐題契約"
+require_text "skills/maze-grill-with-docs/SKILL.md" "references/domain-modeling\.md" "Grill with docs 載入領域模型契約"
+require_text "skills/maze-grill-with-docs/SKILL.md" "同時安裝" "Grill with docs 標明需同時安裝 maze-grill"
 require_text "skills/maze-spec-to-issues/references/issue-model.md" "乾淨 Context Window" "Issue 單一 Context"
 require_text "skills/maze-spec-to-issues/references/issue-model.md" "垂直切片" "Issue 垂直切片"
 require_text "skills/maze-spec-to-issues/references/issue-model.md" "阻塞.*可執行前線" "Issue 阻塞前線"
@@ -137,10 +130,10 @@ require_text "skills/maze-context-audit/SKILL.md" '忽略外部既有 `STATUS.md
 require_text "skills/maze-project-init/templates/NEXT_ACTION.template.md" "整體重建" "NEXT 模板整體重建契約"
 require_text "skills/maze-project-init/templates/NEXT_ACTION.template.md" "最多 3 項" "NEXT 模板最多三項行動"
 require_text "skills/maze-project-init/templates/DECISIONS.template.md" "唯一權威.*更新或移除" "DECISIONS 模板有效索引契約"
-if [ ! -e "${ROOT_DIR}/docs/STATUS.md" ] && [ ! -e "${ROOT_DIR}/skills/maze-project-init/templates/STATUS.template.md" ] && [ ! -e "${ROOT_DIR}/templates/STATUS.md" ]; then
-  ok "STATUS 不再生成且 repo 舊檔已移除"
+if find "${ROOT_DIR}/skills" -name 'STATUS.md' -o -name 'STATUS.template.md' | grep -q .; then
+  err "STATUS.md 不得由任何技能保留或生成"
 else
-  err "STATUS 仍存在於受管理位置"
+  ok "STATUS.md 不再由技能建立或生成"
 fi
 
 if find "${ROOT_DIR}/skills/maze-session-closeout" -iname '*summary*' -o -iname '*status-update*' | grep -q .; then
@@ -148,6 +141,15 @@ if find "${ROOT_DIR}/skills/maze-session-closeout" -iname '*summary*' -o -iname 
 else
   ok "closeout 無 summary/status-update 產物"
 fi
+
+echo "--- project-init document model ---"
+require_text "skills/maze-project-init/references/document-model.md" "文件類型總覽" "文件系統模型保留文件類型"
+require_text "skills/maze-project-init/references/document-model.md" "^\| 短期快照 \|" "文件系統模型保留短期快照生命週期"
+require_text "skills/maze-project-init/references/document-model.md" "^\| 有效索引 \|" "文件系統模型保留有效索引生命週期"
+require_text "skills/maze-project-init/references/document-model.md" "^\| 一次性報告 \|" "文件系統模型保留一次性報告生命週期"
+require_text "skills/maze-project-init/references/document-model.md" "佔位符.*\[\.\.\.\]" "文件系統模型保留佔位符規範"
+require_text "skills/maze-project-init/references/document-model.md" '`STATUS.md` 已退休' "文件系統模型保留 STATUS 退休規則"
+require_text "skills/maze-project-init/SKILL.md" "references/document-model\.md" "project-init 引用文件系統模型"
 
 echo "--- v3.1 review and GitHub CLI contracts ---"
 SPEC_REVIEW="skills/maze-spec-review/SKILL.md"
@@ -169,8 +171,9 @@ require_text "${PR_REVIEW}" "Request changes.*Comment.*Approve.*Insufficient evi
 require_text "${PR_REVIEW}" "降級.*不得 Approve" "PR review 降級限制"
 require_text "${PR_REVIEW}" "已審查且未發現問題" "PR review 覆蓋範圍"
 require_text "${PR_REVIEW}" "不留言.*批准.*request changes" "PR review 遠端唯讀邊界"
+require_text "${PR_REVIEW}" "\.\./maze-github-safe-ops/references/github-cli-contract\.md" "PR review 以相對路徑引用 GitHub CLI 契約"
 
-CLI="skills/maze-github-cli/SKILL.md"
+CLI="skills/maze-github-safe-ops/references/github-cli-contract.md"
 require_text "${CLI}" "gh.*可用且已登入" "GitHub CLI auth 前置檢查"
 require_text "${CLI}" "repository.*remote.*branch" "GitHub CLI repo/remote 前置檢查"
 require_text "${CLI}" "\\-\\-json.*\\-\\-jq" "GitHub CLI 結構化輸出"
@@ -178,7 +181,10 @@ require_text "${CLI}" "Read.*Create／Update.*Destructive" "GitHub CLI 操作分
 require_text "${CLI}" "預覽.*明確確認" "GitHub CLI 寫入確認"
 require_text "${CLI}" "\\-\\-admin.*force.*保護規則" "GitHub CLI 禁止繞過"
 require_text "${CLI}" "失敗後重新查詢.*重試未完成" "GitHub CLI 冪等失敗處理"
-require_text "skills/maze-github-safe-ops/SKILL.md" "使用者明確請求.*預覽.*確認.*委派.*internal" "safe-ops internal CLI 委派"
+require_text "${CLI}" "references/command-contract\.md" "GitHub CLI 契約指向命令契約"
+require_text "${CLI}" "checklists/write-preview-checklist\.md" "GitHub CLI 契約指向寫入預覽清單"
+require_text "skills/maze-github-safe-ops/SKILL.md" "references/github-cli-contract\.md" "safe-ops 以相對路徑引用 GitHub CLI 契約"
+require_text "skills/maze-wayfinder/SKILL.md" "\.\./maze-github-safe-ops/references/github-cli-contract\.md" "wayfinder 以相對路徑引用 GitHub CLI 契約"
 
 echo "--- wayfinder contract ---"
 require_text "skills/maze-wayfinder/SKILL.md" "Mode 1 建圖.*不解決 issue.*Mode 2 推進.*每次只解決一個 issue" "Wayfinder Mode 1／Mode 2 分離"
@@ -192,6 +198,7 @@ for field in "type: grilling" "status: open" "blocked-by:" "question:" "answer:"
 done
 require_text "skills/maze-wayfinder/references/issue-types.md" "Local Markdown 載體.*Questions.*section.*Q-ID、type、status、blocked-by、question、answer" "Wayfinder Local Markdown 六欄位契約"
 require_text "skills/maze-wayfinder/references/execution-flow.md" "單一寫入者模式.*多人協作改用 GitHub Issues" "Wayfinder Local Markdown 單一寫入者邊界"
+require_text "skills/maze-wayfinder/references/execution-flow.md" "\.\./\.\./maze-grill-with-docs/references/domain-modeling\.md" "Wayfinder 以相對路徑引用領域模型契約"
 grep -rq 'hash' "${ROOT_DIR}/skills/maze-wayfinder" && err "Wayfinder 仍要求計算或比對檔案 hash" || ok "Wayfinder 無 hash 規則"
 grep -rq 'spec-revision\|Spec Revision\|SHA-256' "${ROOT_DIR}/skills/maze-spec-to-issues" && err "spec-to-issues 仍要求或輸出 spec-revision／SHA-256" || ok "spec-to-issues 無 spec-revision／SHA-256"
 require_text "skills/maze-spec-to-issues/templates/issue.template.md" "task-id:" "Issue marker 保留 task-id"
@@ -225,13 +232,8 @@ require_text "${ROOT_CAUSE}" "證據不足.*候選根因.*下一個最小區辨�
 require_text "${ROOT_CAUSE}" "不得因.*修正後測試通過.*根因" "Root cause diagnosis 禁止症狀修補誤判"
 
 echo "--- portability ---"
-bash -n "${ROOT_DIR}/scripts/sync-adapters.sh" && ok "sync-adapters.sh syntax" || err "sync-adapters.sh syntax"
 bash -n "${ROOT_DIR}/scripts/validate-skillpack.sh" && ok "validate-skillpack.sh syntax" || err "validate-skillpack.sh syntax"
-if [[ "$(uname -s)" == Linux ]]; then
-  ok "Linux runtime"
-else
-  echo "  [SKIP] Ubuntu runtime case（current: $(uname -s)）"
-fi
+bash -n "${ROOT_DIR}/scripts/validate-skills-functional.sh" && ok "validate-skills-functional.sh syntax" || err "validate-skills-functional.sh syntax"
 
 echo
 if [ "${ERRORS}" -eq 0 ]; then
