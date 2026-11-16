@@ -63,7 +63,7 @@ v3.x 以自適應 Harness 為設計核心：共用契約檔、三級 Guidance Pr
 - 安裝 = 讓技能目錄出現在 host 會掃描的技能路徑下；不改變技能內容。
 - `scripts/install-skills.sh` 只建立 symlink，支援 `--host`（claude、codex、cursor、pi、opencode、agents）、`--scope`（user／project）與技能名稱清單；不提供覆蓋選項，也不提供複製模式。
 - 位置參數只接受 `skills/` 直接子目錄的精確名稱；不得接受含 `/`、`.`、`..` 的值。
-- 安裝目錄的實體路徑不得與 `skills/` 相同或互相包含（MINGW／MSYS／Cygwin 下比對前轉小寫）。
+- 安裝目錄的實體路徑不得與 `skills/` 相同或互相包含；比對一律不分大小寫（NTFS 與 macOS 預設不分大小寫，WSL 的 `/mnt/*` 也是），因此在 Linux 上可能多擋掉僅大小寫不同的路徑。
 - **腳本永遠不刪除實體目錄或檔案**：目標已存在且不是 symlink（含空目錄）時，所有衝突在任何寫入前一次列出並停下，由使用者自行搬走或刪除。
 - 目標是 symlink 時才替換，且必須先建暫存連結並驗證，成功後才換手；失敗時原本的連結不動。
 

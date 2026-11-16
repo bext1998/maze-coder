@@ -227,7 +227,9 @@ mkdir -p "${DEST_ROOT}" || die "無法建立安裝目錄 ${DEST_ROOT}"
 
 remove_created_dirs() {
   local d
-  for d in "${created_dirs[@]}"; do
+  # bash 3.2（macOS 預設 shell）在 set -u 下展開空陣列會報錯，先展開成不存在的寫法。
+  [ "${#created_dirs[@]}" -gt 0 ] || return 0
+  for d in ${created_dirs[@]+"${created_dirs[@]}"}; do
     rmdir "${d}" 2>/dev/null || true
   done
   created_dirs=()
@@ -301,17 +303,12 @@ replace_link() {
     mv -T "${staging_link}" "${target}"
     return
   fi
-  # 沒有 -T 的環境：先把舊連結「搬進」暫存目錄（不是刪除），再放上新的；
-  # 失敗就把舊連結搬回原位，使用者原本的連結不會消失。
+  # 沒有 -T 的環境：先把舊連結「搬進」暫存目錄（不是刪除），再放上新的。
+  # 還原一律交給 cleanup_staging 處理：成功印「已搬回」，失敗就保留暫存目錄。
   if [ -L "${target}" ]; then
     mv "${target}" "${previous}" || return 1
-    if mv "${staging_link}" "${target}"; then
-      return 0
-    fi
-    if mv "${previous}" "${target}"; then
-      return 1
-    fi
-    die "無法把暫存連結換到 ${target}" "還原也失敗：原本的連結仍在 ${previous}，請手動移回。"
+    mv "${staging_link}" "${target}" && return 0
+    return 2
   fi
   mv "${staging_link}" "${target}"
 }
@@ -320,13 +317,21 @@ STAGING_DIR=""
 CURRENT_TARGET=""
 cleanup_staging() {
   if [ -n "${STAGING_DIR}" ] && [ -d "${STAGING_DIR}" ]; then
-    # 中斷發生在「舊連結已搬進暫存、新連結還沒換上」的空檔時，先把舊連結搬回去。
-    if [ -n "${CURRENT_TARGET}" ] && [ ! -e "${CURRENT_TARGET}" ] && [ ! -L "${CURRENT_TARGET}" ] \
-       && [ -L "${STAGING_DIR}/previous" ]; then
-      mv "${STAGING_DIR}/previous" "${CURRENT_TARGET}" 2>/dev/null || true
-      echo "WARN: 中斷時已把先前的連結搬回 ${CURRENT_TARGET}" >&2
+    local restore_failed=0
+    # 舊連結已搬進暫存、新連結還沒換上的空檔（換手失敗或收到 INT／TERM）：
+    # 搬得回去就搬回去；搬不回去就把整個暫存目錄留下來，不刪。
+    if [ -L "${STAGING_DIR}/previous" ] && [ -n "${CURRENT_TARGET}" ] \
+       && [ ! -e "${CURRENT_TARGET}" ] && [ ! -L "${CURRENT_TARGET}" ]; then
+      if mv "${STAGING_DIR}/previous" "${CURRENT_TARGET}" 2>/dev/null; then
+        echo "WARN: 已把先前的連結搬回 ${CURRENT_TARGET}" >&2
+      else
+        echo "ERROR: 無法把先前的連結搬回 ${CURRENT_TARGET}；它仍在 ${STAGING_DIR}/previous，請手動移回。" >&2
+        restore_failed=1
+      fi
     fi
-    rm -rf "${STAGING_DIR}" 2>/dev/null || true
+    if [ "${restore_failed}" = "0" ]; then
+      rm -rf "${STAGING_DIR}" 2>/dev/null || true
+    fi
   fi
   STAGING_DIR=""
   CURRENT_TARGET=""
@@ -392,10 +397,16 @@ for idx in "${!selected[@]}"; do
       "       既有連結未被變更。"
   fi
 
-  if ! replace_link "${staging_link}" "${target}" "${STAGING_DIR}/previous"; then
+  replace_rc=0
+  replace_link "${staging_link}" "${target}" "${STAGING_DIR}/previous" || replace_rc=$?
+  if [ "${replace_rc}" = "1" ]; then
     CURRENT_TARGET=""
     cleanup_staging
     report_failure "${idx}" "ERROR: 無法把暫存連結換到 ${target}" "       原本的連結未變動。"
+  elif [ "${replace_rc}" = "2" ]; then
+    # 舊連結已搬進暫存但新連結換不上：交給 cleanup_staging 統一還原或保留。
+    cleanup_staging
+    report_failure "${idx}" "ERROR: 換手失敗（${target}）" "       先前的連結是否已還原，見上一則訊息。"
   fi
 
   CURRENT_TARGET=""
