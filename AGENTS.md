@@ -74,4 +74,4 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：每個 `maze-*` 技能�
 ## 狀態
 
 - 工作狀態權威是 GitHub Issues／PR 與 Git；`docs/NEXT_ACTION.md` 只保留當前前線，closeout 時重建。
-- 目前 open issue：#59（技能包簡化為原生 Agent Skills，本 repo 正在進行）與 #58（全域安裝，已併入 #59 的安裝部分）。
+- 目前無 open issues；#59、#58 已由 PR #60（v3.0.0）完成並關閉。

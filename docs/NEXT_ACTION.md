@@ -4,21 +4,20 @@
 
 ## 下一個 Session 目標
 
-Issue #59 的四段實作已完成並在 worktree 分支上通過驗證；下一個動作是把分支整理成一個 PR（`release:major`，`Closes #59`、`Related to #58`）。
+v3.0.0（PR #60，原生 Agent Skills 集合）已合併發佈，GitHub 沒有 open issue。目前前線是把本機各 agent 的全域安裝遷移到新架構。
 
 ## 行動（最多 3 項）
 
-1. 依最後一段的審查結果決定是否補修，然後開 PR（`maze/2026-11-17-6ec31f0` → `master`）。
-2. PR 合併後，依 README「從舊版遷移」把本機五個 agent 的全域安裝換到 `skills/` 來源，先裝新的再刪舊的。
-3. 合併後確認 release 產物改為 `maze-coder-skills-<tag>.zip`（workflow 已改），舊的 adapter 壓縮檔不再產生。
+1. 依 README「從舊版遷移」把本機全域安裝換成指向 `skills/` 的連結。舊的 `~/.claude/skills/maze-*` 指向已刪除的 `adapters/`，合併後已全部失效。Codex 與 Pi 的舊副本也要一併搬走。
+2. 遷移完成後，用 `bash scripts/install-skills.sh --host agents` 與 `--host claude` 安裝，在 Claude Code、Codex、Pi 各試一個代表性技能（例如 `maze-grill`）確認能載入。
 
 ## 阻塞與待決策
 
-- 本機 Cursor 與 opencode 未安裝，這兩個 host 的實際載入行為只有官方文件依據，沒有實機驗證。
-- Codex 不支援 `disable-model-invocation` 已列為已知限制；若之後 Codex 變成主要工具，再評估加 `agents/openai.yaml`。
+- 本機沒有安裝 Cursor 與 opencode，這兩個 host 的實際載入行為只有官方文件依據，沒有實機驗證。
+- Codex 不支援 `disable-model-invocation`，已列為已知限制。若之後 Codex 變成主要工具，再評估是否加 `agents/openai.yaml`。
 
 ## 參考
 
-- Issue：https://github.com/bext1998/maze-coder/issues/59（#58 併入安裝部分）
+- 發佈：https://github.com/bext1998/maze-coder/releases/tag/v3.0.0
 - 規格：docs/spec.md
 - 決策：docs/adr/0003-native-agent-skills.md
