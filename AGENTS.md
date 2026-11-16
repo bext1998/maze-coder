@@ -35,6 +35,22 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：每個 `maze-*` 技能�
 - 技能缺少必要輸入時停止並列出缺漏；同名輸出已存在時不得靜默覆蓋。
 - 回應以結果或下一步開始；不得為縮短內容刪掉安全規則。
 
+## 程式碼審查（Goldfish 審查）
+
+參考 [Elephant-Goldfish Model](https://github.com/google/elephant-goldfish-model)：寫程式的 agent 握有上下文，審查者則只看產出本身。
+
+- **全新上下文**：每個審查視角各開一次 headless 執行（例：`agy -p "<提示>" --mode auto`、`codex exec -s read-only`），不沿用已經審過其他輪的 session。
+- **不給作者的說法**：提示只包含 diff 範圍、Issue 編號、repo 路徑與審查視角；不附實作者的理由、自評、「已修正」或「刻意決定」等說法。刻意的設計應該寫在 spec／ADR，讓審查者自己讀。
+- **分視角**：依 diff 性質選 2–4 個，同時執行：
+  - 破壞性路徑：刪除、覆寫、搬移、路徑解析。只要 diff 含 `rm`、`mv`、`ln` 或寫檔就必選。
+  - 失敗模式：指令中途失敗、`set -e`、trap、訊號、部分完成。
+  - 契約一致：程式碼與 README、spec、ADR 是否互相符合。
+  - 照文件操作：只讀 README，逐步實際跑一遍。
+- **只讀、隔離實測**：審查者不得修改 repo 或寫入真實 HOME；需要實際驗證時，只在 `mktemp -d` 的假 repo 加臨時 `HOME` 裡做。協調者審完後用 `git status` 確認沒有副作用。
+- **嘗試矩陣**：每份報告都要附「試過的輸入／佈局 → 實際結果」表格。「沒有發現」必須以這張表為證據，不接受只寫一句「找不到」。
+- **協調者合併**：合併重複項、重新判定嚴重度（審查者常把嚴重度報高），每條標成「修」或「反駁（附證據）」。涉及資料刪除、覆寫的發現，協調者必須親自重現。
+- **收斂上限**：每段實作最多複審一次。複審後仍有同類 blocker 時，就改設計（例如拿掉危險能力），不要繼續補洞；其餘問題記為接受的取捨。
+
 ## Git 與 GitHub
 
 - Git／GitHub 操作遵守 `skills/maze-github-safe-ops/SKILL.md`；只有使用者明確要求時才 commit、push 或對外發布。
