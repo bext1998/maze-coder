@@ -20,7 +20,7 @@ description: 評估該新增 maze-* 技能或擴充既有技能的 checklist／r
 2. 確認必須獨立成技能後，決定 `name`（`maze-<動詞或名詞短語>`）、`description`（含「何時使用」觸發語句，供模型判斷是否載入），以及是否加 `disable-model-invocation: true`：只有使用者明示觸發的技能才加，模型可主動載入時不加。
 3. 撰寫單一 `SKILL.md`，維持既有結構：前置條件、執行流程、輸出契約、邊界（不做的事）。預設只寫單一檔案；只有內容量大到必須拆分時才加 `checklists`、`templates`、`references` 或 `examples` 子目錄，且子目錄內容只能按需讀取，不得在 SKILL.md 主體展開全文。
 4. 高風險技能（邊界依賴「已證明」「根因」等判斷性措辭，錯誤解讀代價高）另讀 `references/adversarial-resilience-check.md`，用對抗式壓力情境驗證措辭是否經得起時間壓力、沉沒成本或看似合理的豁免理由；低風險技能跳過此步。
-5. 更新 source of truth：`skills/<name>/` 是唯一來源，同時更新 `README.md` 的技能表；跨技能引用一律寫成安裝佈局下可解析的相對路徑，並在引用端寫明需要同時安裝哪個技能。會被其他技能跨技能載入的 reference，內部相對路徑一律以所屬技能根目錄為基準，並在檔案內寫明基準。
+5. 更新 source of truth：`skills/<name>/` 是唯一來源，同時更新 `README.md` 的技能表。路徑基準：`references`、`templates`、`checklists`、`examples` 目錄下的資源以技能根目錄為基準；`../` 開頭的路徑以所在檔案的目錄為基準。跨技能引用要在引用端 SKILL.md 寫明需要同時安裝哪個技能。
 6. 執行 `bash scripts/validate-skillpack.sh` 與 `bash scripts/validate-skills-functional.sh` 確認通過。
 
 ## 輸出契約

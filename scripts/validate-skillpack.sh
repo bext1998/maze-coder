@@ -5,8 +5,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SKILLS_DIR="${ROOT_DIR}/skills"
+ROOT_DIR="$(cd -P "${SCRIPT_DIR}/.." && pwd -P)"
+# skills/ 用實體路徑：repo 經由 symlink 路徑執行時（例如 macOS 的 /tmp），
+# 用邏輯路徑會把合法的 ../ 引用誤報為「離開 skills/」。
+SKILLS_DIR="$(cd -P "${ROOT_DIR}/skills" 2>/dev/null && pwd -P)" || SKILLS_DIR="${ROOT_DIR}/skills"
 ERRORS=0
 WARNINGS=0
 MAX_DESC_CHARS=200
@@ -25,8 +27,13 @@ MODEL_INVOCABLE_SKILLS=(
   maze-wayfinder
 )
 
-UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
-[ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
+# locale -a 可能很大，先整份收下再過濾：`locale -a | awk` 在 pipefail 下會因為
+# awk 提早 exit 造成 SIGPIPE，讓整個腳本靜默中止。
+LOCALE_LIST="$(locale -a 2>/dev/null || true)"
+UTF8_LOCALE="$(printf '%s\n' "${LOCALE_LIST}" | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}' || true)"
+if [ -n "${UTF8_LOCALE}" ]; then
+  export LC_ALL="${UTF8_LOCALE}"
+fi
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }
@@ -50,8 +57,6 @@ is_model_invocable() {
   return 1
 }
 
-# 取出反引號內的候選相對路徑，解析後回報不存在的檔案。
-# 以技能根目錄為基準解 references/、templates/、checklists/；以檔案所在目錄為基準解 ../。
 # 取出反引號內的候選相對路徑，解析後回報不存在的檔案或目錄。
 # 以技能根目錄為基準解 references/、templates/、checklists/、examples/；以檔案所在目錄為基準解 ../。
 check_reference_paths() {
@@ -77,10 +82,11 @@ check_reference_paths() {
     esac
     case "${token}" in
       *..*)
-        # 任何含 .. 的 token 都要用實體路徑確認沒跑出 skills/；目錄 token（以 / 結尾）
-        # 解析完整目錄，檔案 token 解析它所在的目錄。
+        # 任何含 .. 的 token 都要用實體路徑確認沒跑出 skills/。目錄 token（以 / 結尾，
+        # 或以 .. 結尾，例如 `../..`）解析完整目錄；檔案 token 解析它所在的目錄。
         case "${token}" in
           */) probe_dir="${base}/${token%/}" ;;
+          *..) probe_dir="${base}/${token}" ;;
           *) probe_dir="${base}/$(dirname "${token}")" ;;
         esac
         resolved=""
@@ -148,7 +154,10 @@ validate_skill() {
   local first close name desc_len chars fields invocation_key
   first="$(head -n 1 "${file}")"
   close="$(awk '/^---$/{count++; if (count==2) {print NR; exit}}' "${file}")"
-  [ "${first}" = "---" ] && [ "${close}" -gt 1 ] || err "${skill}: frontmatter 格式錯誤"
+  if [ "${first}" != "---" ] || [ -z "${close}" ] || [ "${close}" -le 1 ]; then
+    err "${skill}: frontmatter 格式錯誤（缺少成對的 ---）"
+    return
+  fi
 
   name="$(awk 'NR>1 && /^---$/{exit} /^name:[[:space:]]*/{sub(/^name:[[:space:]]*/, ""); print}' "${file}")"
   [ "${name}" = "${skill}" ] || err "${skill}: name 與目錄不一致"

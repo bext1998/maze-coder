@@ -45,24 +45,30 @@
 
 ### 方式 1：`install-skills.sh`（symlink，建議）
 
-建議設定就兩行：`--host agents` 蓋住 Codex、Cursor、Pi、opencode，`--host claude` 給 Claude Code。
+先看自己用哪些工具，再挑最少數量的安裝根：
+
+| 你用的工具 | 建議指令 | 說明 |
+|---|---|---|
+| Claude Code ＋ Cursor／opencode | `--host claude` | Cursor 與 opencode 都會讀 `~/.claude/skills`，一個根就夠 |
+| Codex 或 Pi | `--host agents` | Codex、Cursor、Pi、opencode 都讀 `~/.agents/skills`（不要同時再用 `--host pi`） |
+| Claude Code ＋ Codex／Pi | `--host claude` ＋ `--host agents` | 兩個根；Cursor 與 opencode 會把同名技能看到兩次（見下方注意） |
 
 ```bash
-# 一般情況：兩個安裝根就夠
-bash scripts/install-skills.sh --host agents
+# 最常見的組合：Claude Code ＋ Codex／Pi
 bash scripts/install-skills.sh --host claude
+bash scripts/install-skills.sh --host agents
 
-# 逐專案：在專案根目錄執行（改成裝到 <專案>/.agents/skills 與 <專案>/.claude/skills）
+# 逐專案：在專案根目錄執行（裝到 <專案>/.claude/skills 或 <專案>/.agents/skills）
 cd /your/project && bash /path/to/maze-coder/scripts/install-skills.sh --host agents --scope project
-
-# 只用單一工具時，才用個別 host 參數
-bash scripts/install-skills.sh --host pi
 
 # 只裝需要的技能（跨技能依賴不會自動補裝，見下節）
 bash scripts/install-skills.sh --host agents maze-grill maze-grill-with-docs
 ```
 
-! 不要把同一批技能同時裝到 `--host agents` 和 `--host pi`（或 `codex`、`cursor`、`opencode`）：這些 host 都會讀 `~/.agents/skills`，而 Pi 另外也會讀 `~/.pi/agent/skills`，結果同一個技能被找到兩份，依各 host 規則可能只載入先找到的那份或同名提示。選一組就好。
+! 兩個坑，選安裝根之前先看一下：
+
+- **不要同時裝到 `--host agents` 與 `--host pi`**（或 `codex`、`cursor`、`opencode`）：它們都會讀 `~/.agents/skills`，Pi 又另外讀 `~/.pi/agent/skills`，同一個技能會出現兩份。
+- **`--host claude` ＋ `--host agents` 在 Cursor 與 opencode 上會看到兩份同名技能**：這兩個 host 同時讀 `~/.claude/skills` 與 `~/.agents/skills`。Cursor 會把兩份都列出來，opencode 依來源優先順序只載入其中一份（`.agents/skills` 較後註冊、優先）。只用 Cursor 或只用 opencode 的人應該只裝一個根（例如 `--host agents`），不要兩個都裝。
 
 `--host` 可為 `claude`、`codex`、`cursor`、`pi`、`opencode`、`agents`；`--scope` 預設 `user`，可改 `project`。腳本只建立 symlink，因此 `git pull` 這個 repo 之後技能內容自動更新，不需要重新安裝。
 
@@ -131,6 +137,7 @@ bash scripts/validate-skills-functional.sh  # 各技能的觸發／輸出契約�
 - **Cursor、opencode 未在本機實測**（本機未安裝）；上表的路徑來自官方文件，實際行為請以各 host 版本為準。
 - **`--host codex` 裝到 `~/.agents/skills`**；若你原本用舊的 `~/.codex/skills`，遷移方式見下節。
 - 手動 `cp -r` 安裝的副本不會隨 `git pull` 更新，需自行重新複製。
+- **同時使用 `--host claude` 與 `--host agents` 時，Cursor 與 opencode 會看到兩份同名技能**（兩者都讀這兩個目錄）；只用其中一個 host 時請只裝一個根，詳見上面安裝段。
 
 ## Extension Skills
 
@@ -142,17 +149,30 @@ bash scripts/validate-skills-functional.sh  # 各技能的觸發／輸出契約�
 | `consult-codex` | Claude Code 端：呼叫本機 `codex` CLI 取得第二意見 | `~/.claude/skills/consult-codex/` |
 
 ```bash
-cp -r extensions/consult-claude ~/.agents/skills/
-cp -r extensions/consult-codex ~/.claude/skills/
+mkdir -p ~/.agents/skills ~/.claude/skills
+cp -r extensions/consult-claude ~/.agents/skills/consult-claude
+cp -r extensions/consult-codex ~/.claude/skills/consult-codex
 ```
+
+目的目錄一定要先建立，且要把目的路徑寫完整：`~/.claude/skills` 不存在時，`cp -r extensions/consult-codex ~/.claude/skills/` 會把整個目錄複製成 `skills` 本身（變成 `~/.claude/skills/consult-codex` 不存在、內容卻在 `~/.claude/skills`）。
 
 兩者互相排斥：不要把 `consult-claude` 裝到 Claude Code 端，也不要把 `consult-codex` 裝到 Codex 端，否則會形成自我遞迴諮詢。
 
 ## 從舊版遷移
 
-舊版（含 Adapter、Profile、Overlay 的版本）的技能是複本，或是指向本 repo 舊產物目錄 `adapters/claude-code/.claude/skills/` 的連結。新版是「repo 的 `skills/` 直接 symlink 到 host 目錄」，而 `install-skills.sh` **只建立或替換 symlink，永遠不刪除實體目錄或檔案**——所以舊的實體安裝必須先由你搬走，否則安裝會停下並列出衝突。
+舊版（含 Adapter、Profile、Overlay 的版本）分「全域」與「逐專案」兩種安裝，留下的東西不一樣。新版是「repo 的 `skills/` 直接 symlink 到 host 目錄」，而 `install-skills.sh` **只建立或替換 symlink，永遠不刪除實體目錄或檔案**——所以舊安裝必須先由你搬走，否則安裝會停下並列出衝突。
 
-順序是「**先備份 → 把所有舊的實體安裝搬進備份 → 再安裝 → 確認可用後才刪備份**」。第 2 步全部成功之後才能進第 3 步。
+舊版實際會留下的東西（依 `6ec31f0` 的 README 與 `adapters/` 產物）：
+
+| 位置 | 全域安裝留下的 | 逐專案安裝留下的 |
+|---|---|---|
+| Claude Code | `~/.claude/skills/maze-*`（指向舊產物目錄的連結）、`~/.claude/maze-coder/` | `.claude/skills/maze-*`、`.claude/maze-coder/`、`.claude/CLAUDE.md` 或專案根 `CLAUDE.md` 裡的 Router 段落 |
+| Codex | `~/.codex/skills/maze-*`、`~/.codex/skills/consult-claude`（若有裝 extension） | 專案根 `AGENTS.md` 的 Router 段落、`.maze-coder/` |
+| Cursor | — | `.cursor/maze-coder/`、`.cursor/rules/maze-coder-router.mdc` |
+| opencode | — | 專案根 `AGENTS.md` 的 Router 段落、`.maze-coder/` |
+| Pi | `~/.pi/agent/skills/maze-*`、`~/.pi/agent/maze-coder/` | `.pi/skills/maze-*`、`.pi/maze-coder/` |
+
+順序是「**先備份 → 把舊的實體安裝搬進備份 → 再安裝 → 確認可用後才刪備份**」。第 2 步全部成功之後才能進第 3 步。
 
 1. 建立本次專屬的備份目錄（每次都是新的唯一目錄，依 host 分子目錄）：
 
@@ -161,27 +181,58 @@ cp -r extensions/consult-codex ~/.claude/skills/
    mkdir -p "$BAK/claude" "$BAK/codex" "$BAK/pi"
    ```
 
-2. 把舊的實體安裝**搬**進備份（不是複製：新舊同時存在會讓安裝因衝突停下）：
+2. 把舊的全域安裝**搬**進備份（不是複製：新舊同時存在會讓安裝因衝突停下）。用迴圈逐項處理，「存在才搬、搬失敗看得到錯誤」：
 
    ```bash
-   mv ~/.claude/skills/maze-*   "$BAK/claude"/ 2>/dev/null || true   # 舊版 cp -r 安裝
-   mv ~/.codex/skills/maze-*    "$BAK/codex"/  2>/dev/null || true   # 舊版 Codex 位置
-   mv ~/.pi/agent/skills/maze-* "$BAK/pi"/     2>/dev/null || true   # 舊版 Pi 位置（新舊位置相同）
+   for d in ~/.claude/skills/maze-* ~/.claude/maze-coder; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAK/claude/"
+   done
+
+   for d in ~/.codex/skills/maze-* ~/.codex/skills/consult-claude; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAK/codex/"
+   done
+
+   for d in ~/.pi/agent/skills/maze-* ~/.pi/agent/maze-coder; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAK/pi/"
+   done
    ```
 
-   Claude Code 的舊安裝也可能是**指向舊產物目錄的連結**（不是實體目錄）。先列出、確認只有本 repo 的項目，再刪：
+   舊版指向產物目錄的 Claude 連結也在 `~/.claude/skills/maze-*` 裡，上面第一個迴圈會一起搬走，不需要另外用 `find` 挑。
+
+3. 逐專案安裝過的專案，在**那個專案**裡執行（不是只刪檔：`AGENTS.md`／`CLAUDE.md` 是你自己的檔案，只刪 Router 段落）：
 
    ```bash
-   REPO="$(cd /path/to/maze-coder && pwd -P)"   # Git Bash 下的實體路徑，例如 /d/AgentCoding/maze-coder
-   find ~/.claude/skills -maxdepth 1 -type l -lname "${REPO}/adapters/claude-code/*" -print
-   # 清單確認無誤後，把同一條指令的 -print 改成 -delete
+   cd /your/old-project
+   BAKP=$(mktemp -d ~/maze-coder-project-backup.XXXXXX)
+   mkdir -p "$BAKP/claude" "$BAKP/codex" "$BAKP/pi" "$BAKP/cursor"
+   for d in .claude/skills/maze-* .claude/maze-coder; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAKP/claude/"
+   done
+   for d in .pi/skills/maze-* .pi/maze-coder; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAKP/pi/"
+   done
+   for d in .maze-coder .cursor/maze-coder; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAKP/codex/"
+   done
+   for d in .cursor/rules/maze-coder-router.mdc; do
+     [ -e "$d" ] || continue
+     mv "$d" "$BAKP/cursor/"
+   done
    ```
 
-3. 安裝新版（推薦的兩個安裝根）：
+   還要手動處理兩個文字檔（只刪段落，不要整檔刪除）：專案 `AGENTS.md` 與 `.claude/CLAUDE.md`／根 `CLAUDE.md` 裡以「maze-coder — … Router」開頭、含意圖→技能表格的那一段。刪掉後專案的 agent 仍然能靠技能自己的 `description` 選用。
+
+4. 安裝新版（依你實際使用的工具選擇，見上面安裝段的對照表）：
 
    ```bash
-   bash scripts/install-skills.sh --host agents
-   bash scripts/install-skills.sh --host claude
+   bash scripts/install-skills.sh --host claude   # Claude Code（Cursor／opencode 也會讀）
+   bash scripts/install-skills.sh --host agents   # Codex、Cursor、Pi、opencode
    ```
 
    只使用 Pi 一個工具的人改用 `--host pi`，驗證時看 `~/.pi/agent/skills`：
@@ -190,18 +241,27 @@ cp -r extensions/consult-codex ~/.claude/skills/
    ls -l ~/.pi/agent/skills/maze-grill   # 應為指向 <repo>/skills/maze-grill 的連結
    ```
 
-   不要同時用 `agents` 與 `pi`：兩者都會被 Pi 讀到，同一個技能會出現兩份。
+   不要同時用 `agents` 與 `pi`：兩者都會被 Pi 讀到，同一個技能會出現兩份。逐專案遷移過的專案同理，只裝你需要的根。
 
-4. 確認新安裝指回 repo：
+5. 確認新安裝指回 repo：
 
    ```bash
    ls -l ~/.agents/skills/maze-grill ~/.claude/skills/maze-grill
    ```
 
-5. 確認可用後才刪備份：`rm -rf "$BAK"`（只刪這次建立的那個目錄）；在那之前 `$BAK` 就是你唯一的回復點。
-6. 清掉舊版遺留的契約副本（不再有用途）：`~/.claude/maze-coder/`、`~/.pi/agent/maze-coder/`。
+6. 確認可用後才刪備份：`rm -rf "$BAK"`（逐專案遷移過的話連 `$BAKP` 一起）——在那之前它們就是你唯一的回復點。
 7. 更新你自己的指示檔：`~/.codex/AGENTS.md`、`~/.pi/agent/AGENTS.md`、`~/.claude/CLAUDE.md` 若引用舊的 Harness／Profile／Adapter 路徑，改成指向新安裝的技能目錄即可（技能本身已自帶觸發描述，不需要 Router 表格）。
-8. 回復：任何一步失敗，把 `$BAK/<host>/` 裡的目錄搬回原位即可；安裝腳本本身不會刪掉你的資料。
+8. 回復：先把新建的連結刪掉，再把備份搬回去（順序反了會撞上 `cannot overwrite non-directory`）：
+
+   ```bash
+   for d in ~/.claude/skills/maze-*; do
+     [ -L "$d" ] || continue
+     rm -f "$d"
+   done
+   mv "$BAK/claude/"* ~/.claude/skills/
+   ```
+
+   安裝腳本本身不會刪掉你的資料，需要回復通常只有「裝錯 host」這一種情況。
 
 ## 設計原則
 
