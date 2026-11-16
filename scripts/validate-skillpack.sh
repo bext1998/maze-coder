@@ -55,7 +55,7 @@ is_model_invocable() {
 # 取出反引號內的候選相對路徑，解析後回報不存在的檔案或目錄。
 # 以技能根目錄為基準解 references/、templates/、checklists/、examples/；以檔案所在目錄為基準解 ../。
 check_reference_paths() {
-  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel resolved
+  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel resolved probe_dir
   rel="${file#"${skill_dir}"/}"
   while IFS= read -r token; do
     [ -n "${token}" ] || continue
@@ -77,10 +77,16 @@ check_reference_paths() {
     esac
     case "${token}" in
       ../*)
-        resolved="$(cd "${base}" 2>/dev/null && cd "$(dirname "${token}")" 2>/dev/null && pwd)"
+        # 目錄 token（以 / 結尾）要解析完整目錄；檔案 token 解析它所在的目錄。
+        case "${token}" in
+          */) probe_dir="${base}/${token%/}" ;;
+          *) probe_dir="${base}/$(dirname "${token}")" ;;
+        esac
+        resolved=""
+        resolved="$(cd "${probe_dir}" 2>/dev/null && pwd)" || resolved=""
         case "${resolved}" in
-          "${SKILLS_DIR}"*) ;;
           "") ;;
+          "${SKILLS_DIR}"|"${SKILLS_DIR}"/*) ;;
           *) err "${skill}: ${token} 解析後離開 skills/（${resolved}）" ;;
         esac
         ;;
@@ -95,14 +101,38 @@ check_reference_paths() {
   return 0
 }
 
+# SKILL.md 是否在「同時安裝」的敘述提到 dep。
+# 先把 ../ 路徑字串抽掉，再看 dep 是否以完整名稱（前後不是 [A-Za-z0-9_-]）出現，
+# 避開「maze-grill 被 maze-grill-with-docs 誤命中」與路徑本身造成的假陽性。
+has_install_declaration() {
+  local skill="$1" dep="$2"
+  awk -v dep="${dep}" '
+    {
+      line = $0
+      gsub(/\.\.\/[A-Za-z0-9._\/-]*/, " ", line)
+      if (line !~ /同時安裝/) next
+      pos = 1
+      while ((i = index(substr(line, pos), dep)) > 0) {
+        at = pos + i - 1
+        prev = (at > 1) ? substr(line, at - 1, 1) : ""
+        nextc = substr(line, at + length(dep), 1)
+        if (prev !~ /[A-Za-z0-9_-]/ && nextc !~ /[A-Za-z0-9_-]/) { found = 1; exit }
+        pos = at + 1
+      }
+    }
+    END { exit !found }
+  ' "${SKILLS_DIR}/${skill}/SKILL.md"
+}
+
 # 技能目錄任一檔案若以相對路徑引用其他技能（`../maze-X/`），SKILL.md 必須寫明
 # 需要同時安裝 maze-X；只安裝單一技能時，那條引用會斷。
 check_cross_skill_install() {
   local skill="$1" dep
   while IFS= read -r dep; do
     [ -n "${dep}" ] || continue
-    grep -Eq "同時安裝.*${dep}|${dep}.*同時安裝" "${SKILLS_DIR}/${skill}/SKILL.md" \
-      || err "${skill}: 引用 ${dep} 的檔案，但 SKILL.md 未寫明需要同時安裝 ${dep}"
+    if ! has_install_declaration "${skill}" "${dep}"; then
+      err "${skill}: 引用 ${dep} 的檔案，但 SKILL.md 未寫明需要同時安裝 ${dep}"
+    fi
   done < <(grep -rhoE '\.\./(\.\./)*maze-[a-z0-9-]+/' "${SKILLS_DIR}/${skill}" \
              | sed -E 's|^(\.\./)+||; s|/$||' | sort -u)
 }
