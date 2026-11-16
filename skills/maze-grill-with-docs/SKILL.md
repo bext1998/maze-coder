@@ -1,7 +1,7 @@
 ---
 name: maze-grill-with-docs
 description: 逐題壓力測試並同步必要的專案術語與決策文件。
-invocation: user
+disable-model-invocation: true
 ---
 
 # maze-grill-with-docs
@@ -13,7 +13,7 @@ invocation: user
 ## 必要輸入
 待檢驗內容及現有專案文件位置。
 ## 核心行為
-依序載入 `../maze-grilling/SKILL.md` 與 `../maze-domain-modeling/SKILL.md`；只同步本輪形成的實質內容。
+依序載入 `../maze-grill/references/grilling-protocol.md` 與 `references/domain-modeling.md`；只同步本輪形成的實質內容。本技能需要與 `maze-grill` 同時安裝。
 ## 確認點
 逐題取得決策；覆寫既有文件或建立 ADR 前展示變更。
 ## 輸出契約

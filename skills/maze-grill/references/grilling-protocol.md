@@ -1,10 +1,5 @@
----
-name: maze-grilling
-description: Grill 共用逐題邏輯。
-invocation: internal
----
 
-# maze-grilling
+# Grill 共用逐題契約
 
 ## 目標
 以最少問題取得可推進本輪目標的決策。

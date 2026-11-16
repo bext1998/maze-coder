@@ -1,10 +1,5 @@
----
-name: maze-domain-modeling
-description: Grill with docs 共用的術語、Context 與重大決策同步邏輯。
-invocation: internal
----
 
-# maze-domain-modeling
+# 領域模型同步契約
 
 ## 目標
 讓未來讀者理解本輪形成的領域語言與重大決策。

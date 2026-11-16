@@ -1,7 +1,7 @@
 ---
 name: maze-threat-modeling
 description: 在實作前建立輕量威脅與濫用模型。當使用者要求 threat modeling、辨識安全邊界、攻擊面或濫用案例時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # threat-modeling

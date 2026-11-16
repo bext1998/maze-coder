@@ -1,8 +1,3 @@
----
-name: maze-github-cli
-description: 供其他技能組合使用的安全 GitHub CLI 操作契約；集中結構化輸出、預覽與授權邊界。
-invocation: internal
----
 
 # github-cli
 

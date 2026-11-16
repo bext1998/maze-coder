@@ -1,7 +1,6 @@
 ---
 name: maze-wayfinder
 description: 使用者不確定自己要做什麼時，以結構化提問產出決策地圖。觸發：「我不知道要做什麼」「有個模糊的想法」「先聊聊看」「幫我想清楚」「開一張地圖」或反覆改需求方向；已有明確想法要整理成規格時改用 maze-idea-to-spec。
-invocation: both
 ---
 
 # maze-wayfinder
@@ -15,4 +14,4 @@ Mode 1 建圖（新想法，一個 session 只做這件事，不解決 issue）�
 ## 輸出契約
 建圖回報地圖位置、Destination、Frontier 清單，不得同 session 解決 issue；推進回報解決的 issue 與地圖更新。一次只問一個問題，可合理假設的標注 `[假設]` 不問。
 ## 邊界
-不寫規格書、不實作、不寫程式碼、不產 PR、不替使用者決策；不在建圖 session 解決 issue；已畢業迷霧不退回，已關閉 issue 不重開。GitHub Issues 操作委派 `maze-github-cli`。
+不寫規格書、不實作、不寫程式碼、不產 PR、不替使用者決策；不在建圖 session 解決 issue；已畢業迷霧不退回，已關閉 issue 不重開。GitHub Issues 操作依 `../maze-github-safe-ops/references/github-cli-contract.md` 執行。

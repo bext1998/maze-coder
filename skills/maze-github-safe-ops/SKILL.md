@@ -1,7 +1,6 @@
 ---
 name: maze-github-safe-ops
 description: 提供安全的 Git／GitHub 操作檢查與 Issue 關聯規則。當使用者要 commit、push、merge、rebase 或建立 PR 時使用。
-invocation: both
 ---
 
 # github-safe-ops
@@ -13,14 +12,14 @@ invocation: both
 ## 前置條件
 
 - 取得操作意圖、branch、remote 與對應 Issue；無法判斷 Issue 時先詢問。
-- 依需要讀取 `checklists/` 的 commit、push 或 conflict 清單。
+- 依需要讀取 `checklists/` 的 commit、push 或 conflict 清單，GitHub CLI 命令與寫入預覽見 `references/command-contract.md` 與 `checklists/write-preview-checklist.md`。
 
 ## 執行流程
 
 1. 檢查 status、staged diff、目標 branch、敏感檔案與未同步變更。
 2. Commit message 依專案慣例引用 Issue；建立 PR 前確認 Issue、QA 與適用的 CI。
 3. 完整完成使用 `Closes #N`；部分完成只用 `Related to #N`。多 Issue 必須逐一確認，多 PR 只讓最後一個完整 PR 關閉 Issue。
-4. GitHub 遠端寫入只在使用者明確請求、完整預覽與確認後，委派 internal `maze-github-cli`；本技能不自行發起寫入。
+4. GitHub 遠端寫入只在使用者明確請求、完整預覽與確認後，依 `references/github-cli-contract.md` 執行；本技能不自行發起寫入。
 5. 合併後確認 Issue 已關閉且 AC、必要且適用的專案檢查、文件均完成；否則回報 `merged-awaiting-close`。
 6. Rebase、reset hard 或 force push 必須先確認；Force push 到 main / master 可能覆蓋其他人的工作，應停止並改用 `git revert` 等替代方案。
 

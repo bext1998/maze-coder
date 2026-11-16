@@ -1,7 +1,7 @@
 ---
 name: maze-gui-prototyping
 description: 為 Electron、Tauri、Wails 等 WebView 桌面應用製作可執行 GUI 原型。當使用者要求探索桌面介面、製作 HTML/CSS/SVG 原型或比較視窗 UI 方案時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # gui-prototyping

@@ -1,7 +1,7 @@
 ---
 name: maze-spec-review
 description: 在實作前或需要複審時，對規格做唯讀、證據導向的結構化審查。
-invocation: user
+disable-model-invocation: true
 ---
 
 # spec-review

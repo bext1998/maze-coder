@@ -1,7 +1,7 @@
 ---
 name: maze-project-init
 description: 初始化專案的指揮文件與 GitHub 工作流設定。當使用者要求建立專案文件或設定 coding agent 指令時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # project-init
@@ -21,7 +21,7 @@ invocation: user
 
 1. 記錄專案摘要、技術棧、文件實際路徑與目標工具。
 2. 詢問是否使用 GitHub Issues、Repository URL、spec-to-issues、標籤慣例、預設 Assignee 策略及是否允許新增標籤。
-3. 依 `templates/` 建立定位錨點與專案文件；不得把 token、密碼或憑證寫入設定。
+3. 依 `templates/` 建立定位錨點與專案文件（文件類型、生命週期與佔位符規範見 `references/document-model.md`）；不得把 token、密碼或憑證寫入設定。
 4. 列出建立、覆蓋、跳過與未建立的文件。
 
 ## 輸出契約
