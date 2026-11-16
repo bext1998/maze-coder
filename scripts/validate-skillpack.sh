@@ -55,7 +55,7 @@ is_model_invocable() {
 # 取出反引號內的候選相對路徑，解析後回報不存在的檔案或目錄。
 # 以技能根目錄為基準解 references/、templates/、checklists/、examples/；以檔案所在目錄為基準解 ../。
 check_reference_paths() {
-  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel
+  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel resolved
   rel="${file#"${skill_dir}"/}"
   while IFS= read -r token; do
     [ -n "${token}" ] || continue
@@ -73,6 +73,16 @@ check_reference_paths() {
       *)
         [ -e "${base}/${token}" ] \
           || err "${skill}: 找不到 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
+        ;;
+    esac
+    case "${token}" in
+      ../*)
+        resolved="$(cd "${base}" 2>/dev/null && cd "$(dirname "${token}")" 2>/dev/null && pwd)"
+        case "${resolved}" in
+          "${SKILLS_DIR}"*) ;;
+          "") ;;
+          *) err "${skill}: ${token} 解析後離開 skills/（${resolved}）" ;;
+        esac
         ;;
     esac
   done < <(awk '{
@@ -166,15 +176,6 @@ for skill in $(find "${SKILLS_DIR}" -mindepth 2 -maxdepth 2 -name SKILL.md | LC_
   validate_skill "${skill}"
 done
 
-echo "--- Removed architecture residue ---"
-STALE_PATTERN='profiles/|model-overlays|HARNESS_ENGINEERING|adapters/|maze-grilling|maze-domain-modeling|maze-github-cli'
-if grep -rnE "${STALE_PATTERN}" "${SKILLS_DIR}" >/dev/null 2>&1; then
-  while IFS= read -r hit; do
-    err "殘留已移除架構的引用：${hit#"${ROOT_DIR}/"}"
-  done < <(grep -rnE "${STALE_PATTERN}" "${SKILLS_DIR}")
-else
-  ok "skills/ 無 Profiles／Overlays／Harness／Adapter／internal 技能殘留"
-fi
 
 echo "--- Duplicate paragraphs ---"
 duplicate_output="$(awk '

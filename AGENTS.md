@@ -6,7 +6,7 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能�
 
 - `skills/` 是唯一來源；沒有生成物、沒有同步腳本，新增或修改技能只改這裡。
 - 每個技能的 `references/`、`templates/`、`checklists/`、`examples/` 跟技能一起安裝，不複製到 repo 根目錄。
-- 沒有 Profiles、Model Overlays、`HARNESS_ENGINEERING.md` 與 Adapter 產物；不要再把它們加回來。
+- 沒有 Harness 契約、Profiles、Model Overlays 與 Adapter 產物；不要再把它們加回來。
 
 ## 工作樹
 
