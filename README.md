@@ -69,9 +69,10 @@ bash scripts/install-skills.sh --host agents maze-grill maze-grill-with-docs
 安全行為：
 
 - 位置參數只接受 `skills/` 直接子目錄的精確名稱；給 `maze-grill/`、`../skills` 這類含 `/`、`.`、`..` 的值會直接報錯，不會有任何寫入。
-- 安裝目錄不得與 repo 的 `skills/` 重疊（含「安裝目錄是指向 `skills/` 的 symlink」）：兩者實體路徑相同或互相包含時直接拒絕，避免 `--force` 刪到 repo 內容。
-- 目標已存在且非空時，除非加 `--force`，否則**整批**停在任何寫入之前（不會留下半套安裝）。`--force` 會把該名稱底下的既有內容換成連結（成功後才移除舊內容），只在你確認那是舊版殘留時使用。
-- 先在目標目錄的暫存目錄建立連結並驗證，成功後才換手；建立或換手失敗時原本的安裝會保持不動或搬回原位。
+- 安裝目錄不得與 repo 的 `skills/` 重疊（含「安裝目錄是指向 `skills/` 的 symlink」）：兩者實體路徑相同或互相包含時直接拒絕。
+- **腳本永遠不刪除實體目錄或檔案。** 目標已存在且不是 symlink（包括舊版 `cp -r` 的副本、空目錄、使用者自己維護的同名技能）時，**整批**停在任何寫入之前，並列出衝突路徑；請自行搬走或刪除後再跑（見下面「從舊版遷移」）。
+- 目標是 symlink（指錯位置或懸空）時才替換：先在本次專屬的暫存目錄建立新連結並驗證，再用 `mv -T` 換上；建立或換手失敗時原本的連結不動。
+- 同一指令可重複執行：已正確指向的項目會輸出 `[SAME]`，不會重建。
 
 ### 方式 2：手動複製
 
@@ -80,7 +81,10 @@ bash scripts/install-skills.sh --host agents maze-grill maze-grill-with-docs
 ```bash
 mkdir -p ~/.claude/skills ~/.agents/skills
 cp -r skills/maze-grill skills/maze-grill-with-docs ~/.claude/skills/
-cp -r skills/* /your/project/.agents/skills/          # 專案層，多數 host 都讀這個位置
+
+# 專案層：多數 host 都讀 .agents/skills，目的地也要先建立
+mkdir -p /your/project/.agents/skills
+cp -r skills/* /your/project/.agents/skills/
 ```
 
 多來源複製前一定要先 `mkdir -p` 目的目錄：`cp -r a b dest/` 在 `dest` 不存在時會失敗。
@@ -146,34 +150,58 @@ cp -r extensions/consult-codex ~/.claude/skills/
 
 ## 從舊版遷移
 
-舊版（含 Adapter、Profile、Overlay 的版本）的技能是複本，或是指向本 repo 舊產物目錄 `adapters/claude-code/.claude/skills/` 的連結。新版是「repo 的 `skills/` 直接 symlink 到 host 目錄」，所以有兩個坑要先處理：
+舊版（含 Adapter、Profile、Overlay 的版本）的技能是複本，或是指向本 repo 舊產物目錄 `adapters/claude-code/.claude/skills/` 的連結。新版是「repo 的 `skills/` 直接 symlink 到 host 目錄」，而 `install-skills.sh` **只建立或替換 symlink，永遠不刪除實體目錄或檔案**——所以舊的實體安裝必須先由你搬走，否則安裝會停下並列出衝突。
 
-- Pi 的新舊位置相同（`~/.pi/agent/skills`）：舊版是實體目錄，直接安裝會因衝突停下；若改用 `--force` 覆蓋，舊內容會先被搬走，**但下一步若再照「刪除 `maze-*`」操作，會把剛裝好的連結一起刪掉**。
-- Claude Code 若舊版是 `cp -r` 裝的，同樣是實體目錄，會被衝突檢查擋下。
+順序是「**先備份 → 把所有舊的實體安裝搬進備份 → 再安裝 → 確認可用後才刪備份**」。第 2 步全部成功之後才能進第 3 步。
 
-正確順序是「**先備份 → 把舊的實體目錄搬進備份 → 再安裝 → 確認可用後才刪備份**」，每一步都可回復。
+1. 建立本次專屬的備份目錄（每次都是新的唯一目錄，依 host 分子目錄）：
 
-1. 備份目錄：`BAK=~/maze-coder-skills-backup-$(date +%F) && mkdir -p "$BAK"`。
-2. 把舊的實體安裝**搬**進備份（不是複製，避免新舊同時存在）。
-   - Claude Code：若是實體目錄，`mv ~/.claude/skills/maze-* "$BAK"/`；若是指向舊產物目錄的連結，先列出再只刪這一批：
-     ```bash
-     REPO="$(cd /path/to/maze-coder && pwd -P)"   # Git Bash 下的實體路徑，例如 /d/AgentCoding/maze-coder
-     find ~/.claude/skills -maxdepth 1 -type l -lname "${REPO}/adapters/claude-code/*" -print
-     ```
-     確認清單只有本 repo 的項目後，把同一條指令的 `-print` 改成 `-delete`。`-lname` 的條件刻意綁定舊安裝的確切路徑前綴，避免誤刪其他工具的連結。
-   - Codex：`mv ~/.codex/skills/maze-* "$BAK"/`（只搬 `maze-*`，不要動同目錄的第三方技能與 `skills-lock.json`）。
-   - Pi：`mv ~/.pi/agent/skills/maze-* "$BAK"/`。
+   ```bash
+   BAK=$(mktemp -d ~/maze-coder-skills-backup.XXXXXX)
+   mkdir -p "$BAK/claude" "$BAK/codex" "$BAK/pi"
+   ```
+
+2. 把舊的實體安裝**搬**進備份（不是複製：新舊同時存在會讓安裝因衝突停下）：
+
+   ```bash
+   mv ~/.claude/skills/maze-*   "$BAK/claude"/ 2>/dev/null || true   # 舊版 cp -r 安裝
+   mv ~/.codex/skills/maze-*    "$BAK/codex"/  2>/dev/null || true   # 舊版 Codex 位置
+   mv ~/.pi/agent/skills/maze-* "$BAK/pi"/     2>/dev/null || true   # 舊版 Pi 位置（新舊位置相同）
+   ```
+
+   Claude Code 的舊安裝也可能是**指向舊產物目錄的連結**（不是實體目錄）。先列出、確認只有本 repo 的項目，再刪：
+
+   ```bash
+   REPO="$(cd /path/to/maze-coder && pwd -P)"   # Git Bash 下的實體路徑，例如 /d/AgentCoding/maze-coder
+   find ~/.claude/skills -maxdepth 1 -type l -lname "${REPO}/adapters/claude-code/*" -print
+   # 清單確認無誤後，把同一條指令的 -print 改成 -delete
+   ```
+
 3. 安裝新版（推薦的兩個安裝根）：
+
    ```bash
    bash scripts/install-skills.sh --host agents
    bash scripts/install-skills.sh --host claude
    ```
-   若你是 Pi 單一工具使用者，用 `--host pi`；但不要同時用 `agents` 與 `pi`。
-4. 確認新安裝指回 repo：`ls -l ~/.agents/skills/maze-grill ~/.claude/skills/maze-grill`，每個都應該是指向 `<repo>/skills/<name>` 的連結。
-5. 確認可用後才刪備份：`rm -rf "$BAK"`；在確認之前那個目錄就是你唯一的回復點。
+
+   只使用 Pi 一個工具的人改用 `--host pi`，驗證時看 `~/.pi/agent/skills`：
+
+   ```bash
+   ls -l ~/.pi/agent/skills/maze-grill   # 應為指向 <repo>/skills/maze-grill 的連結
+   ```
+
+   不要同時用 `agents` 與 `pi`：兩者都會被 Pi 讀到，同一個技能會出現兩份。
+
+4. 確認新安裝指回 repo：
+
+   ```bash
+   ls -l ~/.agents/skills/maze-grill ~/.claude/skills/maze-grill
+   ```
+
+5. 確認可用後才刪備份：`rm -rf "$BAK"`（只刪這次建立的那個目錄）；在那之前 `$BAK` 就是你唯一的回復點。
 6. 清掉舊版遺留的契約副本（不再有用途）：`~/.claude/maze-coder/`、`~/.pi/agent/maze-coder/`。
 7. 更新你自己的指示檔：`~/.codex/AGENTS.md`、`~/.pi/agent/AGENTS.md`、`~/.claude/CLAUDE.md` 若引用舊的 Harness／Profile／Adapter 路徑，改成指向新安裝的技能目錄即可（技能本身已自帶觸發描述，不需要 Router 表格）。
-8. 回復：任何一步失敗，把 `$BAK` 裡的目錄搬回原位即可。
+8. 回復：任何一步失敗，把 `$BAK/<host>/` 裡的目錄搬回原位即可；安裝腳本本身不會刪掉你的資料。
 
 ## 設計原則
 

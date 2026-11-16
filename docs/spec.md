@@ -60,11 +60,11 @@ v3.x 以自適應 Harness 為設計核心：共用契約檔、三級 Guidance Pr
 ### 安裝
 
 - 安裝 = 讓技能目錄出現在 host 會掃描的技能路徑下；不改變技能內容。
-- `scripts/install-skills.sh` 只建立 symlink，支援 `--host`（claude、codex、cursor、pi、opencode、agents）、`--scope`（user／project）、`--force` 與技能名稱清單。
+- `scripts/install-skills.sh` 只建立 symlink，支援 `--host`（claude、codex、cursor、pi、opencode、agents）、`--scope`（user／project）與技能名稱清單；不提供覆蓋選項，也不提供複製模式。
 - 位置參數只接受 `skills/` 直接子目錄的精確名稱；不得接受含 `/`、`.`、`..` 的值。
-- 所有未經 `--force` 的衝突必須在任何寫入前一次預檢完畢；不得留下半套安裝。
-- 建立連結必須先建暫存連結並驗證，成功後才動既有安裝；失敗時既有安裝保持不動。
-- 不提供複製模式；無法建立 symlink 時直接報錯並說明 Windows 開發人員模式。
+- 安裝目錄的實體路徑不得與 `skills/` 相同或互相包含（MINGW／MSYS／Cygwin 下比對前轉小寫）。
+- **腳本永遠不刪除實體目錄或檔案**：目標已存在且不是 symlink（含空目錄）時，所有衝突在任何寫入前一次列出並停下，由使用者自行搬走或刪除。
+- 目標是 symlink 時才替換，且必須先建暫存連結並驗證，成功後才換手；失敗時原本的連結不動。
 
 ### 驗證
 
@@ -82,7 +82,7 @@ v3.x 以自適應 Harness 為設計核心：共用契約檔、三級 Guidance Pr
 | `skills/` 是唯一來源，且沒有生成物 | 出現第二份技能副本，或修改技能要跑同步腳本 |
 | 使用者觸發的技能帶 `disable-model-invocation: true` | 模型在使用者沒要求時自行載入不該自動觸發的技能 |
 | 跨技能引用在安裝佈局下可解析 | 只安裝單一技能時，被引用的 reference 讀不到 |
-| 安裝失敗不破壞既有安裝 | `--force` 或 symlink 失敗後，使用者原有的技能或 repo 內容消失 |
+| 安裝失敗不破壞既有安裝 | 安裝後使用者原有的技能或 repo 內容消失；或失敗後原先的 symlink 不見 |
 | 安全邊界與輸出契約不因簡化而放寬 | 驗證器的契約斷言被刪除或弱化 |
 
 ## 技能拓撲
@@ -106,7 +106,7 @@ v3.x 以自適應 Harness 為設計核心：共用契約檔、三級 Guidance Pr
 - 只安裝部分技能時，被引用的 reference 不存在；技能必須在缺檔時停止並回報，不得假裝讀過。
 - Codex 不支援 `disable-model-invocation`：使用者觸發的技能在 Codex 上可能被模型自動選用；這是已接受的限制，不以 host 專屬 sidecar 檔補償。
 - Windows 未開開發人員模式時無法建立 symlink：安裝失敗且既有安裝不變。
-- 目標目錄已有使用者自己的同名技能：不加 `--force` 一律停手。
+- 目標目錄已有使用者自己的同名技能或舊版副本：不加任何參數也不會被刪，腳本一律停手並列出衝突。
 
 ## Testing Decisions
 

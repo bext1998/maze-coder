@@ -84,7 +84,7 @@ check_reference_paths() {
           *) probe_dir="${base}/$(dirname "${token}")" ;;
         esac
         resolved=""
-        resolved="$(cd "${probe_dir}" 2>/dev/null && pwd)" || resolved=""
+        resolved="$(cd -P "${probe_dir}" 2>/dev/null && pwd -P)" || resolved=""
         case "${resolved}" in
           "") ;;
           "${SKILLS_DIR}"|"${SKILLS_DIR}"/*) ;;
