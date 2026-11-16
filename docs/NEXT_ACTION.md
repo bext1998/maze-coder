@@ -4,12 +4,12 @@
 
 ## 下一個 Session 目標
 
-v3.0.0（PR #60，原生 Agent Skills 集合）已合併發佈，GitHub 沒有 open issue。目前前線是把本機各 agent 的全域安裝遷移到新架構。
+v3.0.0（PR #60，原生 Agent Skills 集合）已合併發佈，GitHub 沒有 open issue。本機全域安裝已遷移完成：`~/.claude/skills` 與 `~/.agents/skills` 的 `maze-*` 都是指向本 repo `skills/` 的連結，舊副本已移除。
 
 ## 行動（最多 3 項）
 
-1. 依 README「從舊版遷移」把本機全域安裝換成指向 `skills/` 的連結。舊的 `~/.claude/skills/maze-*` 指向已刪除的 `adapters/`，合併後已全部失效。Codex 與 Pi 的舊副本也要一併搬走。
-2. 遷移完成後，用 `bash scripts/install-skills.sh --host agents` 與 `--host claude` 安裝，在 Claude Code、Codex、Pi 各試一個代表性技能（例如 `maze-grill`）確認能載入。
+1. 在 Claude Code、Codex、Pi 各試一個代表性技能（例如 `maze-grill`），確認能正常載入。
+2. 確認沒問題後，刪除遷移留下的備份目錄 `~/maze-coder-skills-backup.*`。
 
 ## 阻塞與待決策
 
