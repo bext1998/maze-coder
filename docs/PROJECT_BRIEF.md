@@ -1,13 +1,13 @@
 # maze-coder — 專案說明
 
 > 建立日期：2026-05-20
-> 最後更新：2026-05-20
+> 最後更新：2026-11-17
 
 ---
 
 ## 一句話說明
 
-maze-coder 是一套可攜式 Harness Engineering 技能包，讓使用者在 Claude Code、Codex、Cursor、opencode 之間切換時，仍能保持一致的工作流程。
+maze-coder 是一組以 Markdown 寫成的 Agent Skills，直接安裝到 Claude Code、Codex、Cursor、Pi、opencode 原生的技能目錄，讓使用者在不同 coding agent 之間切換時仍能沿用同一套工作流程。
 
 ---
 
@@ -19,9 +19,8 @@ maze-coder 是一套可攜式 Harness Engineering 技能包，讓使用者在 Cl
 
 ## 技術棧
 
-- **主要格式**：Markdown（`.md`）
-- **Adapter 格式**：SKILL.md（Claude Code）、AGENTS.md（Codex / opencode）、.mdc（Cursor）
-- **腳本**：Bash（`#!/usr/bin/env bash`）
+- **主要格式**：Markdown（`SKILL.md` + 按需資源）
+- **腳本**：Bash（`install-skills.sh` 與兩支驗證腳本）
 - **目標平台**：macOS、Linux、Windows（via Git Bash）
 
 ---
@@ -29,7 +28,7 @@ maze-coder 是一套可攜式 Harness Engineering 技能包，讓使用者在 Cl
 ## Coding Agent 工具
 
 - **主要工具**：Claude Code
-- **支援目標**：Codex、Cursor、opencode
+- **支援**：Codex、Cursor、Pi、opencode（皆走原生 Agent Skills 探索，不做 per-host 內容轉換）
 
 ---
 
@@ -43,6 +42,7 @@ maze-coder 是一套可攜式 Harness Engineering 技能包，讓使用者在 Cl
 
 ## 重要限制
 
-- 本專案不含任何可執行程式碼（scripts 除外）
+- 本專案不含任何可執行程式碼（`scripts/` 除外）
 - 所有交付物以 `.md` 為主，`.sh` 為輔
-- 「可攜式」定義：複製整個目錄到任何機器，無需安裝任何依賴即可使用
+- 「可攜式」定義：複製技能目錄到 host 原生的技能路徑即可使用，不需要安裝依賴
+- Codex 不支援 `disable-model-invocation`，使用者觸發的技能在該 host 可能被模型自動選用

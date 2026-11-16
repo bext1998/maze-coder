@@ -1,6 +1,6 @@
 # maze-coder — Agent 規範
 
-maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能，直接安裝到各 host 原生的技能目錄使用。
+maze-coder 是跨 Coding Agent 的 Agent Skills 集合：每個 `maze-*` 技能都是獨立目錄，直接安裝到各 host 原生的技能目錄使用。
 
 ## Source of Truth
 
@@ -58,4 +58,4 @@ maze-coder 是跨 Coding Agent 的 Agent Skills 集合：26 個 `maze-*` 技能�
 ## 狀態
 
 - 工作狀態權威是 GitHub Issues／PR 與 Git；`docs/NEXT_ACTION.md` 只保留當前前線，closeout 時重建。
-- 工作狀態以 GitHub Issues 為準。
+- 目前 open issue：#59（技能包簡化為原生 Agent Skills，本 repo 正在進行）與 #58（全域安裝，已併入 #59 的安裝部分）。

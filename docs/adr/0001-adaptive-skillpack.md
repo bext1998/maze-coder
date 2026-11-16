@@ -2,7 +2,9 @@
 
 ## 狀態
 
-Accepted
+Superseded by ADR-0003
+
+> 本決策已由 [ADR-0003](0003-native-agent-skills.md) 取代；以下內容保留為歷史紀錄。
 
 ## 背景
 
