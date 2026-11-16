@@ -51,7 +51,7 @@
 
 根據 issue 類型委派對應的技能（見 `issue-types.md`）：
 - Grilling → 委派 `maze-grill` 或 `maze-grill-with-docs`，向使用者提問，一次一個問題，收斂到答案
-- Research → Agent 獨立調研，產出摘要（如涉及領域建模，委派 `maze-domain-modeling`）
+- Research → Agent 獨立調研，產出摘要（如涉及領域建模，依 `../../maze-grill-with-docs/references/domain-modeling.md` 處理）
 - Prototype → 委派 `maze-gui-prototyping`（如適用），或產出粗糙原型供使用者反應
 - Task → 列出使用者需要完成的步驟，或 agent 獨立完成
 

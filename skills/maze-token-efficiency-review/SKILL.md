@@ -1,7 +1,7 @@
 ---
 name: maze-token-efficiency-review
 description: 稽核 agent 的 token 效率：回顧 trace、工具呼叫、載入內容與模型選擇，找出可省的浪費。當使用者要求 token 稽核或檢視 agent trace、技能載入時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # token-efficiency-review

@@ -20,20 +20,15 @@ jobs:
           bash scripts/validate-skillpack.sh
           bash scripts/validate-skills-functional.sh
 
-      - name: Verify adapters are in sync
-        run: |
-          bash scripts/sync-adapters.sh
-          git diff --exit-code
-
       - name: Build release archive
         run: |
-          zip -r "maze-coder-adapters-${GITHUB_REF_NAME}.zip" adapters README.md LICENSE
+          zip -r "maze-coder-skills-${GITHUB_REF_NAME}.zip" skills README.md LICENSE
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            "maze-coder-adapters-${GITHUB_REF_NAME}.zip" \
+            "maze-coder-skills-${GITHUB_REF_NAME}.zip" \
             --title "${GITHUB_REF_NAME}" \
             --generate-notes

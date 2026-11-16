@@ -1,7 +1,7 @@
 ---
 name: maze-root-cause-diagnosis
 description: 以假設、區辨實驗與反證收斂 Bug 根因。當使用者要求診斷問題、找 root cause，或已有重現但尚未證明原因時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # root-cause-diagnosis

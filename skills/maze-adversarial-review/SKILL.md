@@ -1,7 +1,7 @@
 ---
 name: maze-adversarial-review
 description: 在實作前對方案、規格、計畫或架構決策做對抗性審查。當使用者要求挑戰方案、找反證、紅隊審查或判斷是否值得投入時使用。
-invocation: user
+disable-model-invocation: true
 ---
 
 # adversarial-review

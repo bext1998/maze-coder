@@ -1,7 +1,6 @@
 ---
 name: maze-risk-driven-tdd
 description: 以風險導向測試流程處理新增功能、Bug 修復與可觀察行為變更；純文件、格式、生成物同步及已證明不改變行為的機械重構不適用。
-invocation: both
 ---
 
 # risk-driven-tdd

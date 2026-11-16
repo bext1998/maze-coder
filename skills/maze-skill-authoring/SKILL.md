@@ -1,14 +1,13 @@
 ---
 name: maze-skill-authoring
-description: 評估該新增 maze-* 技能或擴充既有技能的 checklist／reference／template，並給出符合架構的撰寫與同步流程。當使用者要求新增技能、拆出新技能或把能力加入技能包時使用。
-invocation: user
+description: 評估該新增 maze-* 技能或擴充既有技能的 checklist／reference／template，並給出符合新架構的撰寫與驗證流程。當使用者要求新增技能、拆出新技能或把能力加入技能包時使用。
 ---
 
 # skill-authoring
 
 ## 目標
 
-在新增能力進入技能包前，先判斷是否真的需要獨立的 SKILL.md，避免技能數量與 Router 常駐內容無節制成長；決定要新增時，確保新技能符合既有架構與 source of truth 慣例。
+在新增能力進入技能包前，先判斷是否真的需要獨立的 SKILL.md，避免技能數量無節制成長；決定要新增時，確保新技能符合既有結構與 source of truth 慣例。
 
 ## 前置條件
 
@@ -18,18 +17,18 @@ invocation: user
 ## 執行流程
 
 1. 優先判斷可否用「擴充既有技能」解決：加一條 checklist 項目、一份 reference、一份 template，或調整既有 SKILL.md 的執行流程／邊界。可以就不開新技能，在既有技能檔案內修改即可，流程到此結束。
-2. 確認必須獨立成技能後，決定 `name`（`maze-<動詞或名詞短語>`）、`description`（含「何時使用」觸發語句，供 Router 與模型判斷是否載入）、`invocation`（`user`／`model`／`both`／`internal`；預設優先 `user`，只有明確需要 agent 主動觸發時才用 `both` 或 `model`）。
-3. 撰寫單一 `SKILL.md`，維持既有結構：前置條件、執行流程、輸出契約、邊界（不做的事）。預設只寫單一檔案；只有內容量大到必須拆分時才加 `checklists/`、`templates/` 或 `references/` 子目錄，且子目錄內容只能按需讀取，不得在 SKILL.md 主體展開全文。
+2. 確認必須獨立成技能後，決定 `name`（`maze-<動詞或名詞短語>`）、`description`（含「何時使用」觸發語句，供模型判斷是否載入），以及是否加 `disable-model-invocation: true`：只有使用者明示觸發的技能才加，模型可主動載入時不加。
+3. 撰寫單一 `SKILL.md`，維持既有結構：前置條件、執行流程、輸出契約、邊界（不做的事）。預設只寫單一檔案；只有內容量大到必須拆分時才加 `checklists`、`templates`、`references` 或 `examples` 子目錄，且子目錄內容只能按需讀取，不得在 SKILL.md 主體展開全文。
 4. 高風險技能（邊界依賴「已證明」「根因」等判斷性措辭，錯誤解讀代價高）另讀 `references/adversarial-resilience-check.md`，用對抗式壓力情境驗證措辭是否經得起時間壓力、沉沒成本或看似合理的豁免理由；低風險技能跳過此步。
-5. 更新 source of truth：`scripts/sync-adapters.sh` 的 `SKILLS` 陣列與 `router_body` 表格（`internal` 技能不進表格）、`README.md` 的技能表與技能總數。
-6. 執行 `bash scripts/sync-adapters.sh` 產生四個 Adapter，再跑 `bash scripts/validate-skillpack.sh` 與 `bash scripts/validate-skills-functional.sh` 確認通過；重新執行一次 sync 應顯示 `no changes`。
+5. 更新 source of truth：`skills/<name>/` 是唯一來源，同時更新 `README.md` 的技能表。路徑基準：`references`、`templates`、`checklists`、`examples` 目錄下的資源以技能根目錄為基準；`../` 開頭的路徑以所在檔案的目錄為基準。跨技能引用要在引用端 SKILL.md 寫明需要同時安裝哪個技能。
+6. 執行 `bash scripts/validate-skillpack.sh` 與 `bash scripts/validate-skills-functional.sh` 確認通過。
 
 ## 輸出契約
 
-- 回報「為何需要新技能／為何改用擴充既有技能」的判斷依據、修改或新增的檔案清單、兩次 sync 與驗證腳本的結果；執行過對抗式壓力驗證時一併回報測過的情境與結果。
+- 回報「為何需要新技能／為何改用擴充既有技能」的判斷依據、修改或新增的檔案清單、兩支驗證腳本的結果；執行過對抗式壓力驗證時一併回報測過的情境與結果。
 
 ## 邊界
 
 - 不得為單次性、不會重複出現的需求開新技能。
 - 不得把新技能寫成需要預設全文載入的長文件；輔助素材一律按需讀取。
-- 不手動編輯 `adapters/` 下由 `sync-adapters.sh` 產生的檔案；一律改 `skills/`、`core/` 或腳本本身後重新同步。
+- 不修改使用者 host 目錄下已安裝的技能副本；一律改 `skills/` 後重新安裝。

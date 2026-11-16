@@ -1,18 +1,39 @@
 #!/usr/bin/env bash
+# 技能結構檢查：frontmatter、必要區段、資源路徑與已移除架構的殘留字串。
+# 只依 skills/ 為事實來源；不檢查任何生成物，也不寫死技能總數。
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-source "${SCRIPT_DIR}/lib/skills.sh"
+ROOT_DIR="$(cd -P "${SCRIPT_DIR}/.." && pwd -P)"
+# skills/ 用實體路徑：repo 經由 symlink 路徑執行時（例如 macOS 的 /tmp），
+# 用邏輯路徑會把合法的 ../ 引用誤報為「離開 skills/」。
+SKILLS_DIR="$(cd -P "${ROOT_DIR}/skills" 2>/dev/null && pwd -P)" || SKILLS_DIR="${ROOT_DIR}/skills"
 ERRORS=0
 WARNINGS=0
-TOTAL_CHARS=0
-MAX_CHARS=22000
+MAX_DESC_CHARS=200
+MAX_SKILL_CHARS=3000
 
-UTF8_LOCALE="$(locale -a 2>/dev/null | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}')"
-[ -n "${UTF8_LOCALE}" ] && export LC_ALL="${UTF8_LOCALE}"
+# 可由模型主動載入的技能：不加 disable-model-invocation，使用者也可直接呼叫。
+# 新增技能時先決定它屬於哪一類，再更新這份清單或加上 frontmatter 欄位。
+MODEL_INVOCABLE_SKILLS=(
+  maze-context-audit
+  maze-explain-for-dumbass
+  maze-github-safe-ops
+  maze-idea-to-spec
+  maze-risk-driven-tdd
+  maze-skill-authoring
+  maze-spec-hardening
+  maze-wayfinder
+)
 
+# locale -a 可能很大，先整份收下再過濾：`locale -a | awk` 在 pipefail 下會因為
+# awk 提早 exit 造成 SIGPIPE，讓整個腳本靜默中止。
+LOCALE_LIST="$(locale -a 2>/dev/null || true)"
+UTF8_LOCALE="$(printf '%s\n' "${LOCALE_LIST}" | awk 'BEGIN{IGNORECASE=1} /^(C|en_US)\.(UTF-8|utf8)$/{print; exit}' || true)"
+if [ -n "${UTF8_LOCALE}" ]; then
+  export LC_ALL="${UTF8_LOCALE}"
+fi
 
 ok() { echo "  [OK]   $1"; }
 err() { echo "  [FAIL] $1" >&2; ERRORS=$((ERRORS + 1)); }
@@ -28,60 +49,173 @@ section_nonempty() {
   ' "${file}"
 }
 
-validate_skill() {
-  local skill="$1" file="${ROOT_DIR}/skills/${skill}/SKILL.md"
-  [ -f "${file}" ] || { err "缺少 skills/${skill}/SKILL.md"; return; }
+is_model_invocable() {
+  local name="$1" candidate
+  for candidate in "${MODEL_INVOCABLE_SKILLS[@]}"; do
+    [ "${candidate}" = "${name}" ] && return 0
+  done
+  return 1
+}
 
-  local first last name fields chars invocation
+# 取出反引號內的候選相對路徑，解析後回報不存在的檔案或目錄。
+# 以技能根目錄為基準解 references/、templates/、checklists/、examples/；以檔案所在目錄為基準解 ../。
+check_reference_paths() {
+  local skill="$1" file="$2" skill_dir="${SKILLS_DIR}/${skill}" token base rel resolved probe_dir
+  rel="${file#"${skill_dir}"/}"
+  while IFS= read -r token; do
+    [ -n "${token}" ] || continue
+    case "${token}" in
+      http://*|https://*|*'://'*) continue ;;
+      ../*) base="${skill_dir}/$(dirname "${rel}")" ;;
+      references/*|templates/*|checklists/*|examples/*) base="${skill_dir}" ;;
+      *) continue ;;
+    esac
+    case "${token}" in
+      */)
+        [ -d "${base}/${token}" ] \
+          || err "${skill}: 找不到目錄 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
+        ;;
+      *)
+        [ -e "${base}/${token}" ] \
+          || err "${skill}: 找不到 ${token}（相對於 ${base}，出自 ${file#"${ROOT_DIR}/"}）"
+        ;;
+    esac
+    case "${token}" in
+      *..*)
+        # 任何含 .. 的 token 都要用實體路徑確認沒跑出 skills/。目錄 token（以 / 結尾，
+        # 或以 .. 結尾，例如 `../..`）解析完整目錄；檔案 token 解析它所在的目錄。
+        case "${token}" in
+          */) probe_dir="${base}/${token%/}" ;;
+          *..) probe_dir="${base}/${token}" ;;
+          *) probe_dir="${base}/$(dirname "${token}")" ;;
+        esac
+        resolved=""
+        resolved="$(cd -P "${probe_dir}" 2>/dev/null && pwd -P)" || resolved=""
+        case "${resolved}" in
+          "") ;;
+          "${SKILLS_DIR}"|"${SKILLS_DIR}"/*) ;;
+          *) err "${skill}: ${token} 解析後離開 skills/（${resolved}）" ;;
+        esac
+        ;;
+    esac
+  done < <(awk '{
+      line=$0
+      while (match(line, /`[^`]+`/)) {
+        print substr(line, RSTART+1, RLENGTH-2)
+        line=substr(line, RSTART+RLENGTH)
+      }
+    }' "${file}" | grep -E '(^\.\./)|^references/|^templates/|^checklists/|^examples/' || true)
+  return 0
+}
+
+# SKILL.md 是否在「同時安裝」的敘述提到 dep。
+# 先把 ../ 路徑字串抽掉，再看 dep 是否以完整名稱（前後不是 [A-Za-z0-9_-]）出現，
+# 避開「maze-grill 被 maze-grill-with-docs 誤命中」與路徑本身造成的假陽性。
+has_install_declaration() {
+  local skill="$1" dep="$2"
+  awk -v dep="${dep}" '
+    {
+      line = $0
+      gsub(/\.\.\/[A-Za-z0-9._\/-]*/, " ", line)
+      if (line !~ /同時安裝/) next
+      pos = 1
+      while ((i = index(substr(line, pos), dep)) > 0) {
+        at = pos + i - 1
+        prev = (at > 1) ? substr(line, at - 1, 1) : ""
+        nextc = substr(line, at + length(dep), 1)
+        if (prev !~ /[A-Za-z0-9_-]/ && nextc !~ /[A-Za-z0-9_-]/) { found = 1; exit }
+        pos = at + 1
+      }
+    }
+    END { exit !found }
+  ' "${SKILLS_DIR}/${skill}/SKILL.md"
+}
+
+# 技能目錄任一檔案若以相對路徑引用其他技能（`../maze-X/`），SKILL.md 必須寫明
+# 需要同時安裝 maze-X；只安裝單一技能時，那條引用會斷。
+check_cross_skill_install() {
+  local skill="$1" dep
+  while IFS= read -r dep; do
+    [ -n "${dep}" ] || continue
+    if ! has_install_declaration "${skill}" "${dep}"; then
+      err "${skill}: 引用 ${dep} 的檔案，但 SKILL.md 未寫明需要同時安裝 ${dep}"
+    fi
+  done < <(grep -rhoE '\.\./(\.\./)*maze-[a-z0-9-]+/' "${SKILLS_DIR}/${skill}" \
+             | sed -E 's|^(\.\./)+||; s|/$||' | sort -u)
+}
+
+validate_skill() {
+  local skill="$1" skill_dir="${SKILLS_DIR}/${skill}" file="${SKILLS_DIR}/${skill}/SKILL.md"
+  if [ ! -f "${file}" ]; then
+    err "缺少 skills/${skill}/SKILL.md"
+    return
+  fi
+
+  local first close name desc_len chars fields invocation_key
   first="$(head -n 1 "${file}")"
-  last="$(awk '/^---$/{count++; if (count==2) {print NR; exit}}' "${file}")"
-  [ "${first}" = "---" ] && [ "${last}" -gt 1 ] || err "${skill}: frontmatter 格式錯誤"
+  close="$(awk '/^---$/{count++; if (count==2) {print NR; exit}}' "${file}")"
+  if [ "${first}" != "---" ] || [ -z "${close}" ] || [ "${close}" -le 1 ]; then
+    err "${skill}: frontmatter 格式錯誤（缺少成對的 ---）"
+    return
+  fi
 
   name="$(awk 'NR>1 && /^---$/{exit} /^name:[[:space:]]*/{sub(/^name:[[:space:]]*/, ""); print}' "${file}")"
   [ "${name}" = "${skill}" ] || err "${skill}: name 與目錄不一致"
-  fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description" && $0 != "invocation") print}' "${file}")"
-  [ -z "${fields}" ] || err "${skill}: frontmatter 含未知欄位 ${fields}"
-  awk 'NR>1 && /^---$/{exit} /^description:[[:space:]]*[^[:space:]]/{found=1} END{exit !found}' "${file}" || err "${skill}: description 不得為空"
+
+  fields="$(awk 'NR>1 && /^---$/{exit} NR>1 && /^[A-Za-z0-9_-]+:/{sub(/:.*/, ""); if ($0 != "name" && $0 != "description" && $0 != "disable-model-invocation") print}' "${file}")"
+  [ -z "${fields}" ] || err "${skill}: frontmatter 含未允許欄位 ${fields}（只允許 name、description、disable-model-invocation）"
+
+  awk 'NR>1 && /^---$/{exit} /^description:[[:space:]]*[^[:space:]]/{found=1} END{exit !found}' "${file}" \
+    || err "${skill}: description 不得為空"
   desc_len="$(awk 'NR>1 && /^---$/{exit} /^description:/{sub(/^description:[[:space:]]*/, ""); print length($0)}' "${file}")"
-  [ "${desc_len}" -le 200 ] || err "${skill}: description ${desc_len} 字元超過 200 上限（Codex Skills Catalog 觸發詞應前置，細節留在 SKILL.md）"
-  invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${file}")"
-  case "${invocation}" in user|model|both|internal) ;; *) err "${skill}: invocation 必須為 user、model、both 或 internal" ;; esac
+  [ "${desc_len}" -le "${MAX_DESC_CHARS}" ] || err "${skill}: description ${desc_len} 字元超過 ${MAX_DESC_CHARS} 上限（觸發詞應前置，細節留在 SKILL.md）"
+
+  invocation_key="$(awk 'NR>1 && /^---$/{exit} /^invocation:/{print}' "${file}")"
+  [ -z "${invocation_key}" ] || err "${skill}: 不得再使用自訂 invocation 欄位，請改用 disable-model-invocation"
+
+  dmi="$(awk 'NR>1 && /^---$/{exit} /^disable-model-invocation:/{sub(/^disable-model-invocation:[[:space:]]*/, ""); gsub(/[[:space:]]+$/, ""); print}' "${file}")"
+  if [ -n "${dmi}" ]; then
+    if [ "${dmi}" = "true" ]; then
+      is_model_invocable "${skill}" && err "${skill}: 列在 MODEL_INVOCABLE_SKILLS，frontmatter 卻含 disable-model-invocation: true"
+    else
+      err "${skill}: frontmatter 的 disable-model-invocation 只接受 true"
+    fi
+  else
+    is_model_invocable "${skill}" || err "${skill}: 使用者明示觸發的技能必須在 frontmatter 含 disable-model-invocation: true（或把它加入 MODEL_INVOCABLE_SKILLS）"
+  fi
 
   section_nonempty "${file}" "目標" || err "${skill}: 缺少或留空「目標」"
   section_nonempty "${file}" "輸出契約" || err "${skill}: 缺少或留空「輸出契約」"
   section_nonempty "${file}" "邊界" || err "${skill}: 缺少或留空「邊界」"
   (section_nonempty "${file}" "前置條件" || section_nonempty "${file}" "必要輸入") || err "${skill}: 缺少必要輸入"
   (section_nonempty "${file}" "執行流程" || section_nonempty "${file}" "核心行為") || err "${skill}: 缺少核心行為"
-  if grep -En 'TODO|FIXME' "${file}" >/dev/null; then
-    err "${skill}: 含 TODO/FIXME"
-  fi
-  while IFS= read -r resource; do
-    [ -e "$(dirname "${file}")/${resource}" ] || err "${skill}: 找不到資源 ${resource}"
-  done < <(grep -Eo '(references|templates|checklists)/[A-Za-z0-9._/-]+' "${file}" | sort -u || true)
+  grep -En 'TODO|FIXME' "${file}" >/dev/null && err "${skill}: 含 TODO/FIXME"
+
+  while IFS= read -r resource_file; do
+    check_reference_paths "${skill}" "${resource_file}"
+  done < <(find "${skill_dir}" -type f -name '*.md' | LC_ALL=C sort)
+
+  check_cross_skill_install "${skill}"
 
   chars="$(wc -m < "${file}" | tr -d ' ')"
-  TOTAL_CHARS=$((TOTAL_CHARS + chars))
-  [ "${chars}" -le 3000 ] || warn "${skill}: ${chars} 字元，超過建議值 3000"
+  [ "${chars}" -le "${MAX_SKILL_CHARS}" ] || warn "${skill}: ${chars} 字元，超過建議值 ${MAX_SKILL_CHARS}"
   ok "${skill} (${chars} chars)"
 }
 
 echo "=== maze-coder validate-skillpack ==="
 echo "--- Skills ---"
-ACTUAL_SKILLS="$(find "${ROOT_DIR}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
-[ "${ACTUAL_SKILLS}" -eq 29 ] || err "skills/ 必須恰有 29 個 SKILL.md，目前為 ${ACTUAL_SKILLS}"
-[ "${#SKILLS[@]}" -eq 29 ] || err "validator canonical skill array 不是 29"
-[ "${#PUBLIC_SKILLS[@]}" -eq 26 ] || err "validator public skill array 不是 26"
-[ "${#INTERNAL_SKILLS[@]}" -eq 3 ] || err "validator internal skill array 不是 3"
-for skill in "${SKILLS[@]}"; do validate_skill "${skill}"; done
+ACTUAL_SKILLS="$(find "${SKILLS_DIR}" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
+[ "${ACTUAL_SKILLS}" -ge 1 ] || err "skills/ 底下找不到任何 SKILL.md"
+ok "skills/ 底下共 ${ACTUAL_SKILLS} 個技能（不寫死總數）"
 
-[ "${TOTAL_CHARS}" -lt "${MAX_CHARS}" ] \
-  && ok "29 份 SKILL.md 共 ${TOTAL_CHARS} 字元，低於上限 ${MAX_CHARS}" \
-  || err "SKILL.md 總字元 ${TOTAL_CHARS} 超過上限 ${MAX_CHARS}"
+for listed in "${MODEL_INVOCABLE_SKILLS[@]}"; do
+  [ -d "${SKILLS_DIR}/${listed}" ] || err "MODEL_INVOCABLE_SKILLS 列出的 ${listed} 不存在於 skills/"
+done
 
-RISK_TDD_CHARS="$(wc -m < "${ROOT_DIR}/skills/maze-risk-driven-tdd/SKILL.md" | tr -d ' ')"
-[ "${RISK_TDD_CHARS}" -le 1200 ] \
-  && ok "maze-risk-driven-tdd 為 ${RISK_TDD_CHARS} 字元，不超過 1200" \
-  || err "maze-risk-driven-tdd 為 ${RISK_TDD_CHARS} 字元，超過 1200"
+for skill in $(find "${SKILLS_DIR}" -mindepth 2 -maxdepth 2 -name SKILL.md | LC_ALL=C sort | while IFS= read -r f; do basename "$(dirname "$f")"; done); do
+  validate_skill "${skill}"
+done
+
 
 echo "--- Duplicate paragraphs ---"
 duplicate_output="$(awk '
@@ -103,150 +237,13 @@ duplicate_output="$(awk '
       else if (files[p] >= 2) print "WARN|" files[p] "|" sample[p]
     }
   }
-' "${ROOT_DIR}"/skills/*/SKILL.md)"
+' "${SKILLS_DIR}"/*/SKILL.md)"
 if [ -z "${duplicate_output}" ]; then
   ok "無跨技能長段落重複"
 else
   while IFS='|' read -r level count sample; do
     [ "${level}" = FAIL ] && err "重複長段落出現在 ${count} 個技能：${sample}…" || warn "相同段落出現在 ${count} 個技能：${sample}…"
   done <<< "${duplicate_output}"
-fi
-
-echo "--- Adapter resources ---"
-compare_tree() {
-  local target="$1" label="$2"
-  if [ -d "${target}" ] && diff -qr "${ROOT_DIR}/skills" "${target}" >/dev/null 2>&1; then
-    ok "${label} 技能資源一致"
-  else
-    err "${label} 技能資源未同步"
-  fi
-}
-
-for skill in "${SKILLS[@]}"; do
-  canonical="${ROOT_DIR}/skills/${skill}/SKILL.md"
-  claude="${ROOT_DIR}/adapters/claude-code/.claude/skills/${skill}/SKILL.md"
-  [ -f "${claude}" ] || { err "Claude Code 缺少 ${skill}"; continue; }
-  diff -u \
-    <(grep -vE '^(invocation|user-invocable|disable-model-invocation):' "${canonical}") \
-    <(grep -vE '^(invocation|user-invocable|disable-model-invocation):' "${claude}") >/dev/null \
-    || err "Claude ${skill} 行為內容與 canonical 不一致"
-  invocation="$(awk 'NR>1 && /^---$/{exit} /^invocation:[[:space:]]*/{sub(/^invocation:[[:space:]]*/, ""); print}' "${canonical}")"
-  case "${invocation}" in
-    user)
-      if [ "${skill}" = "maze-skill-authoring" ]; then
-        # Issue #40：此技能例外允許模型觸發，不得被 sync 重新轉回停用。
-        grep -q '^disable-model-invocation: true$' "${claude}" && err "Claude ${skill} 應允許模型觸發，卻含 disable-model-invocation: true"
-      else
-        grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} 未停用模型觸發"
-      fi
-      ;;
-    model) grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} 未停用使用者入口" ;;
-    internal)
-      grep -q '^user-invocable: false$' "${claude}" || err "Claude ${skill} internal 仍可由使用者觸發"
-      grep -q '^disable-model-invocation: true$' "${claude}" || err "Claude ${skill} internal 仍可由模型觸發"
-      ;;
-  esac
-done
-ok "Claude Code invocation metadata 已轉譯"
-compare_tree "${ROOT_DIR}/adapters/codex/.maze-coder/skills" "Codex"
-compare_tree "${ROOT_DIR}/adapters/opencode/.maze-coder/skills" "opencode"
-compare_tree "${ROOT_DIR}/adapters/cursor/.cursor/maze-coder/skills" "Cursor"
-
-for pair in \
-  "adapters/claude-code/.claude/maze-coder/HARNESS_ENGINEERING.md" \
-  "adapters/codex/.maze-coder/HARNESS_ENGINEERING.md" \
-  "adapters/opencode/.maze-coder/HARNESS_ENGINEERING.md" \
-  "adapters/cursor/.cursor/maze-coder/HARNESS_ENGINEERING.md"; do
-  cmp -s "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" "${ROOT_DIR}/${pair}" \
-    && ok "${pair}" || err "${pair} 未同步"
-done
-
-grep -q '所有 29 個 canonical skills' "${ROOT_DIR}/core/HARNESS_ENGINEERING.md" \
-  && ok "核心 Harness 標示 29 個技能" || err "核心 Harness 未標示 29 個技能"
-for readme in \
-  "adapters/claude-code/README.md" \
-  "adapters/codex/README.md" \
-  "adapters/cursor/README.md" \
-  "adapters/opencode/README.md"; do
-  grep -q '29 個' "${ROOT_DIR}/${readme}" \
-    && ok "${readme} 標示 29 個技能" || err "${readme} 未標示 29 個技能"
-done
-
-for router in adapters/codex/AGENTS.md adapters/opencode/AGENTS.md adapters/cursor/.cursor/rules/maze-coder-router.mdc; do
-  [ -f "${ROOT_DIR}/${router}" ] || { err "缺少 ${router}"; continue; }
-  for skill in "${PUBLIC_SKILLS[@]}"; do
-    grep -q "${skill}" "${ROOT_DIR}/${router}" || err "${router} 缺少 ${skill} 路由"
-  done
-  for skill in "${INTERNAL_SKILLS[@]}"; do
-    ! grep -q "${skill}" "${ROOT_DIR}/${router}" || err "${router} 公開 internal skill ${skill}"
-  done
-  ok "${router}"
-done
-
-for legacy in maze-coder-core.mdc maze-coder-qa.mdc maze-coder-git.mdc maze-coder-design-review.mdc; do
-  [ ! -e "${ROOT_DIR}/adapters/cursor/.cursor/rules/${legacy}" ] || err "殘留舊 Cursor rule: ${legacy}"
-done
-
-echo "--- Templates and docs ---"
-SPEC_FILE="${ROOT_DIR}/docs/spec.md"
-grep -q '29 個 canonical skills：26 個公開或可由模型觸發的技能、3 個 internal skills' "${SPEC_FILE}" \
-  && ok "spec 標示 29／26／3 技能拓撲" || err "spec 未標示 29／26／3 技能拓撲"
-grep -q '總字元上限固定為 22,000' "${SPEC_FILE}" \
-  && ok "spec 標示 22,000 字元上限" || err "spec 未標示 22,000 字元上限"
-if grep -Eq '28 個 canonical skills|28 個 SKILL\.md|固定驗證 28 個 SKILL\.md|完成後技能數固定為 28／25／3' "${SPEC_FILE}"; then
-  err "spec 仍含過期技能、情境或字元上限"
-else
-  ok "spec 無過期技能、情境或字元上限"
-fi
-TEMPLATE_MAP=(
-  "maze-wayfinder/templates/WAYFINDER_MAP.template.md:WAYFINDER_MAP.md"
-  "maze-idea-to-spec/templates/spec.template.md:spec.md"
-  "maze-project-init/templates/AGENTS.template.md:AGENTS.md"
-  "maze-project-init/templates/MAZE_PROJECT.template.md:MAZE_PROJECT.md"
-  "maze-project-init/templates/PROJECT_BRIEF.template.md:PROJECT_BRIEF.md"
-  "maze-project-init/templates/NEXT_ACTION.template.md:NEXT_ACTION.md"
-  "maze-project-init/templates/DECISIONS.template.md:DECISIONS.md"
-  "maze-qa-verification/templates/QA_REPORT.template.md:QA_REPORT.md"
-  "maze-design-review/templates/DESIGN_REVIEW.template.md:DESIGN_REVIEW.md"
-  "maze-design-system/templates/DESIGN_SYSTEM.template.md:DESIGN_SYSTEM.md"
-  "maze-gui-prototyping/templates/PROTOTYPE_BRIEF.template.md:PROTOTYPE_BRIEF.md"
-  "maze-repo-map/templates/REPO_MAP.template.md:REPO_MAP.md"
-  "maze-handoff-summary/templates/HANDOFF.template.md:HANDOFF.md"
-  "maze-spec-review/templates/SPEC_REVIEW.template.md:SPEC_REVIEW.md"
-)
-for mapping in "${TEMPLATE_MAP[@]}"; do
-  src="${mapping%%:*}"; dst="${mapping#*:}"
-  cmp -s "${ROOT_DIR}/skills/${src}" "${ROOT_DIR}/templates/${dst}" \
-    && ok "templates/${dst}" || err "templates/${dst} 未同步"
-done
-
-grep -q '## 29 Canonical Skills' "${ROOT_DIR}/README.md" || err "README 未標示 29 Canonical Skills"
-
-echo "--- Adaptive architecture ---"
-for file in core/invariants.md core/workflow-model.md profiles/minimal.md profiles/standard.md profiles/scaffolded.md model-overlays/gpt-5.6.md model-overlays/claude.md model-overlays/gemini.md model-overlays/local-small-model.md; do
-  [ -s "${ROOT_DIR}/${file}" ] && ok "${file}" || err "缺少或空白 ${file}"
-done
-for root in \
-  adapters/claude-code/.claude/maze-coder \
-  adapters/codex/.maze-coder \
-  adapters/opencode/.maze-coder \
-  adapters/cursor/.cursor/maze-coder; do
-  diff -qr "${ROOT_DIR}/core" "${ROOT_DIR}/${root}/core" >/dev/null 2>&1 || err "${root}/core 未同步"
-  diff -qr "${ROOT_DIR}/profiles" "${ROOT_DIR}/${root}/profiles" >/dev/null 2>&1 || err "${root}/profiles 未同步"
-  diff -qr "${ROOT_DIR}/model-overlays" "${ROOT_DIR}/${root}/model-overlays" >/dev/null 2>&1 || err "${root}/model-overlays 未同步"
-done
-
-if grep -R -En 'TODO|FIXME' "${ROOT_DIR}/skills" "${ROOT_DIR}/core" "${ROOT_DIR}/profiles" "${ROOT_DIR}/model-overlays" | grep -v 'TODO/FIXME\|禁止使用' >/dev/null; then
-  err "canonical 內容含 TODO/FIXME"
-fi
-if [ -d "${ROOT_DIR}/skills/maze-session-closeout/templates" ] \
-  && find "${ROOT_DIR}/skills/maze-session-closeout/templates" -type f | grep -q .; then
-  err "closeout 仍含 Session Report templates"
-fi
-if [ -e "${ROOT_DIR}/docs/STATUS.md" ] || [ -e "${ROOT_DIR}/skills/maze-project-init/templates/STATUS.template.md" ] || [ -e "${ROOT_DIR}/templates/STATUS.md" ]; then
-  err "STATUS.md 不得由 canonical 或根模板保留"
-else
-  ok "STATUS.md 已退休且不再生成"
 fi
 
 echo
